@@ -51,4 +51,6 @@ def second_stage_permutation_importance(num_permutations, quantile, var_fitted_m
         importance_scores.append({'predictor': predictor_name, 'contribution': mean_contribution})
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores).sort_values(by='contribution', ascending=False)
+    # Normalize contributions
+    results_df['contribution'] = results_df['contribution'] / results_df['contribution'].sum()
     return results_df
