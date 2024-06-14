@@ -71,11 +71,11 @@ class Stack:
 
         # plot settings
 
-        plot_baseline = False,  # plot the baseline model
-        plot_weighted_avg = False,  # plot the weighted average predictions
+        plot_baseline = True,  # plot the baseline model
+        plot_weighted_avg = True,  # plot the weighted average predictions
         plot_importance_gbr = False,  # plot the feature importances for the GBR model
-        plot_importance_permutation_first_stage = False,  # plot the permutation importances first stage
+        plot_importance_permutation_first_stage = True,  # plot the permutation importances first stage
         plot_importance_permutation_second_stage = True,  # plot the permutation importances second stage
-        plot_importance_weighted_avg = False,  # plot the feature importances for the weighted average model
+        plot_importance_weighted_avg = True,  # plot the feature importances for the weighted average model
         zoom_in_variability = True, # zoom in the variability forecasts
     )
