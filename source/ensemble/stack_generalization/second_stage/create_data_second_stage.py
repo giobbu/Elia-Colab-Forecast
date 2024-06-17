@@ -14,7 +14,7 @@ def create_augmented_dataframe_2stage(df_2stage, order_diff, max_lags, augment=F
             if 'targets' not in col:
                 df_2stage_diff[f'{col}_sqr'] = df_2stage_diff[col]**2
     # Drop rows with NaNs resulting from the shift operation
-    df_2stage_process = df_2stage_diff.iloc[max_lags:, :]
+    df_2stage_process = df_2stage_diff.iloc[max_lags+1:, :]
     return df_2stage_process
 
 def create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test, predictions_insample, predictions_outsample):
