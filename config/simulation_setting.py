@@ -22,6 +22,10 @@ class WeightedAvg:
 @dataclass(frozen=True)
 class Stack:
     params = dict(
+
+        save_info = './info_model/',
+        save_file = 'previous_day.pickle',
+        
         compute_abs_difference = False,
         add_quantile_predictions = False,
         augment_q50 = False,
