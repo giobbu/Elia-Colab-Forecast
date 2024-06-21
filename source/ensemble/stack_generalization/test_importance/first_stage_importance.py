@@ -1,6 +1,7 @@
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
+from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 
 def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, base_score):
@@ -10,8 +11,9 @@ def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test
     permuted_score = score_functions[quantile](fitted_model, X_test_permuted, y_test)['mean_pinball_loss']
     return max(0.0, permuted_score - base_score)
 
-def first_stage_permutation_importance(num_permutations, quantile, fitted_model, X_test_augmented, y_test, df_train_ensemble_augmented):
+def first_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_first_stage):
     " Compute permutation importances for the first stage model."
+    num_permutations = parameters_model['nr_permutations']
     assert num_permutations > 0, "Number of permutations must be positive"
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
     # Define the score functions for different quantiles
@@ -20,6 +22,11 @@ def first_stage_permutation_importance(num_permutations, quantile, fitted_model,
         0.5: score_func_50,
         0.9: score_func_90
     }
+    # get the model
+    fitted_model = info_previous_day_first_stage[quantile]['fitted_model']
+    # get the data
+    X_test_augmented = info_previous_day_first_stage[quantile]['X_test_augmented']
+    df_train_ensemble_augmented = info_previous_day_first_stage[quantile]['df_train_ensemble_augmented']
     # Compute the original score
     base_score = score_functions[quantile](fitted_model, X_test_augmented, y_test)['mean_pinball_loss']
     importance_scores = []
@@ -36,5 +43,33 @@ def first_stage_permutation_importance(num_permutations, quantile, fitted_model,
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores).sort_values(by='contribution', ascending=False)
     # Normalize contributions
-    results_df['contribution'] = results_df['contribution'] / results_df['contribution'].sum()
+    results_df['contribution'] = results_df['contribution']/results_df['contribution'].sum()
     return results_df
+
+def wind_power_importance(results_challenge_dict, ens_params, y_test, results_contributions):
+    " Get the importance of the wind power"
+    assert 'wind_power' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
+    assert 'info_contributions' in results_challenge_dict['wind_power_variability'].keys(), 'The key info_contributions is not present in the results_challenge_dict'
+    assert 'quantiles' in ens_params.keys(), 'The key quantiles is not present in the ens_params'
+    assert 'nr_permutations' in ens_params.keys(), 'The key nr_permutations is not present in the ens_params'
+    logger.opt(colors=True).info(f'<blue>--</blue>' * 79)
+    logger.opt(colors=True).info(f'<blue>Wind Power</blue>')
+    # Get the info from the previous day
+    info_previous_day_first_stage = results_challenge_dict['wind_power']['info_contributions']
+    num_permutations = ens_params['nr_permutations']
+    logger.info(f'Number of permutations: {num_permutations}')
+    # Get the contributions per quantile
+    for quantile in ens_params['quantiles']:
+        logger.opt(colors=True).info(f'<blue>Quantile: {quantile}</blue>')
+        # Get the contributions
+        df_contributions = first_stage_permutation_importance(
+            y_test=y_test, 
+            parameters_model=ens_params, 
+            quantile=quantile, 
+            info_previous_day_first_stage=info_previous_day_first_stage
+        )
+        # Get the predictor name
+        df_contributions['predictor'] = df_contributions['predictor'].apply(lambda x: x.split('_')[1])
+        # Save the contributions
+        results_contributions['wind_power'][quantile] = dict(df_contributions.groupby('predictor')['contribution'].sum())
+    return results_contributions
