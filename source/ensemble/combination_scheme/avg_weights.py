@@ -67,7 +67,7 @@ def create_weighted_avg_df(df_test_norm_diff, combination_forecast, combination_
         'mean_prediction': combination_forecast,
         'Q90': combination_quantile90
     }, index=df_test_norm_diff.index)
-    df_weighted_avg['diff_norm_measured'] = df_test_norm_diff['diff_norm_measured']
+    df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
     return df_weighted_avg
 
 def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predictions, window_size_valid=1, var=False):
@@ -85,7 +85,7 @@ def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predicti
         df_weighted_avg = pd.DataFrame({
                 'mean_prediction': combination_forecast,
             }, index=df_test_norm_diff.index)
-        df_weighted_avg['diff_norm_measured'] = df_test_norm_diff['diff_norm_measured']
+        df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
         dict_weights = {0.5:norm_lst_q50_weight}
         return df_weighted_avg, dict_weights
     
@@ -101,6 +101,6 @@ def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predicti
             'mean_prediction': combination_forecast,
             'Q90': combination_quantile90
         }, index=df_test_norm_diff.index)
-    df_weighted_avg['diff_norm_measured'] = df_test_norm_diff['diff_norm_measured']
+    df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
     dict_weights = {0.5:norm_lst_q50_weight, 0.1:norm_lst_q10_weight, 0.9: norm_lst_q90_weight}
     return df_weighted_avg, dict_weights

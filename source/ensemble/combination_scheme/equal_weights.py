@@ -17,5 +17,5 @@ def calculate_equal_weights(df_test_norm_diff):
         'mean_prediction': MEAN,
         'Q90': Q90
     }, index=df_test_norm_diff.index)
-    df_equal_weights['diff_norm_measured'] = df_test_norm_diff['diff_norm_measured']
+    df_equal_weights['target'] = df_test_norm_diff['diff_norm_measured']
     return df_equal_weights
