@@ -309,13 +309,11 @@ def create_ensemble_forecasts(ens_params,
                                     'wind_power': 
                                         {'predictions': df_results_wind_power, 
                                             'info_contributions': previous_day_results_first_stage,
-                                            'best_results': best_results,
-                                            'df_test': df_test_ensemble},
+                                            'best_results': best_results},
                                     'wind_power_variability': 
                                         {'predictions': df_results_wind_power_variability, 
                                             'info_contributions': previous_day_results_second_stage,
-                                            'best_results': best_results_var,
-                                            'df_test': df_2stage_test}
+                                            'best_results': best_results_var}
                                         }
         # save results
         with open(file_info, 'wb') as handle:
