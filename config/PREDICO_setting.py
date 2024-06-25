@@ -9,7 +9,7 @@ class Simulation:
         file_3 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/04.json',
         file_4 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/05.json',
         window_size = 30,
-        start_training = '2023-01-24',
+        start_training = '2023-01-21',
         num_test_days = 80,
         forecasts_col = ['forecast', 'confidence10', 'confidence90'],
         measured_col = 'measured',
@@ -34,7 +34,7 @@ class Stack:
         save_info = './info_model/',
         save_file = 'previous_day.pickle',
 
-        normalize = False,
+        normalize = True,
         compute_abs_difference = False,
         add_quantile_predictions = False,
         augment_q50 = False,
@@ -51,14 +51,14 @@ class Stack:
         differenciate = False,
 
         # params for 2nd stage
-        max_lags_var = 3,
+        max_lags_var = 6,
         augment_var=False,
 
         baseline_model = 'diff_norm_dayahead',
 
         # Ensemble Learning
-        model_type = 'LR',  # 'GBR' or 'LR'
-        var_model_type = 'LR',  # 'GBR' or 'LR'
+        model_type = 'GBR',  # 'GBR' or 'LR'
+        var_model_type = 'GBR',  # 'GBR' or 'LR'
 
         gbr_update_every_days = 30,
 
@@ -66,7 +66,7 @@ class Stack:
         gbr_config_params = {'learning_rate': [0.001, 0.005, 0.01],
                                 'max_features' : [.85, .95, 1.0],
                                 'max_depth': [3, 4, 5],
-                                'max_iter': [250, 500, 750, 1000, 1200, 1500]},
+                                'max_iter': [250]},
         lr_config_params = {'alpha': [0.00001, 0.0001, 0.001, 0.005],
                             'fit_intercept' : [True, False]},
 
@@ -75,11 +75,11 @@ class Stack:
         var_gbr_config_params = {'learning_rate': [0.001, 0.005, 0.01],
                                     'max_features' : [.85, .95, 1.0],
                                     'max_depth': [3, 4, 5],
-                                    'max_iter': [150, 300, 450, 600]},
+                                    'max_iter': [250]},
         var_lr_config_params = {'alpha': [0.00001, 0.0001, 0.001, 0.005],
                                 'fit_intercept' : [True, False]},
 
-        nr_permutations=100,
+        nr_permutations=3,
         compute_second_stage = True,  # activate the second stage of the ensemble learning
 
         # plot settings
