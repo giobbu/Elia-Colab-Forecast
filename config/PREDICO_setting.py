@@ -34,6 +34,7 @@ class Stack:
         save_info = './info_model/',
         save_file = 'previous_day.pickle',
 
+        normalize = False,
         compute_abs_difference = False,
         add_quantile_predictions = False,
         augment_q50 = False,
