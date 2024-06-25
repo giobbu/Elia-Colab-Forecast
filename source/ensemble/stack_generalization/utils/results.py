@@ -14,16 +14,17 @@ def collect_quantile_ensemble_predictions(quantiles, test_data, predictions):
                 quantile_ensemble_predictions.append({'datetime': test_data.index[i],
                                                         'predictions': predictions[quantile][i]})
             quantile_predictions_dict[quantile] = quantile_ensemble_predictions
+        return quantile_predictions_dict
     except Exception as e:
         logger.exception("An error occurred:", e)
         return None
-    return quantile_predictions_dict
+    
 
 def create_ensemble_dataframe(buyer_resource_name, quantiles, quantile_predictions_dict, df_test):
     " Create ensemble dataframe from quantile predictions."
     assert len(quantiles) == len(quantile_predictions_dict), "Length mismatch between quantiles and quantile predictions"
     assert df_test.shape[0] == len(quantile_predictions_dict[quantiles[0]]), "Length mismatch between test data and predictions"
-    assert 'diff_norm_' + buyer_resource_name in df_test.columns, 'diff_norm_measured column not found in test data'
+    assert 'target' in df_test.columns, 'target column not found in test data'
     for i, quantile in enumerate(quantiles):
         if i == 0:
             df_pred_ensemble = pd.DataFrame(quantile_predictions_dict[quantile])
