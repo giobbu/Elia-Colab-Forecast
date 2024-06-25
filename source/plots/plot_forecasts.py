@@ -10,7 +10,7 @@ def plot_elia_forecasts(df, which = 'norm_dayahead'):
 
 def plot_ensemble_forecasts(df_pred_ensemble, df_ensemble):
     " Plot ensemble forecasts "
-    assert 'diff_norm_targ' in list(df_ensemble), 'diff_norm_targ not in df_ensemble'
+    assert 'target' in list(df_ensemble), 'target not in df_ensemble'
     # Create a figure and a set of subplots
     fig, ax = plt.subplots()
     # Plot '10_predictions' and '90_predictions' on the same axes with blue dashed lines
@@ -21,13 +21,13 @@ def plot_ensemble_forecasts(df_pred_ensemble, df_ensemble):
     df_plot_mean = df_pred_ensemble[['50_predictions']]
     df_plot_mean.columns = ['MEAN']
     df_plot_mean.plot(ax=ax, color='blue')
-    df_target = df_ensemble[['diff_norm_targ']]
+    df_target = df_ensemble[['target']]
     df_target.columns = ['target']
     df_target.plot(ax=ax, color='red')
 
 def plot_var_ensemble_forecasts(df_pred_ensemble, df_ensemble):
     " Plot ensemble forecasts "
-    assert 'targets' in list(df_ensemble), 'targets not in df_ensemble'
+    assert 'target' in list(df_ensemble), 'target not in df_ensemble'
     # Create a figure and a set of subplots
     fig, ax = plt.subplots()
     # Plot '10_predictions' and '90_predictions' on the same axes with blue dashed lines
@@ -38,7 +38,7 @@ def plot_var_ensemble_forecasts(df_pred_ensemble, df_ensemble):
     df_plot_mean = df_pred_ensemble[['50_var_predictions']]
     df_plot_mean.columns = ['MEAN_variability']
     df_plot_mean.plot(ax=ax, color='blue')
-    df_target = df_ensemble[['targets']]
+    df_target = df_ensemble[['target']]
     df_target.columns = ['target_variability']
     df_target.plot(ax=ax, color='red')
 
