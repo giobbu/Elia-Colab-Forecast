@@ -67,9 +67,13 @@ def create_ensemble_forecasts(ens_params,
             df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
     else:
         df_ensemble_normalized = df_ensemble_quantile50.copy()
+        df_ensemble_normalized = df_ensemble_normalized.add_prefix('norm_')
+
         if ens_params['add_quantile_predictions']:
             df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy()
             df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy()
+            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile10.add_prefix('norm_')
+            df_ensemble_normalized_quantile90 = df_ensemble_normalized_quantile90.add_prefix('norm_')
         else:
             df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
     
@@ -242,6 +246,16 @@ def create_ensemble_forecasts(ens_params,
                                                                 "df_train_ensemble": df_train_ensemble, 
                                                                 "df_test_ensemble": df_test_ensemble,
                                                                 "y_train": y_train}
+
+                # Rescale predictions for predictions
+                if ens_params['normalize']:
+                    variability_predictions[quantile] = variability_predictions[quantile] * maximum_capacity
+            
+            if ens_params['normalize']:
+                df_2stage_test.loc[:, 'targets'] = df_2stage_test['targets'] * maximum_capacity
+            else:
+                df_2stage_test.loc[:,'targets'] = df_2stage_test['targets']
+
             # Collect quantile variability predictions
             var_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_2stage_test, variability_predictions)
 
@@ -256,10 +270,22 @@ def create_ensemble_forecasts(ens_params,
 
             del df_2stage, df_2stage_buyer, df_2stage_train
             gc.collect()
+
+        # Rescale predictions
+        if ens_params['normalize']:
+                predictions[quantile] = predictions[quantile] * maximum_capacity
         
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
-    
+
+    if ens_params['normalize']:
+        target_name = 'diff_norm_' + buyer_resource_name
+        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name] * maximum_capacity
+
+    else:
+        target_name = 'diff_norm_' + buyer_resource_name
+        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name] * maximum_capacity
+
     # Collect quantile predictions
     quantile_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_test_norm_diff, predictions)
 
@@ -274,7 +300,7 @@ def create_ensemble_forecasts(ens_params,
         assert  challenge_usecase == 'simulation', 'challenge_usecase must be "simulation"'
 
         # collect results as dataframe
-        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_norm_diff['diff_norm_' + buyer_resource_name]], axis=1) 
+        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_norm_diff['target']], axis=1) 
         df_results_wind_power_variability = pd.concat([df_var_ensemble, df_2stage_test['targets']], axis=1)
 
         # collect results as dictionary of dictionaries
