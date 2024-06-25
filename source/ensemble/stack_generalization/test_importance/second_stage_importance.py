@@ -15,7 +15,8 @@ def second_stage_permuted_score(predictor_index, X_test_augmented, y_test, fitte
     df_2stage_test_permuted = df_2stage_processed_permuted[(df_2stage_processed_permuted.index >= start_prediction_timestamp) & (df_2stage_processed_permuted.index <= end_prediction_timestamp)]
     X_test_2stage_permuted, y_test_2stage_permuted = df_2stage_test_permuted.drop(columns=['targets']).values, df_2stage_test_permuted['targets'].values
     permutation_score = score_functions[quantile](var_fitted_model, X_test_2stage_permuted, y_test_2stage_permuted)['mean_pinball_loss']
-    return max(0.0, permutation_score - base_score)
+    importance_score = max(0.0, permutation_score - base_score)
+    return  importance_score
 
 def second_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_second_stage, start_prediction_timestamp, end_prediction_timestamp):
     "Compute permutation importances for the second stage model."
@@ -41,6 +42,7 @@ def second_stage_permutation_importance(y_test, parameters_model, quantile, info
     df_train_ensemble = info_previous_day_second_stage[quantile]['df_train_ensemble']
     df_test_ensemble = info_previous_day_second_stage[quantile]['df_test_ensemble']
     y_train = info_previous_day_second_stage[quantile]['y_train']
+
     # Generate predictions from the first-stage model
     predictions_insample = fitted_model.predict(X_train_augmented)
     predictions_outsample = fitted_model.predict(X_test_augmented)
