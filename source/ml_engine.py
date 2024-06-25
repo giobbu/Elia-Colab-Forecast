@@ -32,6 +32,9 @@ def create_ensemble_forecasts(ens_params,
     # set solver for quantile regression
     from sklearn.utils.fixes import parse_version, sp_version
     solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
+    if ens_params['model_type'] == 'LR':
+        assert ens_params['normalize'] == True, "Normalization must be True for model_type 'LR'"
+ 
 
     # ML ENGINE PREDICO PLATFORM
     logger.info('  ')
