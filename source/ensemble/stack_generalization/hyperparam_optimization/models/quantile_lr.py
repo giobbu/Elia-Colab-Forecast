@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.linear_model import LinearRegression, QuantileRegressor
+from sklearn.linear_model import LinearRegression, QuantileRegressor, Lasso
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import evaluate
 
 def optimize_lr(X_train, y_train, quantile, nr_cv_splits, solver, params):
@@ -19,14 +19,12 @@ def optimize_lr(X_train, y_train, quantile, nr_cv_splits, solver, params):
     ts_cv = TimeSeriesSplit(n_splits=nr_cv_splits)
     for alpha in params['alpha']:
         for fit_intercept in params['fit_intercept']:
-            if quantile == 0.5:
-                lr_params = dict(
-                fit_intercept=fit_intercept)
-                lr = LinearRegression(**lr_params)
-            else:
-                lr_params = dict(
+            lr_params = dict(
                 alpha=alpha,
                 fit_intercept=fit_intercept)
+            if quantile == 0.5:
+                lr = Lasso(**lr_params)  
+            else:
                 lr = QuantileRegressor(quantile=quantile, solver=solver, **lr_params)
             mean_cv_score = evaluate(lr, X_train, y_train, cv=ts_cv, quantile=quantile)  
             if mean_cv_score < best_score:

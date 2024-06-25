@@ -2,7 +2,7 @@ from source.ensemble.stack_generalization.hyperparam_optimization.models.quantil
 from source.ensemble.stack_generalization.hyperparam_optimization.models.quantile_lr import optimize_lr
 
 from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.linear_model import LinearRegression, QuantileRegressor
+from sklearn.linear_model import LinearRegression, QuantileRegressor, Lasso
 from loguru import logger
 
 def optimize_model(X_train, y_train, quantile, nr_cv_splits, model_type, solver, gbr_config_params, lr_config_params):
@@ -27,7 +27,7 @@ def initialize_model(model_type, quantile, best_params, solver):
             model = HistGradientBoostingRegressor(loss="quantile", quantile=quantile, **best_params)
     elif model_type == 'LR':
         if quantile == 0.5:
-            model = LinearRegression(**best_params)
+            model = Lasso(**best_params)  #LinearRegression(**best_params)
         else:
             model = QuantileRegressor(quantile=quantile, solver=solver, **best_params)
     else:
