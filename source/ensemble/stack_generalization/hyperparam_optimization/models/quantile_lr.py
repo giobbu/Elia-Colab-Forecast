@@ -15,7 +15,7 @@ def optimize_lr(X_train, y_train, quantile, nr_cv_splits, solver, params):
     assert params['alpha'] is not None, 'alpha must be provided'
     assert params['fit_intercept'] is not None, 'fit_intercept must be provided'
     best_lr_params = None
-    best_score=100000
+    best_score=np.exp(10000)
     ts_cv = TimeSeriesSplit(n_splits=nr_cv_splits)
     for alpha in params['alpha']:
         for fit_intercept in params['fit_intercept']:
