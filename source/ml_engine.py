@@ -50,17 +50,25 @@ def create_ensemble_forecasts(ens_params,
     logger.opt(colors=True).info(f'<fg 250,128,114> Forecasters Ensemble DataFrame </fg 250,128,114>')
 
     # Normalize dataframes
-    logger.info('   ')
-    logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
-    df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, maximum_capacity)
+    if ens_params['normalize']:
+        logger.info('   ')
+        logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
+        df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, maximum_capacity)
 
-    # Normalize dataframes quantile predictions
-    if ens_params['add_quantile_predictions']:
-        logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-        df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, maximum_capacity)
-        df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, maximum_capacity)
+        # Normalize dataframes quantile predictions
+        if ens_params['add_quantile_predictions']:
+            logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
+            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, maximum_capacity)
+            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, maximum_capacity)
+        else:
+            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
     else:
-        df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
+        df_ensemble_normalized = df_ensemble_quantile50.copy()
+        if ens_params['add_quantile_predictions']:
+            df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy()
+            df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy()
+        else:
+            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
     
     # Augment dataframes
     logger.info('   ')
@@ -93,7 +101,11 @@ def create_ensemble_forecasts(ens_params,
         df_ensemble_normalized_lag_quantile10 = df_ensemble_normalized_lag_quantile90 = None
     
     # Normalize dataframe
-    df_buyer_norm = normalize_dataframe(df_buyer, maximum_capacity)
+    if ens_params['normalize']:
+        df_buyer_norm = normalize_dataframe(df_buyer, maximum_capacity)
+    else:
+        df_buyer_norm = df_buyer.copy()
+        df_buyer_norm = df_buyer_norm.add_prefix('norm_')
     
     # Differentiate dataframe
     df_buyer_norm_diff = df_buyer_norm.copy()
@@ -103,7 +115,7 @@ def create_ensemble_forecasts(ens_params,
     # Split train and test dataframes
     df_train_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index < start_prediction_timestamp]
     df_test_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index >= start_prediction_timestamp]
-    
+
     df_train_ensemble, df_test_ensemble = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff, start_prediction_timestamp, ens_params['max_lags'])
     
     # Split train and test dataframes quantile predictions
