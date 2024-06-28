@@ -2,6 +2,8 @@ from source.ensemble.stack_generalization.feature_engineering.data_augmentation 
 from source.ensemble.stack_generalization.hyperparam_optimization.optimization import optimize_model, initialize_model
 from source.ensemble.stack_generalization.train_importance.plot_importance import plot_feature_importance
 from loguru import logger
+import pandas as pd
+import numpy as np
 
 def run_ensemble_predictions_per_quantile(abs_differenciate, X_train, X_test, y_train, df_train_ensemble,  
                                     predictions, quantile, iteration, add_quantiles, augment_q50,
@@ -76,8 +78,8 @@ def predico_ensemble_predictions_per_quantile(abs_differenciate, X_train, X_test
                                     nr_cv_splits, model_type, solver, 
                                     gbr_update_every_days, gbr_config_params, lr_config_params,
                                     plot_importance_gbr, best_results,
-                                    X_train_quantile10=None, X_test_quantile10=None, df_train_ensemble_quantile10=None, 
-                                    X_train_quantile90=None, X_test_quantile90=None, df_train_ensemble_quantile90=None):
+                                    X_train_quantile10=np.array([]), X_test_quantile10=np.array([]), df_train_ensemble_quantile10=pd.DataFrame(), 
+                                    X_train_quantile90=np.array([]), X_test_quantile90=np.array([]), df_train_ensemble_quantile90=pd.DataFrame()):
     " Run ensemble predictions for a specific quantile."
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Run ensemble predictions for quantile {quantile} </fg 250,128,114>')

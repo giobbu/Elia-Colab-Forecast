@@ -1,5 +1,6 @@
 from loguru import logger
 import pandas as pd
+import numpy as np
 import gc
 import pickle
 from tqdm import tqdm
@@ -10,6 +11,17 @@ from source.ensemble.stack_generalization.data_preparation.data_train_test impor
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
+
+
+def extract_quantile_columns(df, quantile):
+    """Extract columns containing the specified quantile."""
+    columns = [name for name in df.columns if quantile in name]
+    if columns:
+        return df[columns]
+    else:
+        print(f"No columns found for {quantile}")
+        return pd.DataFrame()
+
 
 def create_ensemble_forecasts(ens_params,
                                 df_buyer,
@@ -22,9 +34,18 @@ def create_ensemble_forecasts(ens_params,
     start_prediction_timestamp = forecast_range[0] 
     end_prediction_timestamp = forecast_range[-1]
 
-    df_ensemble_quantile50 = df_market[[ name for name in df_market.columns if 'q50' in name]]  # get the quantile 50 predictions
-    df_ensemble_quantile10 = df_market[[ name for name in df_market.columns if 'q10' in name]]  # get the quantile 10 predictions
-    df_ensemble_quantile90 = df_market[[ name for name in df_market.columns if 'q90' in name]]  # get the quantile 90 predictions
+    # df_ensemble_quantile50 = df_market[[ name for name in df_market.columns if 'q50' in name]]  # get the quantile 50 predictions
+    # df_ensemble_quantile10 = df_market[[ name for name in df_market.columns if 'q10' in name]]  # get the quantile 10 predictions
+    # df_ensemble_quantile90 = df_market[[ name for name in df_market.columns if 'q90' in name]]  # get the quantile 90 predictions
+
+    # Extract quantile columns with checks
+    df_ensemble_quantile50 = extract_quantile_columns(df_market, 'q50')  # get the quantile 50 predictions
+    df_ensemble_quantile10 = extract_quantile_columns(df_market, 'q10')  # get the quantile 10 predictions
+    df_ensemble_quantile90 = extract_quantile_columns(df_market, 'q90')  # get the quantile 90 predictions
+
+    # Ensure at least one quantile DataFrame is not empty
+    if df_ensemble_quantile50.empty and df_ensemble_quantile10.empty and df_ensemble_quantile90.empty:
+        raise ValueError("None of the required quantile columns ('q50', 'q10', 'q90') were found in the DataFrame.")
 
     buyer_resource_name = df_buyer.columns[0]  # get the name of the buyer resource
     maximum_capacity = df_buyer[buyer_resource_name].max()  # get the maximum capacity
@@ -57,25 +78,21 @@ def create_ensemble_forecasts(ens_params,
         logger.info('   ')
         logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
         df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, maximum_capacity)
-
         # Normalize dataframes quantile predictions
         if ens_params['add_quantile_predictions']:
             logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, maximum_capacity)
-            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, maximum_capacity)
+            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, maximum_capacity) if not df_ensemble_quantile10.empty else pd.DataFrame()
+            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, maximum_capacity) if not df_ensemble_quantile90.empty else pd.DataFrame()
         else:
-            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
+            df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
     else:
         df_ensemble_normalized = df_ensemble_quantile50.copy()
         df_ensemble_normalized = df_ensemble_normalized.add_prefix('norm_')
-
         if ens_params['add_quantile_predictions']:
-            df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy()
-            df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy()
-            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile10.add_prefix('norm_')
-            df_ensemble_normalized_quantile90 = df_ensemble_normalized_quantile90.add_prefix('norm_')
+            df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy().add_prefix('norm_') if not df_ensemble_quantile10.empty else pd.DataFrame()
+            df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy().add_prefix('norm_') if not df_ensemble_quantile90.empty else pd.DataFrame()
         else:
-            df_ensemble_normalized_quantile10 = df_ensemble_normalized_quantile90 = None
+            df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
     
     # Augment dataframes
     logger.info('   ')
@@ -91,21 +108,21 @@ def create_ensemble_forecasts(ens_params,
         logger.opt(colors=True).info(f'<fg 250,128,114> -- Augment quantile predictions </fg 250,128,114>')
 
         # Augment with predictions quantile 10
-        df_ensemble_normalized_lag_quantile10 = create_augmented_dataframe(df_ensemble_normalized_quantile10,
+        df_ensemble_normalized_lag_quantile10 = (create_augmented_dataframe(df_ensemble_normalized_quantile10,
                                                                             max_lags=ens_params['max_lags'], 
                                                                             forecasters_diversity=ens_params['forecasters_diversity'], 
                                                                             lagged=ens_params['lagged'], 
                                                                             augmented=ens_params['augment'], 
-                                                                            differenciate=ens_params['differenciate'])
+                                                                            differenciate=ens_params['differenciate']) if not df_ensemble_normalized_quantile10.empty else pd.DataFrame())
         # Augment with predictions quantile 90
-        df_ensemble_normalized_lag_quantile90 = create_augmented_dataframe(df_ensemble_normalized_quantile90, 
+        df_ensemble_normalized_lag_quantile90 = (create_augmented_dataframe(df_ensemble_normalized_quantile90, 
                                                                             max_lags=ens_params['max_lags'], 
                                                                             forecasters_diversity=ens_params['forecasters_diversity'], 
                                                                             lagged=ens_params['lagged'], 
                                                                             augmented=ens_params['augment'], 
-                                                                            differenciate=ens_params['differenciate'])
+                                                                            differenciate=ens_params['differenciate']) if not df_ensemble_normalized_quantile90.empty else pd.DataFrame())
     else:
-        df_ensemble_normalized_lag_quantile10 = df_ensemble_normalized_lag_quantile90 = None
+        df_ensemble_normalized_lag_quantile10, df_ensemble_normalized_lag_quantile90 = pd.DataFrame(), pd.DataFrame()
     
     # Normalize dataframe
     if ens_params['normalize']:
@@ -127,13 +144,13 @@ def create_ensemble_forecasts(ens_params,
     
     # Split train and test dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
-        df_train_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index < start_prediction_timestamp]
-        df_test_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index >= start_prediction_timestamp]
-        df_train_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index < start_prediction_timestamp]
-        df_test_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index >= start_prediction_timestamp]
+        df_train_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index < start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile10.empty else pd.DataFrame()
+        df_test_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index >= start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile10.empty else pd.DataFrame()
+        df_train_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index < start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile90.empty else pd.DataFrame()
+        df_test_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index >= start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile90.empty else pd.DataFrame()
     else:
-        df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = None
-        df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = None
+        df_train_ensemble_quantile10, df_test_ensemble_quantile10 = pd.DataFrame(), pd.DataFrame()
+        df_train_ensemble_quantile90, df_test_ensemble_quantile90 = pd.DataFrame(), pd.DataFrame()
     
     # Assert df_test matches df_ensemble_test
     assert (df_test_norm_diff.index == df_test_ensemble.index).all(),'Datetime index are not equal'
@@ -143,13 +160,13 @@ def create_ensemble_forecasts(ens_params,
     
     # Make X-y train and test sets quantile predictions
     if ens_params['add_quantile_predictions']:
-        X_train_quantile10 = df_train_ensemble_quantile10.values
-        X_test_quantile10 = df_test_ensemble_quantile10.values
-        X_train_quantile90 = df_train_ensemble_quantile90.values
-        X_test_quantile90 = df_test_ensemble_quantile90.values
+        X_train_quantile10 = df_train_ensemble_quantile10.values if not df_train_ensemble_quantile10.empty else np.array([])
+        X_test_quantile10 = df_test_ensemble_quantile10.values if not df_test_ensemble_quantile10.empty else np.array([])
+        X_train_quantile90 = df_train_ensemble_quantile90.values if not df_train_ensemble_quantile90.empty else np.array([])
+        X_test_quantile90 = df_test_ensemble_quantile90.values if not df_test_ensemble_quantile90.empty else np.array([])
     else:
-        X_train_quantile10 = X_test_quantile10 = None
-        X_train_quantile90 = X_test_quantile90 = None
+        X_train_quantile10, X_test_quantile10 = np.array([]), np.array([])
+        X_train_quantile90, X_test_quantile90 = np.array([]), np.array([])
     
     # Assert no NaNs in train ensemble
     assert df_train_ensemble.isna().sum().sum() == 0
