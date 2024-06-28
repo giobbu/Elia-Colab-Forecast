@@ -290,7 +290,7 @@ def create_ensemble_forecasts(ens_params,
 
         # Rescale predictions
         if ens_params['normalize']:
-                predictions[quantile] = predictions[quantile] * maximum_capacity
+            predictions[quantile] = predictions[quantile] * maximum_capacity
         
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
@@ -298,10 +298,9 @@ def create_ensemble_forecasts(ens_params,
     if ens_params['normalize']:
         target_name = 'diff_norm_' + buyer_resource_name
         df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name] * maximum_capacity
-
     else:
         target_name = 'diff_norm_' + buyer_resource_name
-        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name] * maximum_capacity
+        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name]
 
     # Collect quantile predictions
     quantile_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_test_norm_diff, predictions)
