@@ -7,6 +7,11 @@ def create_augmented_dataframe(df, max_lags, forecasters_diversity=False, lagged
     assert isinstance(max_lags, int), "max_lags should be an integer"
     assert max_lags > 0, "max_lags should be greater than 0"
     shifted_df_ensemble = pd.DataFrame()
+    if forecasters_diversity:
+        " Create forecasters diversity features"
+        forecast_cols = [name for name in df.columns if any(q in name for q in ['q50', 'q10', 'q90'])] # forecasters columns
+        shifted_df_ensemble["forecasters_std"] = df[forecast_cols].std(axis=1)  # standard deviation among forecasters
+        shifted_df_ensemble["forecasters_var"] = df[forecast_cols].var(axis=1)  # variance among forecasters
     if lagged:
         " Create lagged features"
         for lag in range(1, max_lags + 1):
@@ -26,11 +31,6 @@ def create_augmented_dataframe(df, max_lags, forecasters_diversity=False, lagged
         for col in df.columns:
             shifted_df_ensemble[col + "_diff"] = df[col].diff()  # difference
             shifted_df_ensemble[col + "_lag-1_diff"] = df[col].shift(1).diff()  # difference on lag-1
-    if forecasters_diversity:
-        " Create forecasters diversity features"
-        forecast_cols = [name for name in df.columns if 'pred' in name]  # forecasters columns
-        shifted_df_ensemble["forecasters_std"] = df[forecast_cols].std(axis=1)  # standard deviation among forecasters
-        shifted_df_ensemble["forecasters_var"] = df[forecast_cols].var(axis=1)  # variance among forecasters
     " Concatenate the original dataframe with the shifted dataframe"
     df = pd.concat([df, shifted_df_ensemble], axis=1)
     df = df.iloc[max_lags:,:]
