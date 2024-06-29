@@ -2,12 +2,13 @@ from matplotlib import pyplot as plt
 import scikit_posthocs as sp
 import pandas as pd
 
-def transform_loss_lists_to_df(lst_loss_gbr_ensemble, lst_loss_equal_weights, lst_loss_weighted_avg, lst_loss_baseline_dayahead, lst_loss_baseline_dayahead11h, lst_loss_baseline_weekahead):
+def transform_loss_lists_to_df(model_type, lst_loss_ensemble, lst_loss_equal_weights, lst_loss_weighted_avg, lst_loss_baseline_dayahead, lst_loss_baseline_dayahead11h, lst_loss_baseline_weekahead):
     " Transform the loss lists into a DataFrame"
-    assert len(lst_loss_gbr_ensemble) == len(lst_loss_equal_weights) == len(lst_loss_weighted_avg) == len(lst_loss_baseline_dayahead) == len(lst_loss_baseline_dayahead11h) == len(lst_loss_baseline_weekahead), 'Length mismatch'
+    assert len(lst_loss_ensemble) == len(lst_loss_equal_weights) == len(lst_loss_weighted_avg) == len(lst_loss_baseline_dayahead) == len(lst_loss_baseline_dayahead11h) == len(lst_loss_baseline_weekahead), 'Length mismatch'
+        
     # Construct the dictionary from the input lists
     dict_data = {
-        'gbr_ensemble': lst_loss_gbr_ensemble,
+        f'{model_type}_ensemble': lst_loss_ensemble,
         'eq_weights': lst_loss_equal_weights,
         'weighted_avg': lst_loss_weighted_avg,
         'dayahead': lst_loss_baseline_dayahead,
