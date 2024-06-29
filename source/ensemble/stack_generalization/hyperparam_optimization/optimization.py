@@ -2,7 +2,7 @@ from source.ensemble.stack_generalization.hyperparam_optimization.models.quantil
 from source.ensemble.stack_generalization.hyperparam_optimization.models.quantile_lr import optimize_lr
 
 from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.linear_model import LinearRegression, QuantileRegressor, Lasso
+from sklearn.linear_model import QuantileRegressor, Lasso
 from loguru import logger
 
 def optimize_model(X_train, y_train, quantile, nr_cv_splits, model_type, solver, gbr_config_params, lr_config_params):

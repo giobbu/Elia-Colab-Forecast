@@ -19,7 +19,7 @@ def optimize_gbr(X_train, y_train, quantile, nr_cv_splits, params):
     assert params['max_depth'] is not None, 'max_depth must be provided'
     assert params['max_iter'] is not None, 'max_iter must be provided'
     best_gbr_params = None
-    best_score=np.exp(10000)
+    best_score=np.exp(1000000)
     ts_cv = TimeSeriesSplit(n_splits=nr_cv_splits)
     for learning_rate in params['learning_rate']:
         for subsample in params['max_features']:
