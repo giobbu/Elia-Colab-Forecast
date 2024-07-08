@@ -389,6 +389,6 @@ def create_ensemble_forecasts(ens_params,
         # save results
         with open(file_info, 'wb') as handle:
             pickle.dump(results_challenge_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        assert  challenge_usecase == 'wind_power' or challenge_usecase == 'wind_power_variability', 'challenge_usecase must be either "wind_power" or "wind_power_variability"'
+        assert  challenge_usecase == 'wind_power' or challenge_usecase == 'wind_power_ramp', 'challenge_usecase must be either "wind_power" or "wind_power_ramp"'
         return results_challenge_dict[challenge_usecase]['predictions']
     
