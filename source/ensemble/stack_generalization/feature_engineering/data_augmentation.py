@@ -67,11 +67,11 @@ def augment_with_quantiles(X_train, X_test, df_train_ensemble,
             quantile_data = {
                 0.1: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
                 0.5: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
-                0.9: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10)
+                0.9: (np.array([]), np.array([]), pd.DataFrame([]))
             }
         elif not df_train_ensemble_quantile90.empty:
             quantile_data = {
-                0.1: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90),
+                0.1: (np.array([]), np.array([]), pd.DataFrame([])),
                 0.5: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90),
                 0.9: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90)
             }

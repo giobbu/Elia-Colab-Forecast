@@ -58,18 +58,14 @@ def create_ensemble_forecasts(ens_params,
     start_prediction_timestamp = forecast_range[0] 
     end_prediction_timestamp = forecast_range[-1]
 
-    # df_ensemble_quantile50 = df_market[[ name for name in df_market.columns if 'q50' in name]]  # get the quantile 50 predictions
-    # df_ensemble_quantile10 = df_market[[ name for name in df_market.columns if 'q10' in name]]  # get the quantile 10 predictions
-    # df_ensemble_quantile90 = df_market[[ name for name in df_market.columns if 'q90' in name]]  # get the quantile 90 predictions
-
     # Extract quantile columns with checks
     df_ensemble_quantile50 = extract_quantile_columns(df_market, 'q50')  # get the quantile 50 predictions
     df_ensemble_quantile10 = extract_quantile_columns(df_market, 'q10')  # get the quantile 10 predictions
     df_ensemble_quantile90 = extract_quantile_columns(df_market, 'q90')  # get the quantile 90 predictions
 
     # Ensure at least one quantile DataFrame is not empty
-    if df_ensemble_quantile50.empty and df_ensemble_quantile10.empty and df_ensemble_quantile90.empty:
-        raise ValueError("None of the required quantile columns ('q50', 'q10', 'q90') were found in the DataFrame.")
+    if df_ensemble_quantile50.empty:
+        raise ValueError("Quantile columns 'q50' were not found in the DataFrame.")
 
     buyer_resource_name = df_buyer.columns[0]  # get the name of the buyer resource
     maximum_capacity = df_buyer[buyer_resource_name].max()  # get the maximum capacity
