@@ -37,15 +37,24 @@ def extract_quantile_columns(df, quantile):
         print(f"No columns found for {quantile}")
         return pd.DataFrame()
 
+def split_quantile_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
+    if df.empty:
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    df_train = df[df.index < end_training_timestamp]
+    df_test = df[df.index >= start_prediction_timestamp]
+    df_test_pre = df[df.index >= pre_start_prediction_timestamp]
+    return df_train, df_test, df_test_pre
 
 def create_ensemble_forecasts(ens_params,
                                 df_buyer,
                                 df_market,
+                                end_training_timestamp,
                                 forecast_range,
                                 challenge_usecase = None,
                                 simulation = False,):
     " Create ensemble forecasts for wind power and wind power variability using forecasters predictions"
 
+    pre_start_prediction_timestamp = forecast_range[0] - pd.Timedelta('1day')
     start_prediction_timestamp = forecast_range[0] 
     end_prediction_timestamp = forecast_range[-1]
 
@@ -76,6 +85,7 @@ def create_ensemble_forecasts(ens_params,
     logger.info('  ')
     logger.opt(colors=True).info(f'<fg 250,128,114> PREDICO Machine Learning Engine </fg 250,128,114> ')
     logger.info('  ')
+    logger.opt(colors=True).info(f'<fg 250,128,114> Launch Time from {str(end_training_timestamp)} </fg 250,128,114> ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Predictions from {str(start_prediction_timestamp)} to {str(end_prediction_timestamp)} </fg 250,128,114> ')
     logger.info('  ')
 
@@ -152,20 +162,30 @@ def create_ensemble_forecasts(ens_params,
     df_buyer_norm_diff.columns = lst_cols_diff
     
     # Split train and test dataframes
-    df_train_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index < start_prediction_timestamp]
+    df_train_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index < end_training_timestamp]
     df_test_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index >= start_prediction_timestamp]
+    df_train_ensemble, df_test_ensemble = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff, end_training_timestamp, start_prediction_timestamp, ens_params['max_lags'])
 
-    df_train_ensemble, df_test_ensemble = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff, start_prediction_timestamp, ens_params['max_lags'])
-    
-    # Split train and test dataframes quantile predictions
+    df_test_norm_diff_pre = df_buyer_norm_diff[df_buyer_norm_diff.index >= pre_start_prediction_timestamp]
+    _, df_test_ensemble_pre = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff_pre, end_training_timestamp, pre_start_prediction_timestamp, ens_params['max_lags'])
+
+    logger.info('   ')
+    logger.opt(colors=True).info(f'<fg 250,128,114> Train and Test Dataframes </fg 250,128,114>')
+    logger.info(f'Length of Train DataFrame: {len(df_train_ensemble)}')
+    logger.info(f'Length of Test DataFrame: {len(df_test_ensemble)}')
+    assert len(df_test_ensemble) == 96, 'Test dataframe must have 96 rows'
+
+    # # Split train and test dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
-        df_train_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index < start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile10.empty else pd.DataFrame()
-        df_test_ensemble_quantile10 = df_ensemble_normalized_lag_quantile10[df_ensemble_normalized_lag_quantile10.index >= start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile10.empty else pd.DataFrame()
-        df_train_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index < start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile90.empty else pd.DataFrame()
-        df_test_ensemble_quantile90 = df_ensemble_normalized_lag_quantile90[df_ensemble_normalized_lag_quantile90.index >= start_prediction_timestamp] if not df_ensemble_normalized_lag_quantile90.empty else pd.DataFrame()
+        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_pre = split_quantile_data(
+            df_ensemble_normalized_lag_quantile10, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
+        
+        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_pre = split_quantile_data(
+            df_ensemble_normalized_lag_quantile90, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
     else:
-        df_train_ensemble_quantile10, df_test_ensemble_quantile10 = pd.DataFrame(), pd.DataFrame()
-        df_train_ensemble_quantile90, df_test_ensemble_quantile90 = pd.DataFrame(), pd.DataFrame()
+        df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = pd.DataFrame()
+        df_test_ensemble_quantile10_pre = df_test_ensemble_quantile90_pre = pd.DataFrame()
+
     
     # Assert df_test matches df_ensemble_test
     assert (df_test_norm_diff.index == df_test_ensemble.index).all(),'Datetime index are not equal'
@@ -227,19 +247,30 @@ def create_ensemble_forecasts(ens_params,
         if ens_params['compute_second_stage'] and quantile == 0.5:
             logger.info('   ')
             logger.opt(colors=True).info(f'<fg 72,201,176> Compute Variability Predictions </fg 72,201,176>')
+
+            ## ------
+            
+            X_test_augmented_pre, y_test_pre = prepare_pre_test_data(ens_params, quantile, df_test_ensemble_pre, df_test_ensemble_quantile10_pre, df_test_ensemble_quantile90_pre)
+            assert len(X_test_augmented_pre) == len(y_test_pre) == 192, 'Test dataframe must have 192 rows'
             
             predictions_insample = fitted_model.predict(X_train_augmented)
-            predictions_outsample = fitted_model.predict(X_test_augmented)
+            predictions_outsample = fitted_model.predict(X_test_augmented_pre)
             
             # Create 2-stage dataframe
-            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test, predictions_insample, predictions_outsample)
+            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_pre, y_train, y_test_pre, predictions_insample, predictions_outsample)
 
             # Augment 2-stage dataframe
             df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
             
             # Split 2-stage dataframe
-            df_2stage_train = df_2stage_buyer[df_2stage_buyer.index < start_prediction_timestamp]
+            df_2stage_train = df_2stage_buyer[df_2stage_buyer.index < end_training_timestamp]
             df_2stage_test = df_2stage_buyer[df_2stage_buyer.index >= start_prediction_timestamp]
+
+            logger.info('   ')
+            logger.opt(colors=True).info(f'<fg 72,201,176> Train and Test Dataframes </fg 72,201,176>')
+            logger.info(f'Length of Train DataFrame: {len(df_2stage_train)}')
+            logger.info(f'Length of Test DataFrame: {len(df_2stage_test)}')
+            assert len(df_2stage_test) == 96, 'Test dataframe must have 96 rows'
             
             # Normalize 2-stage dataframe
             X_train_2stage = df_2stage_train.drop(columns=['targets']).values
