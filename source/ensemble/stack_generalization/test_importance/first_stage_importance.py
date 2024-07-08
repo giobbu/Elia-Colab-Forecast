@@ -4,12 +4,12 @@ import pandas as pd
 from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 
-def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, base_score):
+def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile):
     " Compute the permuted score for a single predictor."
     X_test_permuted = X_test_augmented.copy()
     X_test_permuted[:, predictor_index] = np.random.permutation(X_test_augmented[:, predictor_index])
     permuted_score = score_functions[quantile](fitted_model, X_test_permuted, y_test)['mean_pinball_loss']
-    return max(0.0, permuted_score - base_score)
+    return permuted_score
 
 def first_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_first_stage):
     " Compute permutation importances for the first stage model."
@@ -35,13 +35,14 @@ def first_stage_permutation_importance(y_test, parameters_model, quantile, info_
         predictor_name = df_train_ensemble_augmented.drop(columns=['diff_norm_targ']).columns[predictor_index]
         # Compute the permuted scores in parallel
         permuted_scores = Parallel(n_jobs=4)(delayed(first_stage_compute_permuted_score)(
-            predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, base_score
-        ) for _ in range(num_permutations))
+            predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile) for _ in range(num_permutations))
         # Calculate mean contribution for the predictor
-        mean_contribution = np.mean(permuted_scores)
+        mean_contribution = max(0, np.mean(permuted_scores) - base_score)
         importance_scores.append({'predictor': predictor_name, 'contribution': mean_contribution})
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores).sort_values(by='contribution', ascending=False)
+    # Drop the forecasters standard deviation and variance rows
+    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
     # Normalize contributions
     results_df['contribution'] = results_df['contribution']/results_df['contribution'].sum()
     return results_df

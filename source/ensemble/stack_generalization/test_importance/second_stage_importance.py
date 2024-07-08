@@ -15,8 +15,7 @@ def second_stage_permuted_score(predictor_index, X_test_augmented, y_test, fitte
     df_2stage_test_permuted = df_2stage_processed_permuted[(df_2stage_processed_permuted.index >= start_prediction_timestamp) & (df_2stage_processed_permuted.index <= end_prediction_timestamp)]
     X_test_2stage_permuted, y_test_2stage_permuted = df_2stage_test_permuted.drop(columns=['targets']).values, df_2stage_test_permuted['targets'].values
     permutation_score = score_functions[quantile](var_fitted_model, X_test_2stage_permuted, y_test_2stage_permuted)['mean_pinball_loss']
-    importance_score = max(0.0, permutation_score - base_score)
-    return  importance_score
+    return  permutation_score
 
 def second_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_second_stage, start_prediction_timestamp, end_prediction_timestamp):
     "Compute permutation importances for the second stage model."
@@ -65,12 +64,14 @@ def second_stage_permutation_importance(y_test, parameters_model, quantile, info
             augment_var, start_prediction_timestamp, end_prediction_timestamp, var_fitted_model
         ) for _ in range(num_permutations))
         # Calculate mean contribution for the predictor
-        mean_contribution = np.mean(permuted_scores)
+        mean_contribution = max(0, np.mean(permuted_scores) - base_score)
         importance_scores.append({'predictor': predictor_name, 'contribution': mean_contribution})
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores).sort_values(by='contribution', ascending=False)
+    # Drop the forecasters standard deviation and variance rows
+    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
     # Normalize contributions
-    results_df['contribution'] = results_df['contribution'] / results_df['contribution'].sum()
+    results_df['contribution'] = results_df['contribution']/results_df['contribution'].sum()
     return results_df
 
 
