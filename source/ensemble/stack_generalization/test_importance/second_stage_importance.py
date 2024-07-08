@@ -5,7 +5,7 @@ from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage
 
-def second_stage_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, base_score, df_train_ensemble, df_test_ensemble, y_train, predictions_insample, order_diff, max_lags_var, augment_var, start_prediction_timestamp, end_prediction_timestamp, var_fitted_model):
+def second_stage_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, df_train_ensemble, df_test_ensemble, y_train, predictions_insample, order_diff, max_lags_var, augment_var, start_prediction_timestamp, end_prediction_timestamp, var_fitted_model):
     "Compute the permuted score for a single predictor in the second stage model."
     X_test_permuted = X_test_augmented.copy()
     X_test_permuted[:, predictor_index] = np.random.permutation(X_test_augmented[:, predictor_index])
@@ -59,7 +59,7 @@ def second_stage_permutation_importance(y_test, parameters_model, quantile, info
         predictor_name = df_train_ensemble_augmented.drop(columns=['diff_norm_targ']).columns[predictor_index]
         # Compute the permuted scores in parallel
         permuted_scores = Parallel(n_jobs=-1)(delayed(second_stage_permuted_score)(
-            predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile, base_score,
+            predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile,
             df_train_ensemble, df_test_ensemble, y_train, predictions_insample, order_diff, max_lags_var,
             augment_var, start_prediction_timestamp, end_prediction_timestamp, var_fitted_model
         ) for _ in range(num_permutations))
