@@ -7,11 +7,26 @@ from tqdm import tqdm
 from pathlib import Path
 from source.utils.data_preprocess import normalize_dataframe
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
-from source.ensemble.stack_generalization.data_preparation.data_train_test import prepare_train_test_data, get_numpy_Xy_train_test
+from source.ensemble.stack_generalization.data_preparation.data_train_test import prepare_pre_test_data, prepare_train_test_data, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
 
+
+def load_or_initialize_results(ens_params, buyer_resource_name):
+    file_info = ens_params['save_info'] + buyer_resource_name + '_' + ens_params['save_file']
+    file_path = Path(file_info)
+    if file_path.is_file():
+        with open(file_info, 'rb') as handle:
+            results_challenge_dict = pickle.load(handle)
+        iteration = results_challenge_dict['iteration'] + 1
+        best_results = results_challenge_dict['wind_power']['best_results']
+        best_results_var = results_challenge_dict['wind_power_ramp']['best_results']
+    else:
+        iteration = 0
+        best_results = {}
+        best_results_var = {}
+    return file_info, iteration, best_results, best_results_var
 
 def extract_quantile_columns(df, quantile):
     """Extract columns containing the specified quantile."""
@@ -167,20 +182,13 @@ def create_ensemble_forecasts(ens_params,
     else:
         X_train_quantile10, X_test_quantile10 = np.array([]), np.array([])
         X_train_quantile90, X_test_quantile90 = np.array([]), np.array([])
-    
+
+
     # Assert no NaNs in train ensemble
     assert df_train_ensemble.isna().sum().sum() == 0
     
-    # chech if file with model info exists
-    file_info = ens_params['save_info'] + buyer_resource_name + '_' + ens_params['save_file']
-    if Path(file_info).is_file():
-        with open(file_info, 'rb') as handle:
-            results_challenge_dict = pickle.load(handle)
-        iteration = results_challenge_dict['iteration'] + 1
-        best_results = results_challenge_dict['wind_power']['best_results']
-        best_results_var = results_challenge_dict['wind_power_variability']['best_results']
-    else:
-        iteration = 0
+
+    file_info, iteration, best_results, best_results_var = load_or_initialize_results(ens_params, buyer_resource_name)
 
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Iteration {iteration} </fg 250,128,114>')
@@ -192,8 +200,8 @@ def create_ensemble_forecasts(ens_params,
 
     # dictioanry to store predictions
     predictions = {}
-    if iteration == 0:
-        best_results = {}
+    # if iteration == 0:
+    #     best_results = {}
     previous_day_results_first_stage = {}
 
     # Loop over quantiles
@@ -240,8 +248,8 @@ def create_ensemble_forecasts(ens_params,
 
             # dictioanry to store variability predictions
             variability_predictions = {}
-            if iteration == 0:
-                best_results_var = {}
+            # if iteration == 0:
+            #     best_results_var = {}
             previous_day_results_second_stage = {}
 
             # Loop over quantiles
