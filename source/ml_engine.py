@@ -355,17 +355,17 @@ def create_ensemble_forecasts(ens_params,
         df_results_wind_power_variability = pd.concat([df_var_ensemble, df_2stage_test['targets']], axis=1)
 
         # collect results as dictionary of dictionaries
-        results_challenge_dict_simu = {'previous_lt': start_prediction_timestamp,
-                                    'iteration': iteration,
-                                    'wind_power': 
-                                        {'predictions': df_results_wind_power, 
-                                            'info_contributions': previous_day_results_first_stage,
-                                            'best_results': best_results},
-                                    'wind_power_variability': 
-                                        {'predictions': df_results_wind_power_variability, 
-                                            'info_contributions': previous_day_results_second_stage,
-                                            'best_results': best_results_var}
-                                        }
+        results_challenge_dict_simu = {'previous_lt': end_training_timestamp,
+                                        'iteration': iteration,
+                                        'wind_power': 
+                                            {'predictions': df_results_wind_power, 
+                                                'info_contributions': previous_day_results_first_stage,
+                                                'best_results': best_results},
+                                        'wind_power_ramp': 
+                                            {'predictions': df_results_wind_power_variability, 
+                                                'info_contributions': previous_day_results_second_stage,
+                                                'best_results': best_results_var}
+                                            }
         # save results
         with open(file_info, 'wb') as handle:
             pickle.dump(results_challenge_dict_simu, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -375,13 +375,13 @@ def create_ensemble_forecasts(ens_params,
         df_pred_ensemble_melt = pd.melt(df_pred_ensemble.reset_index(), id_vars='datetime', value_vars=df_pred_ensemble.columns)
 
         # collect results as dictionary of dictionaries
-        results_challenge_dict = {'previous_lt': start_prediction_timestamp,
+        results_challenge_dict = {'previous_lt': end_training_timestamp,
                                     'iteration': iteration,
                                     'wind_power': 
                                         {'predictions': df_pred_ensemble_melt, 
                                             'info_contributions': previous_day_results_first_stage,
                                             'best_results': best_results},
-                                    'wind_power_variability': 
+                                    'wind_power_ramp': 
                                         {'predictions': df_var_ensemble_melt, 
                                             'info_contributions': previous_day_results_second_stage,
                                             'best_results': best_results_var}
