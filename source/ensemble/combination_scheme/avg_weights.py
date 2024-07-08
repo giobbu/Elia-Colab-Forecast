@@ -3,10 +3,13 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_pinball_loss
 
 
-def calculate_weights(df_val_norm_diff):
+def calculate_weights(sim_params, df_val_norm_diff):
     " Calculate weights based on the pinball loss of the forecasts"
     assert len(df_val_norm_diff) > 0, 'Dataframe is empty'
-    lst_cols = [name for name in list(df_val_norm_diff.columns) if 'mostrecent' not in name]
+    if not sim_params['most_recent']:
+        lst_cols = [name for name in list(df_val_norm_diff.columns) if 'mostrecent' not in name]
+    else:
+        lst_cols = list(df_val_norm_diff.columns)
     targ_col = [name for name in lst_cols if 'measured' in name]
     targets =  df_val_norm_diff[targ_col[0]]
     lst_cols_forecasts = [name for name in lst_cols if 'measured' not in name]
@@ -70,14 +73,15 @@ def create_weighted_avg_df(df_test_norm_diff, combination_forecast, combination_
     df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
     return df_weighted_avg
 
-def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predictions, window_size_valid=1, var=False):
+def calculate_weighted_avg(sim_params, df_train_norm_diff, df_test_norm_diff, 
+                           end_observations, window_size_valid=1, var=False):
     " Calculate the weights based on the pinball loss of the forecasts "
     if var:
         df_diff = pd.concat([df_train_norm_diff, df_test_norm_diff], axis=0).diff().dropna()
-        df_train_norm_diff, df_test_norm_diff = df_diff[df_diff.index < start_predictions], df_diff[df_diff.index >= start_predictions]
-        window_validation =  pd.to_datetime(start_predictions, utc=True) - pd.Timedelta(days=window_size_valid)
-        df_val_norm_diff = df_train_norm_diff[df_train_norm_diff.index.to_series().between(window_validation, start_predictions)]
-        lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(df_val_norm_diff)
+        df_train_norm_diff, df_test_norm_diff = df_diff[df_diff.index < end_observations], df_diff[df_diff.index >= end_observations]
+        window_validation =  pd.to_datetime(end_observations, utc=True) - pd.Timedelta(days=window_size_valid)
+        df_val_norm_diff = df_train_norm_diff[df_train_norm_diff.index.to_series().between(window_validation, end_observations)]
+        lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(sim_params, df_val_norm_diff)
         norm_lst_q50_weight = normalize_weights(lst_q50_weight) 
         norm_lst_q10_weight = normalize_weights(lst_q10_weight) 
         norm_lst_q90_weight = normalize_weights(lst_q90_weight) 
@@ -86,12 +90,11 @@ def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predicti
                 'mean_prediction': combination_forecast,
             }, index=df_test_norm_diff.index)
         df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
-        dict_weights = {0.5:norm_lst_q50_weight}
+        dict_weights = {0.5: {key:value for d in norm_lst_q50_weight for key, value in d.items()}}
         return df_weighted_avg, dict_weights
-    
-    window_validation =  pd.to_datetime(start_predictions, utc=True) - pd.Timedelta(days=window_size_valid)
-    df_val_norm_diff = df_train_norm_diff[df_train_norm_diff.index.to_series().between(window_validation, start_predictions)]
-    lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(df_val_norm_diff)
+    window_validation =  pd.to_datetime(end_observations, utc=True) - pd.Timedelta(days=window_size_valid)
+    df_val_norm_diff = df_train_norm_diff[df_train_norm_diff.index.to_series().between(window_validation, end_observations)]
+    lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(sim_params, df_val_norm_diff)
     norm_lst_q50_weight = normalize_weights(lst_q50_weight) 
     norm_lst_q10_weight = normalize_weights(lst_q10_weight) 
     norm_lst_q90_weight = normalize_weights(lst_q90_weight) 
@@ -102,5 +105,7 @@ def calculate_weighted_avg(df_train_norm_diff, df_test_norm_diff, start_predicti
             'Q90': combination_quantile90
         }, index=df_test_norm_diff.index)
     df_weighted_avg['target'] = df_test_norm_diff['diff_norm_measured']
-    dict_weights = {0.5:norm_lst_q50_weight, 0.1:norm_lst_q10_weight, 0.9: norm_lst_q90_weight}
+    dict_weights = {0.5: {key:value for d in norm_lst_q50_weight for key, value in d.items()},
+                    0.1: {key:value for d in norm_lst_q10_weight for key, value in d.items()}, 
+                    0.9: {key:value for d in norm_lst_q90_weight for key, value in d.items()}}
     return df_weighted_avg, dict_weights
