@@ -187,7 +187,7 @@ def create_ensemble_forecasts(ens_params,
     assert (df_test_norm_diff.index == df_test_ensemble.index).all(),'Datetime index are not equal'
 
     # Make X-y train and test sets
-    X_train, y_train, X_test, y_test = get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble)
+    X_train, y_train, X_test, _ = get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble)
     
     # Make X-y train and test sets quantile predictions
     if ens_params['add_quantile_predictions']:
