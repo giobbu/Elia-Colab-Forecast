@@ -32,7 +32,7 @@ def first_stage_permutation_importance(y_test, parameters_model, quantile, info_
     importance_scores = []
     # Loop through each predictor
     for predictor_index in range(X_test_augmented.shape[1]):
-        predictor_name = df_train_ensemble_augmented.drop(columns=['diff_norm_targ']).columns[predictor_index]
+        predictor_name = df_train_ensemble_augmented.drop(columns=['norm_targ']).columns[predictor_index]
         # Compute the permuted scores in parallel
         permuted_scores = Parallel(n_jobs=4)(delayed(first_stage_compute_permuted_score)(
             predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile) for _ in range(num_permutations))

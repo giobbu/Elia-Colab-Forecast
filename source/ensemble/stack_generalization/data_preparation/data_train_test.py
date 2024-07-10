@@ -7,8 +7,8 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     assert len(df_test_ensemble) == 192, "df_test_ensemble should have 192 rows"
     assert len(df_test_ensemble_q10) == 192 or df_test_ensemble_q10.empty, "df_test_ensemble_q10 should have 192 rows or be empty"
     assert len(df_test_ensemble_q90) == 192 or df_test_ensemble_q90.empty, "df_test_ensemble_q90 should have 192 rows or be empty"
-    assert "diff_norm_targ" in df_test_ensemble.columns, "diff_norm_targ should be in df_test_ensemble columns"
-    target_column = "diff_norm_targ"
+    assert "norm_targ" in df_test_ensemble.columns, "norm_targ should be in df_test_ensemble columns"
+    target_column = "norm_targ"
     X_test = df_test_ensemble.drop(columns=[target_column]).values
     y_test = df_test_ensemble[target_column].values
     if params['add_quantile_predictions']:
@@ -35,15 +35,15 @@ def prepare_train_test_data(buyer_resource_name, df_ensemble, df_val, df_test, e
     assert isinstance(df_val, pd.DataFrame), "df_val should be a DataFrame"
     assert isinstance(df_test, pd.DataFrame), "df_test should be a DataFrame"
     #assert isinstance(start_predictions, pd.Timestamp), "start_predictions should be a Timestamp"
-    assert 'diff_norm_' + buyer_resource_name in df_val.columns, "diff_norm_measured should be in df_val columns"
-    assert 'diff_norm_' + buyer_resource_name in df_test.columns, "diff_norm_measured should be in df_test columns"
+    assert 'norm_' + buyer_resource_name in df_val.columns, "norm_measured should be in df_val columns"
+    assert 'norm_' + buyer_resource_name in df_test.columns, "norm_measured should be in df_test columns"
     assert isinstance(max_lag, int), "max_lag should be an integer"
     assert max_lag > 0, "max_lag should be greater than 0"
-    col_name_buyer = 'diff_norm_' + buyer_resource_name
+    col_name_buyer = 'norm_' + buyer_resource_name
     df_train_ensemble = df_ensemble[df_ensemble.index < end_training].copy()
-    df_train_ensemble.loc[:, 'diff_norm_targ'] = df_val[col_name_buyer].values[max_lag:]
+    df_train_ensemble.loc[:, 'norm_targ'] = df_val[col_name_buyer].values[max_lag:]
     df_test_ensemble = df_ensemble[df_ensemble.index >= start_predictions].copy()
-    df_test_ensemble.loc[:, 'diff_norm_targ'] = df_test[col_name_buyer].values
+    df_test_ensemble.loc[:, 'norm_targ'] = df_test[col_name_buyer].values
     return df_train_ensemble, df_test_ensemble
 
 def get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble):

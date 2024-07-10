@@ -23,6 +23,7 @@ def extract_quantile_columns(df, quantile):
         return pd.DataFrame()
 
 def split_quantile_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
+    """Split the quantile data into training and test sets."""
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     df_train = df[df.index < end_training_timestamp]
@@ -136,18 +137,14 @@ def create_ensemble_forecasts(ens_params,
         df_buyer_norm = df_buyer.copy()
         df_buyer_norm = df_buyer_norm.add_prefix('norm_')
     
-    # Differentiate dataframe
-    df_buyer_norm_diff = df_buyer_norm.copy()
-    lst_cols_diff = ['diff_' + name for name in list(df_buyer_norm.columns)]
-    df_buyer_norm_diff.columns = lst_cols_diff
-    
-    # Split train and test dataframes
-    df_train_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index < end_training_timestamp]
-    df_test_norm_diff = df_buyer_norm_diff[df_buyer_norm_diff.index >= start_prediction_timestamp]
-    df_train_ensemble, df_test_ensemble = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff, end_training_timestamp, start_prediction_timestamp, ens_params['max_lags'])
 
-    df_test_norm_diff_pre = df_buyer_norm_diff[df_buyer_norm_diff.index >= pre_start_prediction_timestamp]
-    _, df_test_ensemble_pre = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm_diff, df_test_norm_diff_pre, end_training_timestamp, pre_start_prediction_timestamp, ens_params['max_lags'])
+    # Split train and test dataframes
+    df_train_norm = df_buyer_norm[df_buyer_norm.index < end_training_timestamp]
+    df_test_norm = df_buyer_norm[df_buyer_norm.index >= start_prediction_timestamp]
+    df_train_ensemble, df_test_ensemble = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm, df_test_norm, end_training_timestamp, start_prediction_timestamp, ens_params['max_lags'])
+
+    df_test_norm_pre = df_buyer_norm[df_buyer_norm.index >= pre_start_prediction_timestamp]
+    _, df_test_ensemble_pre = prepare_train_test_data(buyer_resource_name, df_ensemble_normalized_lag, df_train_norm, df_test_norm_pre, end_training_timestamp, pre_start_prediction_timestamp, ens_params['max_lags'])
 
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Train and Test Dataframes </fg 250,128,114>')
@@ -168,7 +165,7 @@ def create_ensemble_forecasts(ens_params,
 
     
     # Assert df_test matches df_ensemble_test
-    assert (df_test_norm_diff.index == df_test_ensemble.index).all(),'Datetime index are not equal'
+    assert (df_test_norm.index == df_test_ensemble.index).all(),'Datetime index are not equal'
 
     # Make X-y train and test sets
     X_train, y_train, X_test, _ = get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble)
@@ -318,24 +315,24 @@ def create_ensemble_forecasts(ens_params,
         target_name = 'norm_' + buyer_resource_name
         df_test_norm.loc[:, 'target'] = df_test_norm[target_name] * maximum_capacity
     else:
-        target_name = 'diff_norm_' + buyer_resource_name
-        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name]
+        target_name = 'norm_' + buyer_resource_name
+        df_test_norm.loc[:, 'target'] = df_test_norm[target_name]
 
     # Collect quantile predictions
-    quantile_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_test_norm_diff, predictions)
+    quantile_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_test_norm, predictions)
 
     # collect results as dataframe
     df_pred_ensemble = create_ensemble_dataframe(buyer_resource_name,
                                                 ens_params['quantiles'],
                                                 quantile_predictions_dict, 
-                                                df_test_norm_diff)
+                                                df_test_norm)
     
     if simulation:
 
         assert  challenge_usecase == 'simulation', 'challenge_usecase must be "simulation"'
 
         # collect results as dataframe
-        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_norm_diff['target']], axis=1) 
+        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_norm['target']], axis=1) 
         df_results_wind_power_variability = pd.concat([df_var_ensemble, df_2stage_test['targets']], axis=1)
 
         # collect results as dictionary of dictionaries
