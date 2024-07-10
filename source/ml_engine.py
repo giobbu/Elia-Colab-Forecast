@@ -61,7 +61,6 @@ def create_ensemble_forecasts(ens_params,
     if ens_params['model_type'] == 'LR':
         assert ens_params['normalize'] == True, "Normalization must be True for model_type 'LR'"
  
-
     # ML ENGINE PREDICO PLATFORM
     logger.info('  ')
     logger.opt(colors=True).info(f'<fg 250,128,114> PREDICO Machine Learning Engine </fg 250,128,114> ')
@@ -80,7 +79,7 @@ def create_ensemble_forecasts(ens_params,
     logger.opt(colors=True).info(f'<fg 250,128,114> Forecasters Ensemble DataFrame </fg 250,128,114>')
 
     # Normalize dataframes
-    if ens_params['normalize']:
+    if ens_params['scale_features'] and ens_params['normalize']:
         logger.info('   ')
         logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
         df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, maximum_capacity)
@@ -130,8 +129,8 @@ def create_ensemble_forecasts(ens_params,
     else:
         df_ensemble_normalized_lag_quantile10, df_ensemble_normalized_lag_quantile90 = pd.DataFrame(), pd.DataFrame()
     
-    # Normalize dataframe
-    if ens_params['normalize']:
+    
+    if ens_params['scale_features'] and ens_params['normalize']:
         df_buyer_norm = normalize_dataframe(df_buyer, maximum_capacity)
     else:
         df_buyer_norm = df_buyer.copy()
@@ -285,10 +284,10 @@ def create_ensemble_forecasts(ens_params,
                                                                 "y_train": y_train}
 
                 # Rescale predictions for predictions
-                if ens_params['normalize']:
+                if ens_params['scale_features'] and ens_params['normalize']:
                     variability_predictions[quantile] = variability_predictions[quantile] * maximum_capacity
-            
-            if ens_params['normalize']:
+
+            if ens_params['scale_features'] and ens_params['normalize']:
                 df_2stage_test.loc[:, 'targets'] = df_2stage_test['targets'] * maximum_capacity
             else:
                 df_2stage_test.loc[:,'targets'] = df_2stage_test['targets']
@@ -309,15 +308,15 @@ def create_ensemble_forecasts(ens_params,
             gc.collect()
 
         # Rescale predictions
-        if ens_params['normalize']:
-            predictions[quantile] = predictions[quantile] * maximum_capacity
-        
+        if ens_params['scale_features'] and ens_params['normalize']:
+                predictions[quantile] = predictions[quantile] * maximum_capacity
+
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
 
-    if ens_params['normalize']:
-        target_name = 'diff_norm_' + buyer_resource_name
-        df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name] * maximum_capacity
+    if ens_params['scale_features'] and ens_params['normalize']:
+        target_name = 'norm_' + buyer_resource_name
+        df_test_norm.loc[:, 'target'] = df_test_norm[target_name] * maximum_capacity
     else:
         target_name = 'diff_norm_' + buyer_resource_name
         df_test_norm_diff.loc[:, 'target'] = df_test_norm_diff[target_name]
