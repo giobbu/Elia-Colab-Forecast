@@ -7,29 +7,13 @@ from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
 from source.utils.data_preprocess import normalize_dataframe
+from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import prepare_pre_test_data, prepare_train_test_data, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
 
-def extract_quantile_columns(df, quantile):
-    """Extract columns containing the specified quantile."""
-    columns = [name for name in df.columns if quantile in name]
-    if columns:
-        return df[columns]
-    else:
-        print(f"No columns found for {quantile}")
-        return pd.DataFrame()
-
-def split_quantile_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
-    """Split the quantile data into training and test sets."""
-    if df.empty:
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    df_train = df[df.index < end_training_timestamp]
-    df_test = df[df.index >= start_prediction_timestamp]
-    df_test_pre = df[df.index >= pre_start_prediction_timestamp]
-    return df_train, df_test, df_test_pre
 
 def create_ensemble_forecasts(ens_params,
                                 df_buyer,
