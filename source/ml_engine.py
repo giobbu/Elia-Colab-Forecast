@@ -67,12 +67,15 @@ def create_ensemble_forecasts(ens_params,
     if ens_params['scale_features'] and ens_params['normalize']:
         logger.info('   ')
         logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
-        df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, maximum_capacity)
+        list_max_forecasters_q50 = df_ensemble_quantile50.max(axis=0).values
+        df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q50)
         # Normalize dataframes quantile predictions
         if ens_params['add_quantile_predictions']:
             logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, maximum_capacity) if not df_ensemble_quantile10.empty else pd.DataFrame()
-            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, maximum_capacity) if not df_ensemble_quantile90.empty else pd.DataFrame()
+            list_max_forecasters_q10 = df_ensemble_quantile10.max(axis=0).values
+            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
+            list_max_forecasters_q90 = df_ensemble_quantile90.max(axis=0).values
+            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
         else:
             df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
     else:
@@ -116,7 +119,8 @@ def create_ensemble_forecasts(ens_params,
     
     
     if ens_params['scale_features'] and ens_params['normalize']:
-        df_buyer_norm = normalize_dataframe(df_buyer, maximum_capacity)
+        list_max_obs = [maximum_capacity]
+        df_buyer_norm = normalize_dataframe(df_buyer, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_obs)
     else:
         df_buyer_norm = df_buyer.copy()
         df_buyer_norm = df_buyer_norm.add_prefix('norm_')

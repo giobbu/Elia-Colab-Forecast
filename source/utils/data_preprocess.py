@@ -15,13 +15,23 @@ def detect_ramp_event(df, ramp_threshold):
     df['ramp_event_down'] = (df['diff_norm_measured'] <= -ramp_threshold).astype(int)
     return df
 
-def normalize_dataframe(df, maximum_capacity):
+def normalize_dataframe(df, axis=1, max_cap=None, max_cap_forecasters_list=None):
     " Normalize dataframe by dividing by maximum capacity"
     df_normalized = df.copy()
-    for col in df_normalized.columns:
-        normalize_col = scale(df_normalized, col, maximum_capacity)
-        df_normalized[f'norm_{col}'] = normalize_col
-    return df_normalized.filter(like='norm')
+    if axis==1:
+        assert max_cap is not None, "Maximum capacity must be provided"
+        for col in df_normalized.columns:
+            normalize_col = scale(df_normalized, col, max_cap)
+            df_normalized[f'norm_{col}'] = normalize_col
+        return df_normalized.filter(like='norm')
+    elif axis==0:
+        assert max_cap_forecasters_list is not None, "List of maximum capacities must be provided"
+        for i, col in enumerate(df_normalized.columns):
+            normalize_col = scale(df_normalized, col, max_cap_forecasters_list[i])
+            df_normalized[f'norm_{col}'] = normalize_col
+        return df_normalized.filter(like='norm')
+    else:
+        raise ValueError("Axis must be either 0 or 1")
 
 def differentiate_dataframe(df):
     " Differentiate dataframe by computing the absolute difference between consecutive values"
