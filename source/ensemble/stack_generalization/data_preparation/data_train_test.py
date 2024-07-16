@@ -1,6 +1,21 @@
 import pandas as pd
 import numpy as np
  
+
+def create_pre_test_dataframe(df_buyer, df_ensemble, pre_start_prediction, buyer_name):
+    " Create test dataframes for buyer and ensemble predictions"
+    # Ensure the DataFrame indices are datetime types
+    if not pd.api.types.is_datetime64_any_dtype(df_buyer.index):
+        raise TypeError("The df_buyer_norm index must be a datetime type.")
+    if not pd.api.types.is_datetime64_any_dtype(df_ensemble.index):
+        raise TypeError("The df_ensemble index must be a datetime type.")
+    # Filter the DataFrames based on the start prediction timestamp
+    df_test_targ_pre = df_buyer[df_buyer.index >= pre_start_prediction]
+    df_test_ensemble_pre = df_ensemble[df_ensemble.index >= pre_start_prediction]
+    # Assign the normalized target column to the ensemble DataFrame
+    df_test_ensemble_pre.loc[:, 'norm_targ'] = df_test_targ_pre['norm_' + buyer_name].values
+    return df_test_ensemble_pre
+
 def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q10=pd.DataFrame([]), df_test_ensemble_q90=pd.DataFrame([])):
     " Prepare test set for 2-stage model"
     assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
@@ -28,21 +43,28 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     return X_test, y_test
 
 
+def split_train_test_data(df, end_train, start_prediction):
+    "Split the data into training and test sets"
+    assert isinstance(df, pd.DataFrame), "df should be a DataFrame"
+    assert isinstance(end_train, pd.Timestamp), "end_training should be a Timestamp"
+    assert isinstance(start_prediction, pd.Timestamp), "start_predictions should be a Timestamp"
+    df_train = df[df.index < end_train]
+    df_test = df[df.index >= start_prediction]
+    return df_train, df_test
 
-def prepare_train_test_data(buyer_resource_name, df_ensemble, df_val, df_test, end_training, start_predictions, max_lag):
+
+def concatenate_feat_targ_dataframes(buyer_resource_name, df_train_ensemble, df_test_ensemble, df_train, df_test,  max_lag):
     "Prepare train and test data for ensemble model"
-    assert isinstance(df_ensemble, pd.DataFrame), "df_ensemble should be a DataFrame"
-    assert isinstance(df_val, pd.DataFrame), "df_val should be a DataFrame"
+    assert isinstance(df_train_ensemble, pd.DataFrame), "df_train_ensemble should be a DataFrame"
+    assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
+    assert isinstance(df_train, pd.DataFrame), "df_train should be a DataFrame"
     assert isinstance(df_test, pd.DataFrame), "df_test should be a DataFrame"
-    #assert isinstance(start_predictions, pd.Timestamp), "start_predictions should be a Timestamp"
-    assert 'norm_' + buyer_resource_name in df_val.columns, "norm_measured should be in df_val columns"
+    assert 'norm_' + buyer_resource_name in df_train.columns, "norm_measured should be in df_train columns"
     assert 'norm_' + buyer_resource_name in df_test.columns, "norm_measured should be in df_test columns"
     assert isinstance(max_lag, int), "max_lag should be an integer"
     assert max_lag > 0, "max_lag should be greater than 0"
     col_name_buyer = 'norm_' + buyer_resource_name
-    df_train_ensemble = df_ensemble[df_ensemble.index < end_training].copy()
-    df_train_ensemble.loc[:, 'norm_targ'] = df_val[col_name_buyer].values[max_lag:]
-    df_test_ensemble = df_ensemble[df_ensemble.index >= start_predictions].copy()
+    df_train_ensemble.loc[:, 'norm_targ'] = df_train[col_name_buyer].values[max_lag:]
     df_test_ensemble.loc[:, 'norm_targ'] = df_test[col_name_buyer].values
     return df_train_ensemble, df_test_ensemble
 
