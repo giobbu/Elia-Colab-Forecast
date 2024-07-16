@@ -6,7 +6,7 @@ import pickle
 from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
-from source.utils.data_preprocess import normalize_dataframe
+from source.utils.data_preprocess import get_maximum_values, normalize_dataframe
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import prepare_pre_test_data, prepare_train_test_data, get_numpy_Xy_train_test
@@ -15,13 +15,14 @@ from source.ensemble.stack_generalization.second_stage.create_data_second_stage 
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
 
 
+
 def create_ensemble_forecasts(ens_params,
                                 df_buyer,
                                 df_market,
                                 end_training_timestamp,
                                 forecast_range,
                                 challenge_usecase = None,
-                                simulation = False,):
+                                simulation = False):
     " Create ensemble forecasts for wind power and wind power variability using forecasters predictions"
 
     pre_start_prediction_timestamp = forecast_range[0] - pd.Timedelta('1day')
@@ -38,7 +39,6 @@ def create_ensemble_forecasts(ens_params,
         raise ValueError("Quantile columns 'q50' were not found in the DataFrame.")
 
     buyer_resource_name = df_buyer.columns[0]  # get the name of the buyer resource
-    maximum_capacity = df_buyer[buyer_resource_name].max()  # get the maximum capacity
     
     # set solver for quantile regression
     from sklearn.utils.fixes import parse_version, sp_version
@@ -53,9 +53,11 @@ def create_ensemble_forecasts(ens_params,
     logger.opt(colors=True).info(f'<fg 250,128,114> Launch Time from {str(end_training_timestamp)} </fg 250,128,114> ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Predictions from {str(start_prediction_timestamp)} to {str(end_prediction_timestamp)} </fg 250,128,114> ')
     logger.info('  ')
-
     logger.opt(colors=True).info(f'<fg 250,128,114> Buyer Resource Name: {buyer_resource_name} </fg 250,128,114>')
-    logger.opt(colors=True).info(f'<fg 250,128,114> Maximum Capacity: {maximum_capacity} </fg 250,128,114>')
+
+    if ens_params['scale_features'] and ens_params['normalize']:
+        maximum_capacity = get_maximum_values(df=df_buyer, end_train=end_training_timestamp, buyer_resource_name=buyer_resource_name)
+        logger.opt(colors=True).info(f'<fg 250,128,114> Maximum Capacity: {maximum_capacity} </fg 250,128,114>')
     logger.info('  ')
 
     # Logging
@@ -67,14 +69,14 @@ def create_ensemble_forecasts(ens_params,
     if ens_params['scale_features'] and ens_params['normalize']:
         logger.info('   ')
         logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
-        list_max_forecasters_q50 = df_ensemble_quantile50.max(axis=0).values
+        list_max_forecasters_q50 = get_maximum_values(df=df_ensemble_quantile50, end_train=end_training_timestamp)
         df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q50)
         # Normalize dataframes quantile predictions
         if ens_params['add_quantile_predictions']:
             logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            list_max_forecasters_q10 = df_ensemble_quantile10.max(axis=0).values
+            list_max_forecasters_q10 = get_maximum_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
+            list_max_forecasters_q90 = get_maximum_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
             df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
-            list_max_forecasters_q90 = df_ensemble_quantile90.max(axis=0).values
             df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
         else:
             df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
@@ -172,7 +174,6 @@ def create_ensemble_forecasts(ens_params,
     # Assert no NaNs in train ensemble
     assert df_train_ensemble.isna().sum().sum() == 0
     
-
     file_info, iteration, best_results, best_results_var = load_or_initialize_results(ens_params, buyer_resource_name)
 
     logger.info('   ')
@@ -274,8 +275,6 @@ def create_ensemble_forecasts(ens_params,
 
             if ens_params['scale_features'] and ens_params['normalize']:
                 df_2stage_test.loc[:, 'targets'] = df_2stage_test['targets'] * maximum_capacity
-            else:
-                df_2stage_test.loc[:,'targets'] = df_2stage_test['targets']
 
             # Collect quantile variability predictions
             var_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_2stage_test, variability_predictions)

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def scale(df, col_name, max_cap):
     " Scale a column by dividing by maximum capacity"
@@ -14,6 +15,24 @@ def detect_ramp_event(df, ramp_threshold):
     df['ramp_event_up'] = (df['diff_norm_measured'] >= ramp_threshold).astype(int)
     df['ramp_event_down'] = (df['diff_norm_measured'] <= -ramp_threshold).astype(int)
     return df
+
+
+def get_maximum_values(df, end_train, buyer_resource_name=None):
+    " Get the maximum values for the buyer resource and forecasters"
+    assert isinstance(df, pd.DataFrame), 'df must be a DataFrame'
+    assert buyer_resource_name is None or isinstance(buyer_resource_name, str), 'buyer_resource_name must be a string or None'
+    # Check if the DataFrame indices are datetime types
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        raise TypeError("The df index must be a datetime type.")
+    if buyer_resource_name is not None:
+        # get the maximum capacity for the buyer resource
+        maximum_capacity_buyer = df[df.index < end_train][buyer_resource_name].max()
+        return maximum_capacity_buyer
+    else:
+        # Get the maximum values for forecasters
+        list_maximum_values_forecasters = df[df.index < end_train].max(axis=0).values
+        return list_maximum_values_forecasters
+
 
 def normalize_dataframe(df, axis=1, max_cap=None, max_cap_forecasters_list=None):
     " Normalize dataframe by dividing by maximum capacity"
