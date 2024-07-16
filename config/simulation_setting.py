@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+# set solver for quantile regression
+from sklearn.utils.fixes import parse_version, sp_version
+solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
 
 @dataclass(frozen=True)
 class Simulation:
@@ -62,6 +65,7 @@ class Stack:
         # Ensemble Learning
         model_type = 'LR',  # 'GBR' or 'LR'
         var_model_type = 'LR',  # 'GBR' or 'LR'
+        solver = solver,
 
         gbr_update_every_days = 15,
 

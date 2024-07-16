@@ -40,9 +40,7 @@ def create_ensemble_forecasts(ens_params,
 
     buyer_resource_name = df_buyer.columns[0]  # get the name of the buyer resource
     
-    # set solver for quantile regression
-    from sklearn.utils.fixes import parse_version, sp_version
-    solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
+    # if the model type is LR, normalization must be True
     if ens_params['model_type'] == 'LR':
         assert ens_params['normalize'] == True, "Normalization must be True for model_type 'LR'"
  
@@ -204,7 +202,7 @@ def create_ensemble_forecasts(ens_params,
         results_per_quantile_wp = predico_ensemble_predictions_per_quantile(abs_differenciate=ens_params['compute_abs_difference'], 
                                                                                                                                         X_train=X_train, X_test=X_test, y_train=y_train, df_train_ensemble=df_train_ensemble, 
                                                                                                                                         predictions=predictions, quantile=quantile, add_quantiles=ens_params['add_quantile_predictions'], 
-                                                                                                                                        augment_q50=ens_params['augment_q50'], nr_cv_splits=ens_params['nr_cv_splits'], model_type=ens_params['model_type'], solver=solver, 
+                                                                                                                                        augment_q50=ens_params['augment_q50'], nr_cv_splits=ens_params['nr_cv_splits'], model_type=ens_params['model_type'], solver=ens_params['solver'], 
                                                                                                                                         gbr_update_every_days=ens_params['gbr_update_every_days'], gbr_config_params=ens_params['gbr_config_params'], 
                                                                                                                                         lr_config_params=ens_params['lr_config_params'], plot_importance_gbr=ens_params['plot_importance_gbr'], 
                                                                                                                                         best_results=best_results, iteration=iteration, 
@@ -271,7 +269,7 @@ def create_ensemble_forecasts(ens_params,
                 # Run ensemble learning
                 results_per_quantile_wpv = predico_ensemble_variability_predictions(X_train_2stage=X_train_2stage, y_train_2stage=y_train_2stage, X_test_2stage=X_test_2stage,
                                                                                                                 variability_predictions=variability_predictions, quantile=quantile, nr_cv_splits=ens_params['nr_cv_splits'], 
-                                                                                                                var_model_type=ens_params['var_model_type'], solver=solver, 
+                                                                                                                var_model_type=ens_params['var_model_type'], solver=ens_params['solver'], 
                                                                                                                 var_gbr_config_params=ens_params['var_gbr_config_params'], var_lr_config_params=ens_params['var_lr_config_params'], 
                                                                                                                 gbr_update_every_days=ens_params['gbr_update_every_days'], iteration=iteration, best_results_var=best_results_var)
                 
