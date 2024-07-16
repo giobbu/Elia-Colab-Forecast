@@ -9,7 +9,7 @@ def extract_quantile_columns(df, quantile):
         print(f"No columns found for {quantile}")
         return pd.DataFrame()
 
-def split_quantile_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
+def split_quantile_train_test_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
     """Split the quantile data into training and test sets."""
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()

@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
 from source.utils.data_preprocess import get_maximum_values, normalize_dataframe
-from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_data
+from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.data_preparation.data_train_test import create_pre_test_dataframe, prepare_pre_test_data
@@ -151,10 +151,10 @@ def create_ensemble_forecasts(ens_params,
 
     # # Split train and test dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
-        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_pre = split_quantile_data(
+        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_pre = split_quantile_train_test_data(
             df_ensemble_normalized_lag_quantile10, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
         
-        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_pre = split_quantile_data(
+        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_pre = split_quantile_train_test_data(
             df_ensemble_normalized_lag_quantile90, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
     else:
         df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = pd.DataFrame()
