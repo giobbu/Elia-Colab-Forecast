@@ -241,8 +241,10 @@ def create_ensemble_forecasts(ens_params,
             df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
             
             # Split 2-stage dataframe
-            df_2stage_train = df_2stage_buyer[df_2stage_buyer.index < end_training_timestamp]
-            df_2stage_test = df_2stage_buyer[df_2stage_buyer.index >= start_prediction_timestamp]
+            df_2stage_train, df_2stage_test = split_train_test_data(df=df_2stage_buyer, 
+                                                                    end_train=end_training_timestamp, 
+                                                                    start_prediction=start_prediction_timestamp)
+
 
             logger.info('   ')
             logger.opt(colors=True).info(f'<fg 72,201,176> Train and Test Dataframes </fg 72,201,176>')
