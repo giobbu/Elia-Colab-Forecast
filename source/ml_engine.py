@@ -191,22 +191,21 @@ def create_ensemble_forecasts(ens_params,
 
     # dictioanry to store predictions
     predictions = {}
-    # if iteration == 0:
-    #     best_results = {}
     previous_day_results_first_stage = {}
 
     # Loop over quantiles
     for quantile in tqdm(ens_params['quantiles'], desc='Quantile Regression'):
 
         # Run ensemble learning
-        results_per_quantile_wp = predico_ensemble_predictions_per_quantile(X_train=X_train, X_test=X_test, y_train=y_train, df_train_ensemble=df_train_ensemble, 
-                                                                            predictions=predictions, quantile=quantile, add_quantiles=ens_params['add_quantile_predictions'], 
-                                                                            augment_q50=ens_params['augment_q50'], nr_cv_splits=ens_params['nr_cv_splits'], model_type=ens_params['model_type'], solver=ens_params['solver'], 
-                                                                            gbr_update_every_days=ens_params['gbr_update_every_days'], gbr_config_params=ens_params['gbr_config_params'], 
-                                                                            lr_config_params=ens_params['lr_config_params'], plot_importance_gbr=ens_params['plot_importance_gbr'], 
-                                                                            best_results=best_results, iteration=iteration, 
-                                                                            X_train_quantile10=X_train_quantile10, X_test_quantile10=X_test_quantile10, df_train_ensemble_quantile10=df_train_ensemble_quantile10, 
-                                                                            X_train_quantile90=X_train_quantile90, X_test_quantile90=X_test_quantile90, df_train_ensemble_quantile90=df_train_ensemble_quantile90)
+        results_per_quantile_wp = predico_ensemble_predictions_per_quantile(ens_params=ens_params,
+                                                                            X_train=X_train, X_test=X_test, y_train=y_train, df_train_ensemble=df_train_ensemble, 
+                                                                            predictions=predictions, quantile=quantile, 
+                                                                            best_results=best_results, 
+                                                                            iteration=iteration, 
+                                                                            X_train_quantile10=X_train_quantile10, X_test_quantile10=X_test_quantile10, 
+                                                                            df_train_ensemble_quantile10=df_train_ensemble_quantile10, 
+                                                                            X_train_quantile90=X_train_quantile90, X_test_quantile90=X_test_quantile90, 
+                                                                            df_train_ensemble_quantile90=df_train_ensemble_quantile90)
         
         # Extract results
         predictions = results_per_quantile_wp['predictions']
@@ -266,11 +265,13 @@ def create_ensemble_forecasts(ens_params,
             for quantile in tqdm(ens_params['quantiles'], desc='Quantile Regression'):
 
                 # Run ensemble learning
-                results_per_quantile_wpv = predico_ensemble_variability_predictions(X_train_2stage=X_train_2stage, y_train_2stage=y_train_2stage, X_test_2stage=X_test_2stage,
-                                                                                                                variability_predictions=variability_predictions, quantile=quantile, nr_cv_splits=ens_params['nr_cv_splits'], 
-                                                                                                                var_model_type=ens_params['var_model_type'], solver=ens_params['solver'], 
-                                                                                                                var_gbr_config_params=ens_params['var_gbr_config_params'], var_lr_config_params=ens_params['var_lr_config_params'], 
-                                                                                                                gbr_update_every_days=ens_params['gbr_update_every_days'], iteration=iteration, best_results_var=best_results_var)
+                results_per_quantile_wpv = predico_ensemble_variability_predictions(ens_params = ens_params, 
+                                                                                    X_train_2stage=X_train_2stage, 
+                                                                                    y_train_2stage=y_train_2stage, 
+                                                                                    X_test_2stage=X_test_2stage,
+                                                                                    variability_predictions=variability_predictions, 
+                                                                                    quantile=quantile, 
+                                                                                    iteration=iteration, best_results_var=best_results_var)
                 
                 # Extract results
                 variability_predictions = results_per_quantile_wpv['variability_predictions']

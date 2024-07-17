@@ -6,16 +6,28 @@ import pandas as pd
 import numpy as np
 
 
-def predico_ensemble_predictions_per_quantile(X_train, X_test, y_train, df_train_ensemble,  
-                                    predictions, quantile, iteration, add_quantiles, augment_q50,
-                                    nr_cv_splits, model_type, solver, 
-                                    gbr_update_every_days, gbr_config_params, lr_config_params,
-                                    plot_importance_gbr, best_results,
-                                    X_train_quantile10=np.array([]), X_test_quantile10=np.array([]), df_train_ensemble_quantile10=pd.DataFrame(), 
-                                    X_train_quantile90=np.array([]), X_test_quantile90=np.array([]), df_train_ensemble_quantile90=pd.DataFrame()):
+def predico_ensemble_predictions_per_quantile(ens_params, 
+                                                X_train, X_test, y_train, df_train_ensemble,  
+                                                predictions, quantile,
+                                                best_results, iteration, 
+                                                X_train_quantile10=np.array([]), X_test_quantile10=np.array([]), df_train_ensemble_quantile10=pd.DataFrame(), 
+                                                X_train_quantile90=np.array([]), X_test_quantile90=np.array([]), df_train_ensemble_quantile90=pd.DataFrame()):
     " Run ensemble predictions for a specific quantile."
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Run ensemble predictions for quantile {quantile} </fg 250,128,114>')
+
+    # Initialize variables
+    add_quantiles = ens_params['add_quantile_predictions'] 
+    augment_q50 = ens_params['augment_q50']
+    nr_cv_splits = ens_params['nr_cv_splits'] 
+    model_type = ens_params['model_type']
+    solver = ens_params['solver']
+    gbr_update_every_days = ens_params['gbr_update_every_days'] 
+    gbr_config_params = ens_params['gbr_config_params']
+    lr_config_params = ens_params['lr_config_params']
+    plot_importance_gbr = ens_params['plot_importance_gbr'] 
+
+    assert model_type in ['GBR', 'LR'], 'Invalid model type'
 
     # Initialize variables
     X_train_augmented, X_test_augmented, df_train_ensemble_augmented = X_train, X_test, df_train_ensemble
@@ -57,10 +69,20 @@ def predico_ensemble_predictions_per_quantile(X_train, X_test, y_train, df_train
     return results 
 
 
-def predico_ensemble_variability_predictions(X_train_2stage, y_train_2stage, X_test_2stage, variability_predictions, quantile, nr_cv_splits, var_model_type, solver, var_gbr_config_params, var_lr_config_params, gbr_update_every_days, iteration, best_results_var):
+def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train_2stage, X_test_2stage, variability_predictions, quantile, iteration, best_results_var):
     " Run ensemble variability predictions"
-    assert var_model_type in ['GBR', 'LR'], 'Invalid model type'
     logger.opt(colors=True).info(f'<fg 72,201,176> Run ensemble variability predictions for quantile {quantile} </fg 72,201,176>')
+
+    # Initialize variables
+    nr_cv_splits = ens_params['nr_cv_splits'] 
+    var_model_type = ens_params['var_model_type'] 
+    solver = ens_params['solver'] 
+    var_gbr_config_params = ens_params['var_gbr_config_params'] 
+    var_lr_config_params = ens_params['var_lr_config_params'] 
+    gbr_update_every_days = ens_params['gbr_update_every_days'] 
+
+    assert var_model_type in ['GBR', 'LR'], 'Invalid model type'
+
     # Optimize model hyperparameters
     if iteration % gbr_update_every_days == 0:  # Optimize hyperparameters every gbr_update_every_days
         logger.opt(colors=True).info(f'<fg 72,201,176> Optimizing model hyperparameters - updating every {gbr_update_every_days} days</fg 72,201,176>')
