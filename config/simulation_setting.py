@@ -41,7 +41,6 @@ class Stack:
         axis=0,
         normalize = True,
         standardize = False,
-        compute_abs_difference = False,
         add_quantile_predictions = True,
         augment_q50 = True,
 

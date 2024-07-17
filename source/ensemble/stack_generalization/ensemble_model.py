@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 
-def predico_ensemble_predictions_per_quantile(abs_differenciate, X_train, X_test, y_train, df_train_ensemble,  
+def predico_ensemble_predictions_per_quantile(X_train, X_test, y_train, df_train_ensemble,  
                                     predictions, quantile, iteration, add_quantiles, augment_q50,
                                     nr_cv_splits, model_type, solver, 
                                     gbr_update_every_days, gbr_config_params, lr_config_params,
@@ -48,8 +48,7 @@ def predico_ensemble_predictions_per_quantile(abs_differenciate, X_train, X_test
                                 df_train_ensemble_augmented.drop(columns=['diff_norm_targ']))
     # Make predictions
     raw_predictions = fitted_model.predict(X_test_augmented)
-    if not abs_differenciate:
-        raw_predictions[raw_predictions < 0] = 0  # Set negative predictions to 0
+    raw_predictions[raw_predictions < 0] = 0  # Set negative predictions to 0
     predictions[quantile] = raw_predictions  # Store predictions
     # Store results
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
@@ -75,5 +74,7 @@ def predico_ensemble_variability_predictions(X_train_2stage, y_train_2stage, X_t
     raw_variability_predictions = var_fitted_model.predict(X_test_2stage)  # Make predictions
     variability_predictions[quantile] = raw_variability_predictions  # Store predictions
     # Store results
-    results = {'variability_predictions': variability_predictions, 'best_results_var': best_results_var, 'var_fitted_model': var_fitted_model}
+    results = {'variability_predictions': variability_predictions, 
+                'best_results_var': best_results_var, 
+                'var_fitted_model': var_fitted_model}
     return results
