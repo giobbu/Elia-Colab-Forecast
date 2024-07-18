@@ -320,8 +320,10 @@ def create_ensemble_forecasts(ens_params,
                                                                 "y_train": y_train}
 
                 # Rescale predictions for variability
+                # Normalize predictions
                 if ens_params['scale_features'] and ens_params['normalize']:
                     variability_predictions[quantile] = rescale_normalized_predictions(variability_predictions, quantile, maximum_capacity)
+                # Standardize predictions
                 elif ens_params['scale_features'] and ens_params['standardize']:
                     variability_predictions[quantile] = rescale_standardized_predictions(variability_predictions, quantile, mean_buyer, std_buyer, stage='2nd')
 
@@ -331,7 +333,8 @@ def create_ensemble_forecasts(ens_params,
             elif ens_params['scale_features'] and ens_params['standardize']:
                 df_2stage_test.loc[:, 'targets'] = rescale_standardized_targets(df_2stage_test, target_name, mean_buyer, std_buyer, stage='2nd')
             else:
-                raise ValueError("Normalization or Standardization must be True")
+                df_2stage_test.loc[:, 'targets'] = df_2stage_test[target_name]
+
 
             # Collect quantile variability predictions
             var_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_2stage_test, variability_predictions)
@@ -350,12 +353,12 @@ def create_ensemble_forecasts(ens_params,
             gc.collect()
 
         # Rescale predictions
+        # Normalize predictions
         if ens_params['scale_features'] and ens_params['normalize']:
             predictions[quantile] = rescale_normalized_predictions(predictions, quantile, maximum_capacity)
+        # Standardize predictions
         elif ens_params['scale_features'] and ens_params['standardize']:
             predictions[quantile] = rescale_standardized_predictions(predictions, quantile, mean_buyer, std_buyer, stage='1st')
-        else:
-            raise ValueError("Normalization or Standardization must be True")
         
         # Ensure predictions are positive
         predictions[quantile] = np.maximum(predictions[quantile], 0)  
