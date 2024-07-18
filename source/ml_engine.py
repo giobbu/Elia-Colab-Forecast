@@ -6,15 +6,14 @@ import pickle
 from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
-from source.utils.data_preprocess import get_maximum_values, normalize_dataframe, rescale_normalized_data
+from source.utils.data_preprocess import get_maximum_values, normalize_dataframe, rescale_normalized_predictions, rescale_normalized_targets
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.data_preparation.data_train_test import create_pre_test_dataframe, prepare_pre_test_data
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
-from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
-
+from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe, melt_dataframe
 
 
 def create_ensemble_forecasts(ens_params,
@@ -291,10 +290,11 @@ def create_ensemble_forecasts(ens_params,
 
                 # Rescale predictions for predictions
                 if ens_params['scale_features'] and ens_params['normalize']:
-                    variability_predictions[quantile] = rescale_normalized_data(variability_predictions, quantile, maximum_capacity)
+                    variability_predictions[quantile] = rescale_normalized_predictions(variability_predictions, quantile, maximum_capacity)
 
             if ens_params['scale_features'] and ens_params['normalize']:
-                df_2stage_test.loc[:, 'targets'] = df_2stage_test['targets'] * maximum_capacity
+                target_name = 'targets'
+                df_2stage_test.loc[:, 'targets'] = rescale_normalized_targets(df_2stage_test, target_name, maximum_capacity)
 
             # Collect quantile variability predictions
             var_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_2stage_test, variability_predictions)
@@ -306,21 +306,21 @@ def create_ensemble_forecasts(ens_params,
                                                             df_2stage_test)
             
             # melt dataframe
-            df_var_ensemble_melt = pd.melt(df_var_ensemble.reset_index(), id_vars='datetime', value_vars=df_var_ensemble.columns)
+            df_var_ensemble_melt = melt_dataframe(df_var_ensemble) 
 
             del df_2stage, df_2stage_buyer, df_2stage_train
             gc.collect()
 
         # Rescale predictions
         if ens_params['scale_features'] and ens_params['normalize']:
-                predictions[quantile] = rescale_normalized_data(predictions, quantile, maximum_capacity)
+                predictions[quantile] = rescale_normalized_predictions(predictions, quantile, maximum_capacity)
 
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
 
     if ens_params['scale_features'] and ens_params['normalize']:
         target_name = 'norm_' + buyer_resource_name
-        df_test_targ.loc[:, 'target'] = df_test_targ[target_name] * maximum_capacity
+        df_test_targ.loc[:, 'target'] = rescale_normalized_targets(df_test_targ, target_name, maximum_capacity)
     else:
         target_name = 'norm_' + buyer_resource_name
         df_test_targ.loc[:, 'target'] = df_test_targ[target_name]
@@ -358,9 +358,11 @@ def create_ensemble_forecasts(ens_params,
         with open(file_info, 'wb') as handle:
             pickle.dump(results_challenge_dict_simu, handle, protocol=pickle.HIGHEST_PROTOCOL)
         return results_challenge_dict_simu
+    
     else:
+
         # melt dataframe
-        df_pred_ensemble_melt = pd.melt(df_pred_ensemble.reset_index(), id_vars='datetime', value_vars=df_pred_ensemble.columns)
+        df_pred_ensemble_melt = melt_dataframe(df_pred_ensemble) 
 
         # collect results as dictionary of dictionaries
         results_challenge_dict = {'previous_lt': end_training_timestamp,
