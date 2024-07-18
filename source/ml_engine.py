@@ -6,7 +6,7 @@ import pickle
 from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
-from source.utils.data_preprocess import get_maximum_values, normalize_dataframe
+from source.utils.data_preprocess import get_maximum_values, normalize_dataframe, rescale_normalized_data
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
@@ -14,6 +14,7 @@ from source.ensemble.stack_generalization.data_preparation.data_train_test impor
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe
+
 
 
 def create_ensemble_forecasts(ens_params,
@@ -259,8 +260,6 @@ def create_ensemble_forecasts(ens_params,
 
             # dictioanry to store variability predictions
             variability_predictions = {}
-            # if iteration == 0:
-            #     best_results_var = {}
             previous_day_results_second_stage = {}
 
             # Loop over quantiles
@@ -292,7 +291,7 @@ def create_ensemble_forecasts(ens_params,
 
                 # Rescale predictions for predictions
                 if ens_params['scale_features'] and ens_params['normalize']:
-                    variability_predictions[quantile] = variability_predictions[quantile] * maximum_capacity
+                    variability_predictions[quantile] = rescale_normalized_data(variability_predictions, quantile, maximum_capacity)
 
             if ens_params['scale_features'] and ens_params['normalize']:
                 df_2stage_test.loc[:, 'targets'] = df_2stage_test['targets'] * maximum_capacity
@@ -314,7 +313,7 @@ def create_ensemble_forecasts(ens_params,
 
         # Rescale predictions
         if ens_params['scale_features'] and ens_params['normalize']:
-                predictions[quantile] = predictions[quantile] * maximum_capacity
+                predictions[quantile] = rescale_normalized_data(predictions, quantile, maximum_capacity)
 
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
