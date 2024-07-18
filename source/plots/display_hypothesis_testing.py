@@ -37,7 +37,7 @@ def transform_loss_lists_to_df(model_type,
         .rename_axis('days')  # Set the index name to 'days'
         .melt(                # Melt the DataFrame to long format
             var_name='model',
-            value_name='rmse',
+            value_name='loss',
             ignore_index=False,
         )
         .reset_index()        # Reset the index to include 'days' as a column
@@ -94,9 +94,9 @@ def run_statistical_comparison_analysis(model_type,
                                             lst_baseline_malicious,
                                             lst_baseline_noisy)
     # Calculate average ranks
-    avg_rank = data.groupby('days').rmse.rank(pct=True).groupby(data.model).mean()
+    avg_rank = data.groupby('days').loss.rank(pct=True).groupby(data.model).mean()
     # Perform posthoc Nemenyi Friedman test
-    pc = sp.posthoc_nemenyi_friedman(data, y_col='rmse', block_col='days', group_col='model', melted=True)
+    pc = sp.posthoc_nemenyi_friedman(data, y_col='loss', block_col='days', group_col='model', melted=True)
     # Plot the statistical comparison
     plot_statistical_comparison(pc, avg_rank,
                                 title1=title1,

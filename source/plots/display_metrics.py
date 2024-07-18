@@ -28,7 +28,7 @@ def highlight_max(s):
 
 def display_table_metrics(dfs, prefixes):
     " Display the mean and standard deviation of the specified columns of quantiles"
-    result = calculate_and_concatenate_stats(dfs, 'model', 'rmse', prefixes)
+    result = calculate_and_concatenate_stats(dfs, 'model', 'loss', prefixes)
     # Apply highlighting to the resulting DataFrame
     styled_result = result.style.apply(highlight_min, subset=pd.IndexSlice[:, :])
     styled_result = styled_result.apply(highlight_max, subset=pd.IndexSlice[:, :])
