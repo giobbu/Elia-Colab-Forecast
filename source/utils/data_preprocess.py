@@ -16,12 +16,17 @@ def detect_ramp_event(df, ramp_threshold):
     df['ramp_event_down'] = (df['diff_norm_measured'] <= -ramp_threshold).astype(int)
     return df
 
-def rescale_normalized_data(predictions, quantile, maximum_capacity):
+def rescale_normalized_predictions(predictions, quantile, maximum_capacity):
     " Rescale normalized predictions"
     assert maximum_capacity > 0, "Maximum capacity must be greater than 0"
     assert quantile in predictions.keys(), "Quantile must be in the predictions keys"
     assert isinstance(predictions[quantile], np.ndarray), "Predictions must be a numpy array"
     return predictions[quantile] * maximum_capacity
+
+def rescale_normalized_targets(df, target_name, maximum_capacity):
+    " Rescale normalized targets"
+    assert target_name in df.columns, "Target name must be in the DataFrame columns"
+    return df[target_name] * maximum_capacity
 
 def get_maximum_values(df, end_train, buyer_resource_name=None):
     " Get the maximum values for the buyer resource and forecasters"

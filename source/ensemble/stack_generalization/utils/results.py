@@ -36,3 +36,7 @@ def create_ensemble_dataframe(buyer_resource_name, quantiles, quantile_predictio
             df_pred_quantile.set_index('datetime', inplace=True)
             df_pred_ensemble = pd.concat([df_pred_ensemble, df_pred_quantile], axis=1)
     return df_pred_ensemble
+
+def melt_dataframe(df_ensemble):
+    " Melt dataframe results"
+    return pd.melt(df_ensemble.reset_index(), id_vars='datetime', value_vars=df_ensemble.columns)
