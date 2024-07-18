@@ -54,6 +54,9 @@ def create_ensemble_forecasts(ens_params,
     logger.info('  ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Buyer Resource Name: {buyer_resource_name} </fg 250,128,114>')
 
+    # check rescale_features is true if Normalize is True or Standardize is True
+    assert not (ens_params['normalize'] or ens_params['standardize']) and not ens_params['scale_features'], 'scale_features must be True if normalize or standardize is True'
+
     # check if normalize and standardize are not both True
     assert not (ens_params['normalize'] and ens_params['standardize']), 'normalize and standardize cannot both be True'
 
