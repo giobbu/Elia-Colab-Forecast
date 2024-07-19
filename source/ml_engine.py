@@ -6,8 +6,8 @@ import pickle
 from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
-from source.utils.data_preprocess import get_maximum_values, normalize_dataframe, rescale_normalized_predictions, rescale_normalized_targets
-from source.utils.data_preprocess import get_mean_std_values, standardize_dataframe, rescale_standardized_predictions, rescale_standardized_targets
+from source.utils.data_preprocess import scale_forecasters_dataframe, scale_buyer_dataframe, buyer_scaler_statistics
+from source.utils.data_preprocess import rescale_predictions, rescale_targets
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
@@ -55,67 +55,21 @@ def create_ensemble_forecasts(ens_params,
     logger.opt(colors=True).info(f'<fg 250,128,114> Buyer Resource Name: {buyer_resource_name} </fg 250,128,114>')
 
     # check rescale_features is true if Normalize is True or Standardize is True
-    assert not (ens_params['normalize'] or ens_params['standardize']) and not ens_params['scale_features'], 'scale_features must be True if normalize or standardize is True'
+    assert not (ens_params['normalize'] or ens_params['standardize'] and not ens_params['scale_features']), 'scale_features must be True if normalize or standardize is True'
 
     # check if normalize and standardize are not both True
     assert not (ens_params['normalize'] and ens_params['standardize']), 'normalize and standardize cannot both be True'
 
     # scale features
-    if ens_params['scale_features'] and ens_params['normalize']:
-        maximum_capacity = get_maximum_values(df=df_buyer, end_train=end_training_timestamp, buyer_resource_name=buyer_resource_name)
-        logger.opt(colors=True).info(f'<fg 250,128,114> Maximum Capacity: {maximum_capacity} </fg 250,128,114>')
-    elif ens_params['scale_features'] and ens_params['standardize']:
-        mean_buyer, std_buyer = get_mean_std_values(df=df_buyer, end_train=end_training_timestamp, buyer_resource_name=buyer_resource_name)
-        logger.opt(colors=True).info(f'<fg 250,128,114> Mean Buyer: {mean_buyer} </fg 250,128,114>')
-        logger.opt(colors=True).info(f'<fg 250,128,114> Std Buyer: {std_buyer} </fg 250,128,114>')
-    logger.info('  ')
+    buyer_scaler_stats = buyer_scaler_statistics(ens_params, df_buyer, end_training_timestamp, buyer_resource_name)
 
     # Logging
     logger.opt(colors=True).info(f'<fg 250,128,114> Collecting forecasters prediction for ensemble learning - model: {ens_params["model_type"]} </fg 250,128,114>')
     logger.info('  ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Forecasters Ensemble DataFrame </fg 250,128,114>')
 
-    # Normalize dataframes
-    if ens_params['scale_features'] and ens_params['normalize']:
-        logger.info('   ')
-        logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
-        list_max_forecasters_q50 = get_maximum_values(df=df_ensemble_quantile50, end_train=end_training_timestamp)
-        df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q50)
-        # Normalize dataframes quantile predictions
-        if ens_params['add_quantile_predictions']:
-            logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            list_max_forecasters_q10 = get_maximum_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
-            list_max_forecasters_q90 = get_maximum_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
-            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], 
-                                                                    max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
-            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], 
-                                                                    max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
-        else:
-            df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
-    elif ens_params['scale_features'] and ens_params['standardize']:
-        logger.info('   ')
-        logger.opt(colors=True).info(f'<fg 250,128,114> Standardize DataFrame </fg 250,128,114>')
-        mean_forecasters_q50, std_forecasters_q50 = get_mean_std_values(df=df_ensemble_quantile50, end_train=end_training_timestamp)
-        df_ensemble_normalized = standardize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, mean_forecasters_list=mean_forecasters_q50, std_forecasters_list=std_forecasters_q50)
-        # Standardize dataframes quantile predictions
-        if ens_params['add_quantile_predictions']:
-            logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            mean_forecasters_q10, std_forecasters_q10 = get_mean_std_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
-            mean_forecasters_q90, std_forecasters_q90 = get_mean_std_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
-            df_ensemble_normalized_quantile10 = standardize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
-                                                                        mean_forecasters_list=mean_forecasters_q10, std_forecasters_list=std_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
-            df_ensemble_normalized_quantile90 = standardize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
-                                                                        mean_forecasters_list=mean_forecasters_q90, std_forecasters_list=std_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
-        else:
-            df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
-    else:
-        df_ensemble_normalized = df_ensemble_quantile50.copy()
-        df_ensemble_normalized = df_ensemble_normalized.add_prefix('norm_')
-        if ens_params['add_quantile_predictions']:
-            df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy().add_prefix('norm_') if not df_ensemble_quantile10.empty else pd.DataFrame()
-            df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy().add_prefix('norm_') if not df_ensemble_quantile90.empty else pd.DataFrame()
-        else:
-            df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = pd.DataFrame(), pd.DataFrame()
+    # Scale dataframes
+    df_ensemble_normalized, df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90 = scale_forecasters_dataframe(ens_params, buyer_scaler_stats, df_ensemble_quantile50, df_ensemble_quantile10, df_ensemble_quantile90, end_training_timestamp)
     
     # Augment dataframes
     logger.info('   ')
@@ -147,18 +101,9 @@ def create_ensemble_forecasts(ens_params,
     else:
         df_ensemble_normalized_lag_quantile10, df_ensemble_normalized_lag_quantile90 = pd.DataFrame(), pd.DataFrame()
     
+    # Scale buyer dataframe
+    df_buyer_norm = scale_buyer_dataframe(ens_params, buyer_scaler_stats, df_buyer)
     
-    if ens_params['scale_features'] and ens_params['normalize']:
-        list_max_buyer = [maximum_capacity]
-        df_buyer_norm = normalize_dataframe(df_buyer, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_buyer)
-    elif ens_params['scale_features'] and ens_params['standardize']:
-        list_mean_buyer, list_std_buyer = [mean_buyer], [std_buyer]
-        df_buyer_norm = standardize_dataframe(df_buyer, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, mean_forecasters_list=list_mean_buyer, std_forecasters_list=list_std_buyer)
-    else:
-        df_buyer_norm = df_buyer.copy()
-        df_buyer_norm = df_buyer_norm.add_prefix('norm_')
-    
-
     # Split train and test dataframes
     df_train_feat, df_test_feat = split_train_test_data(df=df_ensemble_normalized_lag, end_train=end_training_timestamp, start_prediction=start_prediction_timestamp)
     df_train_targ, df_test_targ = split_train_test_data(df=df_buyer_norm, end_train=end_training_timestamp, start_prediction=start_prediction_timestamp)
@@ -320,21 +265,11 @@ def create_ensemble_forecasts(ens_params,
                                                                 "y_train": y_train}
 
                 # Rescale predictions for variability
-                # Normalize predictions
-                if ens_params['scale_features'] and ens_params['normalize']:
-                    variability_predictions[quantile] = rescale_normalized_predictions(variability_predictions, quantile, maximum_capacity)
-                # Standardize predictions
-                elif ens_params['scale_features'] and ens_params['standardize']:
-                    variability_predictions[quantile] = rescale_standardized_predictions(variability_predictions, quantile, mean_buyer, std_buyer, stage='2nd')
+                variability_predictions = rescale_predictions(variability_predictions, ens_params, buyer_scaler_stats, quantile, stage='2nd') 
 
+            # Rescale targets for variability
             target_name = 'targets'
-            if ens_params['scale_features'] and ens_params['normalize']:
-                df_2stage_test.loc[:, 'targets'] = rescale_normalized_targets(df_2stage_test, target_name, maximum_capacity)
-            elif ens_params['scale_features'] and ens_params['standardize']:
-                df_2stage_test.loc[:, 'targets'] = rescale_standardized_targets(df_2stage_test, target_name, mean_buyer, std_buyer, stage='2nd')
-            else:
-                df_2stage_test.loc[:, 'targets'] = df_2stage_test[target_name]
-
+            df_2stage_test = rescale_targets(ens_params, buyer_scaler_stats, df_2stage_test, target_name, stage='2nd')
 
             # Collect quantile variability predictions
             var_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_2stage_test, variability_predictions)
@@ -353,12 +288,7 @@ def create_ensemble_forecasts(ens_params,
             gc.collect()
 
         # Rescale predictions
-        # Normalize predictions
-        if ens_params['scale_features'] and ens_params['normalize']:
-            predictions[quantile] = rescale_normalized_predictions(predictions, quantile, maximum_capacity)
-        # Standardize predictions
-        elif ens_params['scale_features'] and ens_params['standardize']:
-            predictions[quantile] = rescale_standardized_predictions(predictions, quantile, mean_buyer, std_buyer, stage='1st')
+        predictions = rescale_predictions(predictions, ens_params, buyer_scaler_stats, quantile, stage='1st') 
         
         # Ensure predictions are positive
         predictions[quantile] = np.maximum(predictions[quantile], 0)  
@@ -367,13 +297,9 @@ def create_ensemble_forecasts(ens_params,
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
         gc.collect()
 
+    # Rescale targets
     target_name = 'norm_' + buyer_resource_name
-    if ens_params['scale_features'] and ens_params['normalize']:
-        df_test_targ.loc[:, 'target'] = rescale_normalized_targets(df_test_targ, target_name, maximum_capacity)
-    elif ens_params['scale_features'] and ens_params['standardize']:
-        df_test_targ.loc[:, 'target'] = rescale_standardized_targets(df_test_targ, target_name, mean_buyer, std_buyer, stage='1st')
-    else:
-        df_test_targ.loc[:, 'target'] = df_test_targ[target_name]
+    df_test_targ = rescale_targets(ens_params, buyer_scaler_stats, df_test_targ, target_name, stage='1st')
 
     # Collect quantile predictions
     quantile_predictions_dict = collect_quantile_ensemble_predictions(ens_params['quantiles'], df_test_targ, predictions)
@@ -389,7 +315,7 @@ def create_ensemble_forecasts(ens_params,
         assert  challenge_usecase == 'simulation', 'challenge_usecase must be "simulation"'
 
         # collect results as dataframe
-        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_targ['target']], axis=1) 
+        df_results_wind_power = pd.concat([df_pred_ensemble, df_test_targ['targets']], axis=1) 
         df_results_wind_power_variability = pd.concat([df_var_ensemble, df_2stage_test['targets']], axis=1)
 
         # collect results as dictionary of dictionaries

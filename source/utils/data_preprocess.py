@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 def detect_ramp_event(df, ramp_threshold):
     " Detect ramp event by comparing the absolute difference between consecutive values with a threshold"
@@ -142,3 +143,125 @@ def rescale_standardized_targets(df, target_name, mean, std, stage = '1st'):
     else:
         raise ValueError("Stage must be either '1st' or '2nd'")
 
+
+def buyer_scaler_statistics(ens_params, df_buyer, end_training_timestamp, buyer_resource_name):
+    " Compute statistics for buyer resource scaler"
+    assert ens_params['scale_features'], 'scale_features must be True'
+    assert ens_params['normalize'] or ens_params['standardize'], 'normalize or standardize must be True'
+    assert end_training_timestamp is not None, 'end_training_timestamp must be provided'
+    stats = {}
+    # Get maximum capacity
+    if ens_params['scale_features'] and ens_params['normalize']:
+        maximum_capacity = get_maximum_values(df=df_buyer, end_train=end_training_timestamp, buyer_resource_name=buyer_resource_name)
+        logger.opt(colors=True).info(f'<fg 250,128,114> Maximum Capacity: {maximum_capacity} </fg 250,128,114>')
+        stats['maximum_capacity'] = maximum_capacity
+    # Get mean and std values
+    elif ens_params['scale_features'] and ens_params['standardize']:
+        mean_buyer, std_buyer = get_mean_std_values(df=df_buyer, end_train=end_training_timestamp, buyer_resource_name=buyer_resource_name)
+        logger.opt(colors=True).info(f'<fg 250,128,114> Mean Buyer: {mean_buyer} </fg 250,128,114>')
+        logger.opt(colors=True).info(f'<fg 250,128,114> Std Buyer: {std_buyer} </fg 250,128,114>')
+        stats['mean_buyer'] = mean_buyer
+        stats['std_buyer'] = std_buyer
+    logger.info('  ')
+    return stats
+
+def scale_forecasters_dataframe(ens_params, stats, df_ensemble_quantile50, df_ensemble_quantile10, df_ensemble_quantile90, end_training_timestamp):
+    """
+    Normalize or standardize the dataframes based on the given ensemble parameters.
+    """
+    # Extract statistics
+    maximum_capacity = stats.get('maximum_capacity', None)
+    mean_buyer = stats.get('mean_buyer', None)
+    std_buyer = stats.get('std_buyer', None)
+    
+    # Initialize dataframes
+    df_ensemble_normalized = pd.DataFrame()
+    df_ensemble_normalized_quantile10 = pd.DataFrame()
+    df_ensemble_normalized_quantile90 = pd.DataFrame()
+    # Normalize dataframes
+    if ens_params['scale_features'] and ens_params['normalize']:
+        logger.info('   ')
+        logger.opt(colors=True).info(f'<fg 250,128,114> Normalize DataFrame </fg 250,128,114>')
+        list_max_forecasters_q50 = get_maximum_values(df=df_ensemble_quantile50, end_train=end_training_timestamp)
+        df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q50)
+        if ens_params['add_quantile_predictions']:
+            logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
+            list_max_forecasters_q10 = get_maximum_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
+            list_max_forecasters_q90 = get_maximum_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], 
+                                                                    max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
+            df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], 
+                                                                    max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
+    # Standardize dataframes
+    elif ens_params['scale_features'] and ens_params['standardize']:
+        logger.info('   ')
+        logger.opt(colors=True).info(f'<fg 250,128,114> Standardize DataFrame </fg 250,128,114>')
+        mean_forecasters_q50, std_forecasters_q50 = get_mean_std_values(df=df_ensemble_quantile50, end_train=end_training_timestamp)
+        df_ensemble_normalized = standardize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, mean_forecasters_list=mean_forecasters_q50, std_forecasters_list=std_forecasters_q50)
+        if ens_params['add_quantile_predictions']:
+            logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
+            mean_forecasters_q10, std_forecasters_q10 = get_mean_std_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
+            mean_forecasters_q90, std_forecasters_q90 = get_mean_std_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            df_ensemble_normalized_quantile10 = standardize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
+                                                                        mean_forecasters_list=mean_forecasters_q10, std_forecasters_list=std_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
+            df_ensemble_normalized_quantile90 = standardize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
+                                                                        mean_forecasters_list=mean_forecasters_q90, std_forecasters_list=std_forecasters_q90) if not df_ensemble_quantile90.empty else pd.DataFrame()
+    # If no scaling is applied, simply copy and prefix dataframes
+    else:
+        df_ensemble_normalized = df_ensemble_quantile50.copy().add_prefix('norm_')
+        if ens_params['add_quantile_predictions']:
+            df_ensemble_normalized_quantile10 = df_ensemble_quantile10.copy().add_prefix('norm_') if not df_ensemble_quantile10.empty else pd.DataFrame()
+            df_ensemble_normalized_quantile90 = df_ensemble_quantile90.copy().add_prefix('norm_') if not df_ensemble_quantile90.empty else pd.DataFrame()
+    return df_ensemble_normalized, df_ensemble_normalized_quantile10, df_ensemble_normalized_quantile90
+
+def scale_buyer_dataframe(ens_params, stats, df_buyer):
+    """
+    Normalize or standardize the buyer dataframe based on the given ensemble parameters.
+    """
+    maximum_capacity = stats.get('maximum_capacity', None)
+    mean_buyer = stats.get('mean_buyer', None)
+    std_buyer = stats.get('std_buyer', None)
+
+    if ens_params['scale_features'] and ens_params['normalize']:
+        list_max_buyer = [maximum_capacity]
+        df_buyer_norm = normalize_dataframe(df_buyer, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_buyer)
+    elif ens_params['scale_features'] and ens_params['standardize']:
+        list_mean_buyer, list_std_buyer = [mean_buyer], [std_buyer]
+        df_buyer_norm = standardize_dataframe(df_buyer, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, mean_forecasters_list=list_mean_buyer, std_forecasters_list=list_std_buyer)
+    else:
+        df_buyer_norm = df_buyer.copy()
+        df_buyer_norm = df_buyer_norm.add_prefix('norm_')
+    return df_buyer_norm
+
+def rescale_predictions(predictions, ens_params, stats, quantile, stage):
+    """
+    Rescale predictions by normalizing or standardizing them based on the given ensemble parameters.
+    """
+    # Extract statistics
+    maximum_capacity = stats.get('maximum_capacity', None)
+    mean_buyer = stats.get('mean_buyer', None)
+    std_buyer = stats.get('std_buyer', None)
+    # Normalize predictions
+    if ens_params['scale_features'] and ens_params['normalize']:
+        predictions[quantile] = rescale_normalized_predictions(predictions, quantile, maximum_capacity)
+    # Standardize predictions
+    elif ens_params['scale_features'] and ens_params['standardize']:
+        predictions[quantile] = rescale_standardized_predictions(predictions, quantile, mean_buyer, std_buyer, stage=stage)
+    return predictions
+
+def rescale_targets(ens_params, stats, df, target_name, stage):
+    """
+    Rescale targets by normalizing or standardizing them based on the given ensemble parameters.
+    """
+    maximum_capacity = stats.get('maximum_capacity', None)
+    mean_buyer = stats.get('mean_buyer', None)
+    std_buyer = stats.get('std_buyer', None)
+    # Normalize targets
+    if ens_params['scale_features'] and ens_params['normalize']:
+        df.loc[:, 'targets'] = rescale_normalized_targets(df, target_name, maximum_capacity)
+    # Standardize targets
+    elif ens_params['scale_features'] and ens_params['standardize']:
+        df.loc[:, 'targets'] = rescale_standardized_targets(df, target_name, mean_buyer, std_buyer, stage=stage)
+    else:
+        df.loc[:, 'targets'] = df[target_name]
+    return df

@@ -60,7 +60,7 @@ def predico_ensemble_predictions_per_quantile(ens_params,
                                 df_train_ensemble_augmented.drop(columns=['diff_norm_targ']))
     # Make predictions
     raw_predictions = fitted_model.predict(X_test_augmented)
-    predictions[quantile] = raw_predictions  # Store predictions
+    predictions[quantile] = raw_predictions  
     # Store results
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
                'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
