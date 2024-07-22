@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def extract_quantile_columns(df, quantile):
     """Extract columns containing the specified quantile."""
