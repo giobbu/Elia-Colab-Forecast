@@ -8,7 +8,7 @@ from tqdm import tqdm
 from source.utils.session_ml_info import load_or_initialize_results
 from source.utils.data_preprocess import scale_forecasters_dataframe, scale_buyer_dataframe, buyer_scaler_statistics
 from source.utils.data_preprocess import rescale_predictions, rescale_targets
-from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data
+from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data, get_numpy_Xy_train_test_quantile
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.data_preparation.data_train_test import create_pre_test_dataframe, prepare_pre_test_data
@@ -141,17 +141,14 @@ def create_ensemble_forecasts(ens_params,
 
     # Make X-y train and test sets
     X_train, y_train, X_test, _ = get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble)
-    
-    # Make X-y train and test sets quantile predictions
-    if ens_params['add_quantile_predictions']:
-        X_train_quantile10 = df_train_ensemble_quantile10.values if not df_train_ensemble_quantile10.empty else np.array([])
-        X_test_quantile10 = df_test_ensemble_quantile10.values if not df_test_ensemble_quantile10.empty else np.array([])
-        X_train_quantile90 = df_train_ensemble_quantile90.values if not df_train_ensemble_quantile90.empty else np.array([])
-        X_test_quantile90 = df_test_ensemble_quantile90.values if not df_test_ensemble_quantile90.empty else np.array([])
-    else:
-        X_train_quantile10, X_test_quantile10 = np.array([]), np.array([])
-        X_train_quantile90, X_test_quantile90 = np.array([]), np.array([])
 
+    # Make X-y train and test sets quantile predictions
+    X_train_quantile10, X_test_quantile10, X_train_quantile90, X_test_quantile90 = get_numpy_Xy_train_test_quantile(ens_params,
+                                                                                                                    df_train_ensemble_quantile10,
+                                                                                                                    df_test_ensemble_quantile10,
+                                                                                                                    df_train_ensemble_quantile90,
+                                                                                                                    df_test_ensemble_quantile90
+                                                                                                                    )
 
     # Assert no NaNs in train ensemble
     assert df_train_ensemble.isna().sum().sum() == 0
