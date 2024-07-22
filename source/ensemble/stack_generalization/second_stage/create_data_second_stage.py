@@ -48,3 +48,14 @@ def create_var_ensemble_dataframe(buyer_resource_name, quantiles, quantile_predi
             df_pred_quantile.set_index('datetime', inplace=True)
             df_pred_ensemble = pd.concat([df_pred_ensemble, df_pred_quantile], axis=1)
     return df_pred_ensemble
+
+
+
+def get_numpy_Xy_train_test_2stage(df_2stage_train, df_2stage_test):
+    """
+    Prepares training and testing data for a two-stage model by separating features and targets.
+    """
+    X_train_2stage = df_2stage_train.drop(columns=['targets']).values
+    y_train_2stage = df_2stage_train['targets'].values
+    X_test_2stage = df_2stage_test.drop(columns=['targets']).values
+    return X_train_2stage, y_train_2stage, X_test_2stage

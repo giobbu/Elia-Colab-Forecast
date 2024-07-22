@@ -13,7 +13,7 @@ from source.ensemble.stack_generalization.feature_engineering.data_augmentation 
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
 from source.ensemble.stack_generalization.data_preparation.data_train_test import create_pre_test_dataframe, prepare_pre_test_data
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
-from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe
+from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe, get_numpy_Xy_train_test_2stage
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe, melt_dataframe
 
 
@@ -142,7 +142,7 @@ def create_ensemble_forecasts(ens_params,
     # Make X-y train and test sets
     X_train, y_train, X_test, _ = get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble)
 
-    # Make X-y train and test sets quantile predictions
+    # Make X-y train and test sets quantile
     X_train_quantile10, X_test_quantile10, X_train_quantile90, X_test_quantile90 = get_numpy_Xy_train_test_quantile(ens_params,
                                                                                                                     df_train_ensemble_quantile10,
                                                                                                                     df_test_ensemble_quantile10,
@@ -225,10 +225,8 @@ def create_ensemble_forecasts(ens_params,
             logger.info(f'Length of Test DataFrame: {len(df_2stage_test)}')
             assert len(df_2stage_test) == 96, 'Test dataframe must have 96 rows'
             
-            # Normalize 2-stage dataframe
-            X_train_2stage = df_2stage_train.drop(columns=['targets']).values
-            y_train_2stage = df_2stage_train['targets'].values
-            X_test_2stage = df_2stage_test.drop(columns=['targets']).values
+            # Make X-y train and test sets for 2-stage
+            X_train_2stage, y_train_2stage, X_test_2stage = get_numpy_Xy_train_test_2stage(df_2stage_train, df_2stage_test)
 
             # dictioanry to store variability predictions
             variability_predictions = {}
