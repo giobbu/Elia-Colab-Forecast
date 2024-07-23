@@ -265,3 +265,14 @@ def rescale_targets(ens_params, stats, df, target_name, stage):
     else:
         df.loc[:, 'targets'] = df[target_name]
     return df
+
+
+def set_non_negative_predictions(predictions, quantile):
+    """
+    Ensures that all values in the specified quantile of predictions are non-negative.
+    """
+    if quantile in predictions:
+        predictions[quantile] = np.maximum(predictions[quantile], 0)
+    else:
+        raise KeyError(f"Quantile '{quantile}' not found in predictions.")
+    return predictions

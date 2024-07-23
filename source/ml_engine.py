@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
 from source.utils.data_preprocess import scale_forecasters_dataframe, scale_buyer_dataframe, buyer_scaler_statistics
-from source.utils.data_preprocess import rescale_predictions, rescale_targets
+from source.utils.data_preprocess import rescale_predictions, rescale_targets, set_non_negative_predictions
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data, get_numpy_Xy_train_test_quantile
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
@@ -286,7 +286,7 @@ def create_ensemble_forecasts(ens_params,
         predictions = rescale_predictions(predictions, ens_params, buyer_scaler_stats, quantile, stage='1st') 
         
         # Ensure predictions are positive
-        predictions[quantile] = np.maximum(predictions[quantile], 0)  
+        predictions = set_non_negative_predictions(predictions, quantile) 
 
         # delete and collect garbage
         del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
