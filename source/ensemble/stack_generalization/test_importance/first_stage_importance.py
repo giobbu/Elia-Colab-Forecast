@@ -8,7 +8,7 @@ def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test
     " Compute the permuted score for a single predictor."
     X_test_permuted = X_test_augmented.copy()
     X_test_permuted[:, predictor_index] = np.random.permutation(X_test_augmented[:, predictor_index])
-    permuted_score = score_functions[quantile](fitted_model, X_test_permuted, y_test)['mean_pinball_loss']
+    permuted_score = score_functions[quantile](fitted_model, X_test_permuted, y_test)['mean_loss']
     return permuted_score
 
 def first_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_first_stage):
@@ -28,7 +28,7 @@ def first_stage_permutation_importance(y_test, parameters_model, quantile, info_
     X_test_augmented = info_previous_day_first_stage[quantile]['X_test_augmented']
     df_train_ensemble_augmented = info_previous_day_first_stage[quantile]['df_train_ensemble_augmented']
     # Compute the original score
-    base_score = score_functions[quantile](fitted_model, X_test_augmented, y_test)['mean_pinball_loss']
+    base_score = score_functions[quantile](fitted_model, X_test_augmented, y_test)['mean_loss']
     importance_scores = []
     # Loop through each predictor
     for predictor_index in range(X_test_augmented.shape[1]):

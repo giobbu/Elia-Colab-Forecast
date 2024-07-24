@@ -8,7 +8,7 @@ def score_func_10(estimator, X, y):
     assert X.shape[0] == y.shape[0], "X and y should have the same number of rows"
     y_pred = estimator.predict(X)
     return {
-        "mean_pinball_loss": mean_pinball_loss(y, y_pred, alpha=0.1),
+        "mean_loss": mean_pinball_loss(y, y_pred, alpha=0.1),
     }
 
 def score_func_50(estimator, X, y):
@@ -16,7 +16,7 @@ def score_func_50(estimator, X, y):
     assert X.shape[0] == y.shape[0], "X and y should have the same number of rows"
     y_pred = estimator.predict(X)
     return {
-        "mean_pinball_loss": mean_squared_error(y, y_pred), # mean_pinball_loss(y, y_pred, alpha=0.5),
+        "mean_loss": mean_squared_error(y, y_pred), # mean_pinball_loss(y, y_pred, alpha=0.5),
     }
 
 def score_func_90(estimator, X, y):
@@ -24,7 +24,7 @@ def score_func_90(estimator, X, y):
     assert X.shape[0] == y.shape[0], "X and y should have the same number of rows"
     y_pred = estimator.predict(X)
     return {
-        "mean_pinball_loss": mean_pinball_loss(y, y_pred, alpha=0.9),
+        "mean_loss": mean_pinball_loss(y, y_pred, alpha=0.9),
     }
 
 def evaluate(model, X, y, cv, quantile):
@@ -43,5 +43,5 @@ def evaluate(model, X, y, cv, quantile):
         scoring=score_func[quantile],
         n_jobs=6
     )
-    score_mean = cv_results['test_mean_pinball_loss'].mean()
+    score_mean = cv_results['test_mean_loss'].mean()
     return score_mean

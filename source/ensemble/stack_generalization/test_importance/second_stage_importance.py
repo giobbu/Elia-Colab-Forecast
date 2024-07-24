@@ -14,7 +14,7 @@ def second_stage_permuted_score(predictor_index, X_test_augmented, y_test, fitte
     df_2stage_processed_permuted = create_augmented_dataframe_2stage(df_2stage_permuted, order_diff, max_lags=max_lags_var, augment=augment_var)
     df_2stage_test_permuted = df_2stage_processed_permuted[(df_2stage_processed_permuted.index >= start_prediction_timestamp) & (df_2stage_processed_permuted.index <= end_prediction_timestamp)]
     X_test_2stage_permuted, y_test_2stage_permuted = df_2stage_test_permuted.drop(columns=['targets']).values, df_2stage_test_permuted['targets'].values
-    permutation_score = score_functions[quantile](var_fitted_model, X_test_2stage_permuted, y_test_2stage_permuted)['mean_pinball_loss']
+    permutation_score = score_functions[quantile](var_fitted_model, X_test_2stage_permuted, y_test_2stage_permuted)['mean_loss']
     return  permutation_score
 
 def second_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_second_stage, start_prediction_timestamp, end_prediction_timestamp):
@@ -52,7 +52,7 @@ def second_stage_permutation_importance(y_test, parameters_model, quantile, info
     df_2stage_test = df_2stage_processed[(df_2stage_processed.index >= start_prediction_timestamp) & (df_2stage_processed.index <= end_prediction_timestamp)]
     X_test_2stage, y_test_2stage = df_2stage_test.drop(columns=['targets']).values, df_2stage_test['targets'].values
     # Compute the original score
-    base_score = score_functions[quantile](var_fitted_model, X_test_2stage, y_test_2stage)['mean_pinball_loss']
+    base_score = score_functions[quantile](var_fitted_model, X_test_2stage, y_test_2stage)['mean_loss']
     importance_scores = []
     # Loop through each predictor
     for predictor_index in range(X_test_augmented.shape[1]):

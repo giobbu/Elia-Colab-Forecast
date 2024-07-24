@@ -1,15 +1,15 @@
 import pandas as pd
 
-def filter_offshore(df, offshore_filter):
-    assert 'offshoreonshore' in df.columns, "The DataFrame must contain the 'offshoreonshore' column."
-    df = df[df.offshoreonshore == offshore_filter]  # filter by offshore/onshore
-    return df
-
 def set_index_datetiemUTC(df):
     assert 'datetime' in df.columns, "The DataFrame must contain the 'datetime' column."
     df['datetime'] = pd.to_datetime(df['datetime'], utc=True)
     df = df.sort_values(by='datetime').reset_index(drop=True)
     df.set_index('datetime', inplace=True)
+    return df
+
+def filter_offshore(df, offshore_filter):
+    assert 'offshoreonshore' in df.columns, "The DataFrame must contain the 'offshoreonshore' column."
+    df = df[df.offshoreonshore == offshore_filter]  # filter by offshore/onshore
     return df
 
 def process_file(file, offshore_filter='Offshore'):
