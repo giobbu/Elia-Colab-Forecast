@@ -1,18 +1,20 @@
 from collections import defaultdict
 import pandas as pd 
 
-def process_combination_scheme(df_train, df_test, df_buyer, end_training_timestamp, start_prediction_timestamp):
+def process_combination_scheme(df_train, df_test, end_training_timestamp, start_prediction_timestamp):
     " Process data for the combination scheme"
     # Concatenate train and test dataframes
     df_comb_scheme = pd.concat([df_train, df_test], axis=0)
-    # Get the maximum capacity
-    maximum_capacity = df_buyer['b1r1'].max()
     df_comb_scheme_norm = df_comb_scheme.copy()
     df_comb_scheme_norm= df_comb_scheme_norm.add_prefix('norm_')
     # Split train and test dataframes
     df_train_norm = df_comb_scheme_norm[df_comb_scheme_norm.index < end_training_timestamp]
     df_test_norm = df_comb_scheme_norm[df_comb_scheme_norm.index >= start_prediction_timestamp]
-    return df_train_norm, df_test_norm, maximum_capacity
+    assert len(df_test_norm)==96, 'Length of test dataframe is not 96'
+    # concatenate last training row with test data
+    df_test_norm_var = df_test.diff().iloc[-96:, :]
+    df_test_norm_var = df_test_norm_var.add_prefix('norm_')
+    return df_train_norm, df_test_norm, df_test_norm_var
 
 def update_dict_weights(mu, observation, iteration):
     " Update the contributions of the forecasters" 
