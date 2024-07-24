@@ -5,6 +5,18 @@ from loguru import logger
 import pandas as pd
 import numpy as np
 
+def initialize_train_and_predict(predictions, model_type, quantile, best_params, solver, X_train, y_train, X_test):
+    """
+    Initializes, fits a model, and makes predictions.
+    """
+    # Initialize model with best params
+    model = initialize_model(model_type, quantile, best_params, solver)
+    # Fit model
+    fitted_model = model.fit(X_train, y_train)
+    # Make predictions
+    predictions[quantile] = fitted_model.predict(X_test)
+    # Return fitted model and predictions
+    return fitted_model, predictions
 
 def predico_ensemble_predictions_per_quantile(ens_params, 
                                                 X_train, X_test, y_train, df_train_ensemble,  
@@ -50,17 +62,15 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     else:
         logger.opt(colors=True).info(f'<fg 250,128,114> Using best hyperparameters from first iteration </fg 250,128,114>')
         best_params = best_results[quantile][1][1]
-    # Initialize model
-    model = initialize_model(model_type, quantile, best_params, solver)
-    # Fit model
-    fitted_model = model.fit(X_train_augmented, y_train)
+
+    # Initialize, fit and predict
+    fitted_model, predictions = initialize_train_and_predict(predictions, model_type, quantile, best_params, solver, X_train_augmented, y_train, X_test_augmented) 
+
     if plot_importance_gbr and model_type == 'GBR':
         logger.opt(colors=True).info(f'<fg 250,128,114> GBR feature importance </fg 250,128,114>')
         plot_feature_importance(fitted_model.feature_importances_,
-                                df_train_ensemble_augmented.drop(columns=['diff_norm_targ']))
-    # Make predictions
-    raw_predictions = fitted_model.predict(X_test_augmented)
-    predictions[quantile] = raw_predictions  
+                                df_train_ensemble_augmented.drop(columns=['diff_norm_targ'])) 
+        
     # Store results
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
                'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
@@ -90,10 +100,10 @@ def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train
     else:
         logger.opt(colors=True).info(f'<fg 72,201,176> Using best hyperparameters from first iteration </fg 72,201,176>')
         best_params_var = best_results_var[quantile][1][1]
-    model = initialize_model(var_model_type, quantile, best_params_var, solver)  # Initialize model
-    var_fitted_model = model.fit(X_train_2stage, y_train_2stage)  # Fit model
-    raw_variability_predictions = var_fitted_model.predict(X_test_2stage)  # Make predictions
-    variability_predictions[quantile] = raw_variability_predictions  # Store predictions
+
+    # Initialize, fit and predict
+    var_fitted_model, variability_predictions = initialize_train_and_predict(variability_predictions, var_model_type, quantile, best_params_var, solver, X_train_2stage, y_train_2stage, X_test_2stage)  
+
     # Store results
     results = {'variability_predictions': variability_predictions, 
                 'best_results_var': best_results_var, 
