@@ -81,10 +81,11 @@ def calculate_best_model(df_test_norm, lst_cols_forecasts, norm_lst_q50_pb_loss,
 def run_model_selection(sim_params, df_train_norm, df_test_norm, 
                         end_observations, start_predictions, window_size_valid=1, var=False, norm='sum'):
     " Calculate the weights based on the pinball loss of the forecasts "
-    assert len(df_test_norm)==96, 'Length of test dataframe is not 96'
+    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
     if var:
         df = pd.concat([df_train_norm, df_test_norm], axis=0).diff().dropna()
         df_train_norm, df_test_norm = df[df.index < end_observations], df[df.index >= start_predictions]
+        assert len(df_test_norm)==96, 'Length of test dataframe is not 96'
         window_validation =  pd.to_datetime(end_observations, utc=True) - pd.Timedelta(days=window_size_valid)
         df_val_norm = df_train_norm[df_train_norm.index.to_series().between(window_validation, end_observations)]
         lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(sim_params, df_val_norm, norm)
@@ -94,6 +95,7 @@ def run_model_selection(sim_params, df_train_norm, df_test_norm,
             }, index=df_test_norm.index)
         df_best_model['target'] = df_test_norm['norm_measured']
         return df_best_model
+    df_test_norm = df_test_norm[df_test_norm.index >= start_predictions]
     window_validation =  pd.to_datetime(end_observations, utc=True) - pd.Timedelta(days=window_size_valid)
     df_val_norm = df_train_norm[df_train_norm.index.to_series().between(window_validation, end_observations)]
     lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight = calculate_weights(sim_params, df_val_norm, norm)
