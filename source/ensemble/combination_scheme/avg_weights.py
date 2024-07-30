@@ -71,17 +71,17 @@ def calculate_combination_forecast(df_test_norm, lst_cols_forecasts, norm_lst_q5
     combination_quantile90 = np.zeros(len(df_test_norm))
     for col in lst_cols_forecasts:
         if 'forecast' in col:
-            forecast = df_test_norm[col]
-            weight = [list(weight.values())[0] for weight in norm_lst_q50_pb_loss if col in weight][0]
-            combination_forecast += forecast * weight
+            forecast_50 = df_test_norm[col]
+            weight_50 = [list(weight.values())[0] for weight in norm_lst_q50_pb_loss if col in weight][0]
+            combination_forecast += forecast_50 * weight_50
         elif 'confidence10' in col:
-            forecast = df_test_norm[col]
-            weight = [list(weight.values())[0] for weight in norm_lst_q10_pb_loss if col in weight][0]
-            combination_quantile10 += forecast * weight
+            forecast_10 = df_test_norm[col]
+            weight_10 = [list(weight.values())[0] for weight in norm_lst_q10_pb_loss if col in weight][0]
+            combination_quantile10 += forecast_10 * weight_10
         elif 'confidence90' in col:
-            forecast = df_test_norm[col]
-            weight = [list(weight.values())[0] for weight in norm_lst_q90_pb_loss if col in weight][0]
-            combination_quantile90 += forecast * weight
+            forecast_90 = df_test_norm[col]
+            weight_90 = [list(weight.values())[0] for weight in norm_lst_q90_pb_loss if col in weight][0]
+            combination_quantile90 += forecast_90 * weight_90
         else:
             raise ValueError('Not a valid column')
     return combination_forecast, combination_quantile10, combination_quantile90
