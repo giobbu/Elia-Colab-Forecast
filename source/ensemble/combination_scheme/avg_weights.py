@@ -113,12 +113,7 @@ def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm,
     norm_lst_q10_weight = normalize_weights(lst_q10_weight) 
     norm_lst_q90_weight = normalize_weights(lst_q90_weight)
     combination_forecast, combination_quantile10, combination_quantile90 = calculate_combination_forecast(df_test_norm, lst_cols_forecasts, norm_lst_q50_weight, norm_lst_q10_weight, norm_lst_q90_weight)
-    df_weighted_avg = pd.DataFrame({
-            'Q10': combination_quantile10,
-            'mean_prediction': combination_forecast,
-            'Q90': combination_quantile90
-        }, index=df_test_norm.index)
-    df_weighted_avg['target'] = df_test_norm['norm_measured']
+    df_weighted_avg = create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90)
     dict_weights = {0.5: {key:value for d in norm_lst_q50_weight for key, value in d.items()},
                     0.1: {key:value for d in norm_lst_q10_weight for key, value in d.items()}, 
                     0.9: {key:value for d in norm_lst_q90_weight for key, value in d.items()}}
