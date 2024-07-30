@@ -14,21 +14,22 @@ class Simulation:
         random_seed = 42,
         window_size = 30,
         start_training = '2023-01-01',
-        num_test_days = 60,
+        num_test_days = 14,
         forecasts_col = ['forecast', 'confidence10', 'confidence90'],
         measured_col = 'measured',
         most_recent = True,
         malicious = False,
         malicious_name= 'mostrecent',
         noise_degree = 10,
-        noisy = False,
+        noisy = True,
         noisy_name = 'weekahead',
         scenario = 'malicious',
+        save_scenario_contributions = False,
         display_metrics=True)
     
 @dataclass(frozen=True)
 class WeightedAvg:
-    params = dict(window_size_valid = 3)
+    params = dict(window_size_valid = 1)
 
 @dataclass(frozen=True)
 class Stack:
@@ -37,10 +38,13 @@ class Stack:
         save_info = './info_model/',
         save_file = 'previous_day.pickle',
         
+        # scaling with normalization or standardization
         scale_features = True,
         axis=0,
-        normalize = True,
-        standardize = False,
+        normalize = False,
+        standardize = True,
+
+        # add quantile predictions
         add_quantile_predictions = True,
         augment_q50 = True,
 
@@ -72,8 +76,8 @@ class Stack:
         gbr_config_params = {'learning_rate': [0.0001, 0.001, 0.005, 0.01],
                                 'max_features' : [.98, 1.0],
                                 'max_depth': [3, 4, 5],
-                                'max_iter': [250, 500, 1000]},
-        lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005],
+                                'max_iter': [25]},
+        lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005, 0.0075, 0.01],
                             'fit_intercept' : [True, False]},
 
         # variability forecasts model parameters
@@ -81,8 +85,8 @@ class Stack:
         var_gbr_config_params = {'learning_rate': [0.0001, 0.001, 0.005, 0.01],
                                     'max_features' : [.98, 1.0],
                                     'max_depth': [3, 4, 5],
-                                    'max_iter': [150, 500]},
-        var_lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005],
+                                    'max_iter': [25]},
+        var_lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005, 0.0075, 0.01],
                                 'fit_intercept' : [True, False]},
 
         nr_permutations=10,
