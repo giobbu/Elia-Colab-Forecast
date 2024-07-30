@@ -5,6 +5,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     # RMSE metric for MEAN
     rmse_ensemble = dict_metrics['ensemble']['rmse']
     rmse_weighted_avg = dict_metrics['weighted_avg']['rmse']
+    rmse_weighted_avg_soft = dict_metrics['weighted_avg_soft']['rmse']
     rmse_equal_weights = dict_metrics['equal_weights']['rmse']
     rmse_dayahead = dict_metrics['day_ahead']['rmse'] 
     rmse_dayahead_11h = dict_metrics['day_ahead_11h']['rmse'] 
@@ -19,6 +20,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('----------------- RMSE -----------------')
     logger.info(f'{model_type} ensemble {rmse_ensemble}')
     logger.info(f'Weighted Average {rmse_weighted_avg}')
+    logger.info(f'Weighted Average Softmax {rmse_weighted_avg_soft}')
     logger.info(f'Equal Weights {rmse_equal_weights}')
     logger.info(f'Day-Ahead {rmse_dayahead}')
     logger.info(f'Day-Ahead-11h {rmse_dayahead_11h}')
@@ -37,6 +39,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     # PB metric for Q10
     pinball_ensemble_q10 = dict_metrics['ensemble']['pb10']
     pinball_weighted_avg_q10 = dict_metrics['weighted_avg']['pb10']
+    pinball_weighted_avg_soft_q10 = dict_metrics['weighted_avg_soft']['pb10']
     pinball_equal_weights_q10 = dict_metrics['equal_weights']['pb10']
     pinball_dayahead_q10 = dict_metrics['day_ahead']['pb10']
     pinball_dayahead_11h_q10 = dict_metrics['day_ahead_11h']['pb10']
@@ -44,6 +47,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     # PB metric for Q90
     pinball_ensemble_q90 = dict_metrics['ensemble']['pb90']
     pinball_weighted_avg_q90 = dict_metrics['weighted_avg']['pb90']
+    pinball_weighted_avg_soft_q90 = dict_metrics['weighted_avg_soft']['pb90']
     pinball_equal_weights_q90 = dict_metrics['equal_weights']['pb90']
     pinball_dayahead_q90 = dict_metrics['day_ahead']['pb90']
     pinball_dayahead_11h_q90 = dict_metrics['day_ahead_11h']['pb90']
@@ -51,6 +55,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     # RMSE metric for MEAN VAR
     rmse_var_ensemble = dict_metrics['ensemble']['rmse_var']
     rmse_var_weighted_avg = dict_metrics['weighted_avg']['rmse_var']
+    rmse_var_weighted_avg_soft = dict_metrics['weighted_avg_soft']['rmse_var']
     rmse_var_equal_weights = dict_metrics['equal_weights']['rmse_var']
     rmse_var_dayahead = dict_metrics['day_ahead']['rmse_var'] 
     rmse_var_dayahead_11h = dict_metrics['day_ahead_11h']['rmse_var'] 
@@ -59,6 +64,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('----------------- PB Q10 -----------------')
     logger.info(f'{model_type} ensemble {pinball_ensemble_q10}')
     logger.info(f'Weig Avg {pinball_weighted_avg_q10}')
+    logger.info(f'Weighted Avg Softmax {pinball_weighted_avg_soft_q10}')
     logger.info(f'Eq Weig {pinball_equal_weights_q10}')
     logger.info(f'Day-Ahead {pinball_dayahead_q10}')
     logger.info(f'Day-Ahead-11h {pinball_dayahead_11h_q10}')
@@ -76,6 +82,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('----------------- PB Q90 -----------------')
     logger.info(f'{model_type} ensemble {pinball_ensemble_q90}')
     logger.info(f'Weig Avg {pinball_weighted_avg_q90}')
+    logger.info(f'Weighted Avg Softmax {pinball_weighted_avg_soft_q90}')
     logger.info(f'Eq Weig {pinball_equal_weights_q90}')
     logger.info(f'Day-Ahead {pinball_dayahead_q90}')
     logger.info(f'Day-Ahead-11h {pinball_dayahead_11h_q90}')
@@ -94,6 +101,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('----------------- RMSE -----------------')
     logger.info(f'{var_model_type} ensemble {rmse_var_ensemble}')
     logger.info(f'Weighted Average {rmse_var_weighted_avg}')
+    logger.info(f'Weighted Average Softmax {rmse_var_weighted_avg_soft}')
     logger.info(f'Equal Weights {rmse_var_equal_weights}')
     logger.info(f'Day-Ahead {rmse_var_dayahead}')
     logger.info(f'Day-Ahead-11h {rmse_var_dayahead_11h}')
