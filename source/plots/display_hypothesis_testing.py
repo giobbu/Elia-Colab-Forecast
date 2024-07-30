@@ -4,6 +4,7 @@ import pandas as pd
 
 def transform_loss_lists_to_df(model_type, 
                                 lst_loss_ensemble, 
+                                lst_loss_best_model,
                                 lst_loss_equal_weights, 
                                 lst_loss_weighted_avg, 
                                 lst_loss_weighted_avg_soft,
@@ -14,11 +15,12 @@ def transform_loss_lists_to_df(model_type,
                                 lst_loss_baseline_cheat=None,
                                 lst_loss_baseline_noisy=None):
     " Transform the loss lists into a DataFrame"
-    assert len(lst_loss_ensemble) == len(lst_loss_equal_weights) == len(lst_loss_weighted_avg) == len(lst_loss_baseline_dayahead) == len(lst_loss_baseline_dayahead11h) == len(lst_loss_baseline_weekahead), 'Length mismatch'
+    assert len(lst_loss_ensemble) == len(lst_loss_best_model) == len(lst_loss_equal_weights) == len(lst_loss_weighted_avg) == len(lst_loss_baseline_dayahead) == len(lst_loss_baseline_dayahead11h) == len(lst_loss_baseline_weekahead), 'Length mismatch'
         
     # Construct the dictionary from the input lists
     dict_data = {
         f'{model_type}_ensemble': lst_loss_ensemble,
+        'best_model': lst_loss_best_model,
         'eq_weights': lst_loss_equal_weights,
         'weighted_avg': lst_loss_weighted_avg,
         'weighted_avg_soft': lst_loss_weighted_avg_soft,
@@ -70,7 +72,8 @@ def plot_statistical_comparison(pc, avg_rank, title1, title2):
 
 
 def run_statistical_comparison_analysis(model_type,
-                                        lst_gbr_ensemble, 
+                                        lst_ensemble,
+                                        lst_best_model, 
                                         lst_equal_weights, 
                                         lst_weighted_avg,
                                         lst_weighted_avg_soft, 
@@ -87,7 +90,8 @@ def run_statistical_comparison_analysis(model_type,
     """
     # Transform loss lists into a DataFrame
     data = transform_loss_lists_to_df(model_type, 
-                                            lst_gbr_ensemble, 
+                                            lst_ensemble,
+                                            lst_best_model,
                                             lst_equal_weights, 
                                             lst_weighted_avg,
                                             lst_weighted_avg_soft,

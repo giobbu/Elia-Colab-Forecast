@@ -4,6 +4,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     
     # RMSE metric for MEAN
     rmse_ensemble = dict_metrics['ensemble']['rmse']
+    rmse_best_model = dict_metrics['best_model']['rmse']
     rmse_weighted_avg = dict_metrics['weighted_avg']['rmse']
     rmse_weighted_avg_soft = dict_metrics['weighted_avg_soft']['rmse']
     rmse_equal_weights = dict_metrics['equal_weights']['rmse']
@@ -19,6 +20,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('------------- Wind Power Forecasting ------------------------------')
     logger.info('----------------- RMSE -----------------')
     logger.info(f'{model_type} ensemble {rmse_ensemble}')
+    logger.info(f'Best Model Select {rmse_best_model}')
     logger.info(f'Weighted Average {rmse_weighted_avg}')
     logger.info(f'Weighted Average Softmax {rmse_weighted_avg_soft}')
     logger.info(f'Equal Weights {rmse_equal_weights}')
@@ -38,6 +40,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
 
     # PB metric for Q10
     pinball_ensemble_q10 = dict_metrics['ensemble']['pb10']
+    pinball_best_model_q10 = dict_metrics['best_model']['pb10']
     pinball_weighted_avg_q10 = dict_metrics['weighted_avg']['pb10']
     pinball_weighted_avg_soft_q10 = dict_metrics['weighted_avg_soft']['pb10']
     pinball_equal_weights_q10 = dict_metrics['equal_weights']['pb10']
@@ -46,6 +49,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     pinball_week_ahead_q10 = dict_metrics['week_ahead']['pb10']
     # PB metric for Q90
     pinball_ensemble_q90 = dict_metrics['ensemble']['pb90']
+    pinball_best_model_q90 = dict_metrics['best_model']['pb90']
     pinball_weighted_avg_q90 = dict_metrics['weighted_avg']['pb90']
     pinball_weighted_avg_soft_q90 = dict_metrics['weighted_avg_soft']['pb90']
     pinball_equal_weights_q90 = dict_metrics['equal_weights']['pb90']
@@ -54,6 +58,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     pinball_week_ahead_q90 = dict_metrics['week_ahead']['pb90']
     # RMSE metric for MEAN VAR
     rmse_var_ensemble = dict_metrics['ensemble']['rmse_var']
+    rmse_var_best_model = dict_metrics['best_model']['rmse_var']
     rmse_var_weighted_avg = dict_metrics['weighted_avg']['rmse_var']
     rmse_var_weighted_avg_soft = dict_metrics['weighted_avg_soft']['rmse_var']
     rmse_var_equal_weights = dict_metrics['equal_weights']['rmse_var']
@@ -63,6 +68,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     
     logger.info('----------------- PB Q10 -----------------')
     logger.info(f'{model_type} ensemble {pinball_ensemble_q10}')
+    logger.info(f'Best Model Select {pinball_best_model_q10}')
     logger.info(f'Weig Avg {pinball_weighted_avg_q10}')
     logger.info(f'Weighted Avg Softmax {pinball_weighted_avg_soft_q10}')
     logger.info(f'Eq Weig {pinball_equal_weights_q10}')
@@ -81,6 +87,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info(' ')
     logger.info('----------------- PB Q90 -----------------')
     logger.info(f'{model_type} ensemble {pinball_ensemble_q90}')
+    logger.info(f'Best Model Select {pinball_best_model_q90}')
     logger.info(f'Weig Avg {pinball_weighted_avg_q90}')
     logger.info(f'Weighted Avg Softmax {pinball_weighted_avg_soft_q90}')
     logger.info(f'Eq Weig {pinball_equal_weights_q90}')
@@ -100,6 +107,7 @@ def display_forecasting_metrics(sim_params, ens_params, dict_metrics):
     logger.info('----------------- Wind Power Variability Forecast -----------------')
     logger.info('----------------- RMSE -----------------')
     logger.info(f'{var_model_type} ensemble {rmse_var_ensemble}')
+    logger.info(f'Best Model Select {rmse_var_best_model}')
     logger.info(f'Weighted Average {rmse_var_weighted_avg}')
     logger.info(f'Weighted Average Softmax {rmse_var_weighted_avg_soft}')
     logger.info(f'Equal Weights {rmse_var_equal_weights}')
