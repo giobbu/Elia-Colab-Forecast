@@ -15,7 +15,7 @@ def load_model_info(file_path):
         logger.error(f"Failed to load model info from {file_path}: {e}")
         return None
 
-def calculate_contributions(results_challenge_dict, ens_params, y_test, previous_day_forecast_range):
+def calculate_contributions(results_challenge_dict, ens_params, y_test, forecast_range):
     " Calculate the contributions of the models in the ensemble"
     assert isinstance(results_challenge_dict, dict), 'The results_challenge_dict must be a dictionary'
     assert isinstance(ens_params, dict), 'The ens_params must be a dictionary'
