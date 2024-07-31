@@ -10,7 +10,7 @@ def process_combination_scheme(df_train, df_test, end_training_timestamp, start_
     # Split train and test dataframes
     df_train_norm = df_comb_scheme_norm[df_comb_scheme_norm.index < end_training_timestamp]
     df_test_norm = df_comb_scheme_norm[df_comb_scheme_norm.index >= start_prediction_timestamp]
-    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96'
+    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
     # concatenate last training row with test data
     df_test_norm_var = df_test.diff().iloc[-96*2:, :]
     df_test_norm_var = df_test_norm_var.add_prefix('norm_')
