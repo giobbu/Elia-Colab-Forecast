@@ -4,6 +4,11 @@ import pandas as pd
 from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 
+def normalize_contributions(df):
+    total_contribution = df['contribution'].sum()
+    df['contribution'] = df['contribution'] / total_contribution
+    return df
+
 def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile):
     " Compute the permuted score for a single predictor."
     X_test_permuted = X_test_augmented.copy()
