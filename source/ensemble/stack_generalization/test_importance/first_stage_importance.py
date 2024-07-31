@@ -45,11 +45,12 @@ def first_stage_permutation_importance(y_test, parameters_model, quantile, info_
         mean_contribution = max(0, np.mean(permuted_scores) - base_score)
         importance_scores.append({'predictor': predictor_name, 'contribution': mean_contribution})
     # Create a DataFrame with the importance scores and sort it
-    results_df = pd.DataFrame(importance_scores).sort_values(by='contribution', ascending=False)
+    results_df = pd.DataFrame(importance_scores)
+    results_df = results_df.sort_values(by='contribution', ascending=False)
     # Drop the forecasters standard deviation and variance rows
     results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
     # Normalize contributions
-    results_df['contribution'] = results_df['contribution']/results_df['contribution'].sum()
+    results_df = normalize_contributions(results_df)
     return results_df
 
 def wind_power_importance(results_challenge_dict, ens_params, y_test, results_contributions):
