@@ -1,6 +1,5 @@
 from loguru import logger
 import pandas as pd
-import numpy as np
 import gc
 import pickle
 from tqdm import tqdm
@@ -114,7 +113,7 @@ def create_ensemble_forecasts(ens_params,
                                                                             max_lag=ens_params['max_lags'])
 
     # Create pre test dataframe
-    df_test_ensemble_pre = create_pre_test_dataframe(df_buyer = df_buyer_norm, 
+    df_test_ensemble_prev = create_pre_test_dataframe(df_buyer = df_buyer_norm, 
                                                         df_ensemble = df_ensemble_normalized_lag, 
                                                         pre_start_prediction = pre_start_prediction_timestamp, 
                                                         buyer_name = buyer_resource_name)
@@ -127,13 +126,13 @@ def create_ensemble_forecasts(ens_params,
 
     # # Split train and test dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
-        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_pre = split_quantile_train_test_data(
+        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_prev = split_quantile_train_test_data(
             df_ensemble_normalized_lag_quantile10, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
-        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_pre = split_quantile_train_test_data(
+        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_prev = split_quantile_train_test_data(
             df_ensemble_normalized_lag_quantile90, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
     else:
         df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = pd.DataFrame()
-        df_test_ensemble_quantile10_pre = df_test_ensemble_quantile90_pre = pd.DataFrame()
+        df_test_ensemble_quantile10_prev = df_test_ensemble_quantile90_prev = pd.DataFrame()
 
     
     # Assert df_test matches df_ensemble_test
@@ -201,14 +200,14 @@ def create_ensemble_forecasts(ens_params,
 
             ## ------
             
-            X_test_augmented_pre, y_test_pre = prepare_pre_test_data(ens_params, quantile, df_test_ensemble_pre, df_test_ensemble_quantile10_pre, df_test_ensemble_quantile90_pre)
-            assert len(X_test_augmented_pre) == len(y_test_pre) == 192, 'Test dataframe must have 192 rows'
+            X_test_augmented_prev, y_test_prev = prepare_pre_test_data(ens_params, quantile, df_test_ensemble_prev, df_test_ensemble_quantile10_prev, df_test_ensemble_quantile90_prev)
+            assert len(X_test_augmented_prev) == len(y_test_prev) == 192, 'Test dataframe must have 192 rows'
             
             predictions_insample = fitted_model.predict(X_train_augmented)
-            predictions_outsample = fitted_model.predict(X_test_augmented_pre)
+            predictions_outsample = fitted_model.predict(X_test_augmented_prev)
             
             # Create 2-stage dataframe
-            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_pre, y_train, y_test_pre, predictions_insample, predictions_outsample)
+            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
 
             # Augment 2-stage dataframe
             df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
@@ -253,10 +252,10 @@ def create_ensemble_forecasts(ens_params,
                 previous_day_results_second_stage[quantile] = {"fitted_model": fitted_model, 
                                                                 "var_fitted_model": var_fitted_model, 
                                                                 "X_train_augmented": X_train_augmented, 
-                                                                "X_test_augmented": X_test_augmented, 
+                                                                "X_test_augmented_prev": X_test_augmented_prev, 
                                                                 "df_train_ensemble_augmented": df_train_ensemble_augmented, 
                                                                 "df_train_ensemble": df_train_ensemble, 
-                                                                "df_test_ensemble": df_test_ensemble,
+                                                                "df_test_ensemble_prev": df_test_ensemble_prev,
                                                                 "y_train": y_train}
 
                 # Rescale predictions for variability
