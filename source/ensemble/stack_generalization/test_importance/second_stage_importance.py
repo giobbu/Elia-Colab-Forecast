@@ -17,15 +17,16 @@ def extract_data(info, quantile):
         )
     
 def permute_predictor(X, index, seed):
+    " Permute the predictor."
     rng = np.random.default_rng(seed)
     X[:, index] = rng.permutation(X[:, index])
     return X
 
 def prepare_second_stage_data(parameters_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample):
+    " Prepare the second stage data."
     df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
     df_2stage_processed = create_augmented_dataframe_2stage(df_2stage, parameters_model['order_diff'], max_lags=parameters_model['max_lags_var'], augment=parameters_model['augment_var'])
     return df_2stage_processed
-
 
 def compute_second_stage_score(seed, parameters_model, 
                                     fitted_model, var_fitted_model, X_test_augmented_prev, df_train_ensemble, df_test_ensemble_prev, y_train, 
@@ -46,16 +47,19 @@ def compute_second_stage_score(seed, parameters_model,
     return score
 
 def validate_inputs(parameters_model, quantile, y_test_prev, X_test_augmented_prev):
+    " Validate the inputs."
     assert parameters_model['nr_permutations'] > 0, "Number of permutations must be positive"
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
     assert len(y_test_prev) == len(X_test_augmented_prev), "The length of y_test_prev and X_test_augmented_prev must be the same"
 
 def normalize_contributions(df):
+    " Normalize the contributions."
     total_contribution = df['contribution'].sum()
-    df['contribution'] = df['contribution'] / total_contribution
+    df['contribution'] = df['contribution']/total_contribution
     return df
 
 def get_score_function(quantile):
+    " Get the score function for the quantile."
     score_functions = {
         0.1: score_func_10,
         0.5: score_func_50,
@@ -67,7 +71,6 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
     """
     Compute permutation importances for the second stage model.
     """
-
     # Initial validations 
     validate_inputs(parameters_model, quantile, y_test_prev, info[quantile]['X_test_augmented_prev'])
     # Get the score function
