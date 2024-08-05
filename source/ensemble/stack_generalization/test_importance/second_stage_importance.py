@@ -5,17 +5,10 @@ from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage
 
+def decrease_performance(base_score, permuted_scores):
+    " Decrease performance."
+    return max(0, np.mean(permuted_scores) - base_score)
 
-def extract_data(info, quantile):
-        return (
-            info[quantile]['fitted_model'],
-            info[quantile]['var_fitted_model'],
-            info[quantile]['X_test_augmented_prev'],
-            info[quantile]['df_train_ensemble'],
-            info[quantile]['df_test_ensemble_prev'],
-            info[quantile]['y_train']
-        )
-    
 def permute_predictor(X, index, seed):
     " Permute the predictor."
     rng = np.random.default_rng(seed)
@@ -93,7 +86,7 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
         # Get the predictor name
         predictor_name = info[quantile]['df_train_ensemble_augmented'].drop(columns=['norm_targ']).columns[predictor_index]
         # Compute permuted scores in parallel
-        permuted_scores = Parallel(n_jobs=-1)(delayed(compute_second_stage_score)(seed, 
+        permuted_scores = Parallel(n_jobs=4)(delayed(compute_second_stage_score)(seed, 
                                                                                         parameters_model, 
                                                                                         info[quantile]['fitted_model'], 
                                                                                         info[quantile]['var_fitted_model'], 
@@ -104,10 +97,12 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
                                                                                         y_test_prev, score_function, predictions_insample, forecast_range, 
                                                                                         permutate=True, predictor_index=predictor_index) 
                                                                                         for seed in range(parameters_model['nr_permutations']))
-        # Calculate mean contribution for the predictor
-        mean_contribution = max(0, np.mean(permuted_scores) - base_score)
+        # Compute the mean contribution
+        mean_contribution = decrease_performance(base_score, permuted_scores)
+        # Append the importance score
         importance_scores.append({'predictor': predictor_name, 
                                     'contribution': mean_contribution})
+        
     # Create a DataFrame and normalize contributions
     results_df = pd.DataFrame(importance_scores)
     results_df = results_df.sort_values(by='contribution', ascending=False)
