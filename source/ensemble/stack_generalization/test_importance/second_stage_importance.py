@@ -79,7 +79,6 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
                                                 info[quantile]['df_test_ensemble_prev'], 
                                                 info[quantile]['y_train'], 
                                                 y_test_prev, score_function, predictions_insample, forecast_range)
-    
     # Compute importance scores for each predictor
     importance_scores = []
     for predictor_index in range(info[quantile]['X_test_augmented_prev'].shape[1]):

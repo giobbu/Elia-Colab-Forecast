@@ -4,46 +4,82 @@ import pandas as pd
 from loguru import logger
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import score_func_10, score_func_50, score_func_90
 
-def normalize_contributions(df):
-    total_contribution = df['contribution'].sum()
-    df['contribution'] = df['contribution'] / total_contribution
-    return df
+def decrease_performance(base_score, permuted_scores):
+    " Decrease performance."
+    return max(0, np.mean(permuted_scores) - base_score)
 
-def first_stage_compute_permuted_score(predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile):
-    " Compute the permuted score for a single predictor."
-    X_test_permuted = X_test_augmented.copy()
-    X_test_permuted[:, predictor_index] = np.random.permutation(X_test_augmented[:, predictor_index])
-    permuted_score = score_functions[quantile](fitted_model, X_test_permuted, y_test)['mean_loss']
-    return permuted_score
+def permute_predictor(X, index, seed):
+    " Permute the predictor."
+    rng = np.random.default_rng(seed)
+    X[:, index] = rng.permutation(X[:, index])
+    return X
 
-def first_stage_permutation_importance(y_test, parameters_model, quantile, info_previous_day_first_stage):
-    " Compute permutation importances for the first stage model."
-    num_permutations = parameters_model['nr_permutations']
-    assert num_permutations > 0, "Number of permutations must be positive"
+def validate_inputs(params_model, quantile, y_test, X_test):
+    " Validate the inputs."
+    assert params_model['nr_permutations'] > 0, "Number of permutations must be positive"
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
-    # Define the score functions for different quantiles
+    assert len(y_test) == len(X_test), "The length of y_test_prev and X_test_augmented_prev must be the same"
+
+def get_score_function(quantile):
+    " Get the score function for the quantile."
     score_functions = {
         0.1: score_func_10,
         0.5: score_func_50,
         0.9: score_func_90
     }
-    # get the model
-    fitted_model = info_previous_day_first_stage[quantile]['fitted_model']
-    # get the data
-    X_test_augmented = info_previous_day_first_stage[quantile]['X_test_augmented']
-    df_train_ensemble_augmented = info_previous_day_first_stage[quantile]['df_train_ensemble_augmented']
+    return score_functions[quantile]
+
+def extract_data(info, quantile):
+    " Extract data from the info dictionary."
+    return (
+            info[quantile]['fitted_model'],
+            info[quantile]['X_test_augmented'],
+            info[quantile]['df_train_ensemble_augmented']
+        )
+
+def normalize_contributions(df):
+    " Normalize the contributions."
+    total_contribution = df['contribution'].sum()
+    df['contribution'] = df['contribution'] / total_contribution
+    return df
+
+def compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_function, permutate=False, predictor_index=None):
+    " Compute  score for a single predictor."
+    # Generate predictions from the first-stage model
+    X_test = X_test_augm.copy()
+    if permutate:
+        # Permute the predictor if permute is True
+        X_test = permute_predictor(X_test, predictor_index, seed)
+    score = score_function(fitted_model, X_test, y_test)['mean_loss']
+    return score
+
+def first_stage_permutation_importance(y_test, params_model, quantile, info_previous_day_first_stage):
+    " Compute permutation importances for the first stage model."
+    # get info previous day
+    fitted_model, X_test_augm, df_train_ens_augm = extract_data(info_previous_day_first_stage, quantile)
+    # Validate inputs
+    validate_inputs(params_model, quantile, y_test, X_test_augm)
+    # Define the score functions for different quantiles
+    score_function = get_score_function(quantile)
     # Compute the original score
-    base_score = score_functions[quantile](fitted_model, X_test_augmented, y_test)['mean_loss']
+    seed=42
+    base_score = compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_function)
+    # Initialize the list to store the importance scores
     importance_scores = []
     # Loop through each predictor
-    for predictor_index in range(X_test_augmented.shape[1]):
-        predictor_name = df_train_ensemble_augmented.drop(columns=['norm_targ']).columns[predictor_index]
+    for predictor_index in range(X_test_augm.shape[1]):
+        # Get the predictor name
+        predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
         # Compute the permuted scores in parallel
-        permuted_scores = Parallel(n_jobs=4)(delayed(first_stage_compute_permuted_score)(
-            predictor_index, X_test_augmented, y_test, fitted_model, score_functions, quantile) for _ in range(num_permutations))
-        # Calculate mean contribution for the predictor
-        mean_contribution = max(0, np.mean(permuted_scores) - base_score)
-        importance_scores.append({'predictor': predictor_name, 'contribution': mean_contribution})
+        permuted_scores = Parallel(n_jobs=4)(delayed(compute_first_stage_score)(seed, X_test_augm, 
+                                                                                y_test, fitted_model, score_function,
+                                                                                permutate=True, predictor_index=predictor_index) 
+                                                                                for seed in range(params_model['nr_permutations']))
+        # Compute the mean contribution
+        mean_contribution = decrease_performance(base_score, permuted_scores)
+        # Append the importance score to the list
+        importance_scores.append({'predictor': predictor_name, 
+                                'contribution': mean_contribution})
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores)
     results_df = results_df.sort_values(by='contribution', ascending=False)
@@ -71,7 +107,7 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
         # Get the contributions
         df_contributions = first_stage_permutation_importance(
             y_test=y_test, 
-            parameters_model=ens_params, 
+            params_model=ens_params, 
             quantile=quantile, 
             info_previous_day_first_stage=info_previous_day_first_stage
         )
