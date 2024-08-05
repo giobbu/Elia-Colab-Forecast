@@ -53,6 +53,20 @@ def compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_fun
     score = score_function(fitted_model, X_test, y_test)['mean_loss']
     return score
 
+def create_norm_import_scores_df(importance_scores):
+    """
+    Create a DataFrame with the importance scores, sort it, drop specific rows, 
+    and normalize the contributions.
+    """
+    # Create a DataFrame with the importance scores and sort it
+    results_df = pd.DataFrame(importance_scores)
+    results_df = results_df.sort_values(by='contribution', ascending=False)
+    # Drop the forecasters standard deviation and variance rows
+    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
+    # Normalize contributions
+    results_df = normalize_contributions(results_df)
+    return results_df
+
 def first_stage_permutation_importance(y_test, params_model, quantile, info_previous_day_first_stage):
     " Compute permutation importances for the first stage model."
     # get info previous day
@@ -80,13 +94,8 @@ def first_stage_permutation_importance(y_test, params_model, quantile, info_prev
         # Append the importance score to the list
         importance_scores.append({'predictor': predictor_name, 
                                 'contribution': mean_contribution})
-    # Create a DataFrame with the importance scores and sort it
-    results_df = pd.DataFrame(importance_scores)
-    results_df = results_df.sort_values(by='contribution', ascending=False)
-    # Drop the forecasters standard deviation and variance rows
-    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
-    # Normalize contributions
-    results_df = normalize_contributions(results_df)
+    # Create a DataFrame with the importance scores, sort, and normalize it
+    results_df = create_norm_import_scores_df(importance_scores)
     return results_df
 
 def wind_power_importance(results_challenge_dict, ens_params, y_test, results_contributions):

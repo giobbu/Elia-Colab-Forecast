@@ -59,7 +59,22 @@ def get_score_function(quantile):
         0.9: score_func_90
     }
     return score_functions[quantile]
-    
+
+
+def create_norm_import_scores_df(importance_scores):
+    """
+    Create a DataFrame with the importance scores, sort it, drop specific rows, 
+    and normalize the contributions.
+    """
+    # Create a DataFrame with the importance scores and sort it
+    results_df = pd.DataFrame(importance_scores)
+    results_df = results_df.sort_values(by='contribution', ascending=False)
+    # Drop the forecasters standard deviation and variance rows
+    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
+    # Normalize contributions
+    results_df = normalize_contributions(results_df)
+    return results_df
+
 def second_stage_permutation_importance(y_test_prev, parameters_model, quantile, info, forecast_range):
     """
     Compute permutation importances for the second stage model.
@@ -101,12 +116,9 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
         # Append the importance score
         importance_scores.append({'predictor': predictor_name, 
                                     'contribution': mean_contribution})
-        
+
     # Create a DataFrame and normalize contributions
-    results_df = pd.DataFrame(importance_scores)
-    results_df = results_df.sort_values(by='contribution', ascending=False)
-    results_df = results_df[~results_df['predictor'].isin(['forecasters_var', 'forecasters_std'])]
-    results_df = normalize_contributions(results_df)
+    results_df = create_norm_import_scores_df(importance_scores)
     return results_df
 
 def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forecast_range, results_contributions):
