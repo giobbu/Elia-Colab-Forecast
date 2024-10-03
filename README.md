@@ -1,2 +1,1 @@
-# Elia-RES-Forecasting
-Ensemble learning methodology wind ramps for wind ramps forecasting
+# Wind Power Forecasting and Wind Ramp Detection 
