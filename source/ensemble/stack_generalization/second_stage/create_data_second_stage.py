@@ -1,16 +1,24 @@
 import pandas as pd
 
 def create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test, predictions_insample, predictions_outsample):
+    " Create 2-stage ensemble dataframe."
     assert df_train_ensemble.shape[0] == len(predictions_insample), "Length mismatch between train data and in-sample predictions"
     assert df_test_ensemble.shape[0] == len(predictions_outsample), "Length mismatch between test data and out-sample predictions"
     assert len(y_train) == len(predictions_insample), "Length mismatch between targets and in-sample predictions"
     assert len(y_test) == len(predictions_outsample), "Length mismatch between targets and out-sample predictions"
-    " Create 2-stage ensemble dataframe."
     # Creating DataFrame for in-sample predictions
     df_insample = pd.DataFrame(predictions_insample, columns=['predictions'], index=df_train_ensemble.index)
+    # # concatenate df_train_ensemble and df_insample
+    # df_insample = pd.concat([df_train_ensemble, df_insample], axis=1)
+    # # drop 'norm_targ' column
+    # df_insample.drop(columns=['norm_targ'], inplace=True)
     df_insample['targets'] = y_train
     # Creating DataFrame for out-sample predictions
     df_outsample = pd.DataFrame(predictions_outsample, columns=['predictions'], index=df_test_ensemble.index)
+    # # concatenate df_test_ensemble and df_outsample
+    # df_outsample = pd.concat([df_test_ensemble, df_outsample], axis=1)
+    # # drop 'norm_targ' column
+    # df_outsample.drop(columns=['norm_targ'], inplace=True)
     df_outsample['targets'] = y_test
     # Concatenating in-sample and out-sample DataFrames
     df_2stage = pd.concat([df_insample, df_outsample], axis=0)
