@@ -1,4 +1,7 @@
 /dataset_elia/*
+/results/*
+PREDICO_module.ipynb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
