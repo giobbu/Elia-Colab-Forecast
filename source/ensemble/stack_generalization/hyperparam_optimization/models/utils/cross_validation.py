@@ -41,7 +41,7 @@ def evaluate(model, X, y, cv, quantile):
         y,
         cv=cv,
         scoring=score_func[quantile],
-        n_jobs=6
+        n_jobs=7
     )
     score_mean = cv_results['test_mean_loss'].mean()
     return score_mean
