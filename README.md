@@ -1,3 +1,4 @@
-# Wind Power Forecasting and Wind Ramp Detection 
+# Wind power forecasting and wind ramp detection in data market 
 
-![Image Alt Text](img/schema_predico.png)
+
+<img src="img/schema_predico.png" alt="Image Alt Text" width="800"/>
