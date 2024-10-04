@@ -194,7 +194,7 @@ def create_ensemble_forecasts(ens_params,
                                                         "df_train_ensemble_augmented" : df_train_ensemble_augmented}
         
         # compute variability predictions with as input the predictions of the first stage
-        if ens_params['compute_second_stage'] and quantile == 0.5:
+        if  quantile == 0.5:
             logger.info('   ')
             logger.opt(colors=True).info(f'<fg 72,201,176> Compute Variability Predictions </fg 72,201,176>')
 
@@ -231,6 +231,9 @@ def create_ensemble_forecasts(ens_params,
             variability_predictions = {}
             previous_day_results_second_stage = {}
 
+            variability_predictions_insample = {}
+            variability_predictions_outsample = {}
+
             # Loop over quantiles
             for quantile in tqdm(ens_params['quantiles'], desc='Quantile Regression'):
 
@@ -239,12 +242,17 @@ def create_ensemble_forecasts(ens_params,
                                                                                     X_train_2stage=X_train_2stage, 
                                                                                     y_train_2stage=y_train_2stage, 
                                                                                     X_test_2stage=X_test_2stage,
-                                                                                    variability_predictions=variability_predictions, 
+                                                                                    variability_predictions=variability_predictions,
                                                                                     quantile=quantile, 
-                                                                                    iteration=iteration, best_results_var=best_results_var)
+                                                                                    iteration=iteration, 
+                                                                                    best_results_var=best_results_var,
+                                                                                    variability_predictions_insample =  variability_predictions_insample,
+                                                                                    variability_predictions_outsample = variability_predictions_outsample,)
                 
                 # Extract results
                 variability_predictions = results_per_quantile_wpv['variability_predictions']
+                variability_predictions_insample = results_per_quantile_wpv['variability_predictions_insample']
+                variability_predictions_outsample = results_per_quantile_wpv['variability_predictions_outsample']
                 best_results_var = results_per_quantile_wpv['best_results_var'] 
                 var_fitted_model = results_per_quantile_wpv['var_fitted_model'] 
                 
@@ -259,7 +267,14 @@ def create_ensemble_forecasts(ens_params,
                                                                 "y_train": y_train}
 
                 # Rescale predictions for variability
-                variability_predictions = rescale_predictions(variability_predictions, ens_params, buyer_scaler_stats, quantile, stage='2nd') 
+                variability_predictions = rescale_predictions(variability_predictions, ens_params, buyer_scaler_stats, quantile, stage='2nd')
+                variability_predictions_insample = rescale_predictions(variability_predictions_insample, ens_params, buyer_scaler_stats, quantile, stage='2nd')
+                variability_predictions_outsample = rescale_predictions(variability_predictions_outsample, ens_params, buyer_scaler_stats, quantile, stage='2nd')
+
+                # Transform predictions to dataframe
+                var_pred_insample_df = pd.DataFrame(variability_predictions_insample, index=df_2stage_train.index)
+                var_pred_outsample_df = pd.DataFrame(variability_predictions_outsample, index=df_2stage_test.index)
+
 
             # Rescale targets for variability
             target_name = 'targets'
@@ -281,15 +296,17 @@ def create_ensemble_forecasts(ens_params,
             del df_2stage, df_2stage_buyer, df_2stage_train
             gc.collect()
 
+
+    # Loop over quantiles
+    for quantile in ens_params['quantiles']:
         # Rescale predictions
         predictions = rescale_predictions(predictions, ens_params, buyer_scaler_stats, quantile, stage='1st') 
-        
         # Ensure predictions are positive
         predictions = set_non_negative_predictions(predictions, quantile) 
 
-        # delete and collect garbage
-        del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
-        gc.collect()
+        # # delete and collect garbage
+        # del X_train_augmented, X_test_augmented, df_train_ensemble_augmented
+        # gc.collect()
 
     # Rescale targets
     target_name = 'norm_' + buyer_resource_name
@@ -322,7 +339,9 @@ def create_ensemble_forecasts(ens_params,
                                         'wind_power_ramp': 
                                             {'predictions': df_results_wind_power_variability, 
                                                 'info_contributions': previous_day_results_second_stage,
-                                                'best_results': best_results_var}
+                                                'best_results': best_results_var,
+                                                'predictions_outsample': var_pred_outsample_df,
+                                                'predictions_insample': var_pred_insample_df}
                                             }
         # save results
         with open(file_info, 'wb') as handle:

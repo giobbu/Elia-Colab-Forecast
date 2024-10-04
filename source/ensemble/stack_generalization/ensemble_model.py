@@ -5,7 +5,7 @@ from loguru import logger
 import pandas as pd
 import numpy as np
 
-def initialize_train_and_predict(predictions, model_type, quantile, best_params, solver, X_train, y_train, X_test):
+def initialize_train_and_predict(predictions, model_type, quantile, best_params, solver, X_train, y_train, X_test, insample=False, predictions_insample=None, predictions_outsample=None):
     """
     Initializes, fits a model, and makes predictions.
     """
@@ -16,7 +16,13 @@ def initialize_train_and_predict(predictions, model_type, quantile, best_params,
     # Make predictions
     predictions[quantile] = fitted_model.predict(X_test)
     # Return fitted model and predictions
-    return fitted_model, predictions
+    if not insample:
+        return fitted_model, predictions
+    elif insample:
+        predictions_insample[quantile] = fitted_model.predict(X_train)
+        predictions_outsample[quantile] = fitted_model.predict(X_test) 
+        return fitted_model, predictions, predictions_insample, predictions_outsample
+
 
 def predico_ensemble_predictions_per_quantile(ens_params, 
                                                 X_train, X_test, y_train, df_train_ensemble,  
@@ -37,7 +43,6 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     gbr_update_every_days = ens_params['gbr_update_every_days'] 
     gbr_config_params = ens_params['gbr_config_params']
     lr_config_params = ens_params['lr_config_params']
-    plot_importance_gbr = ens_params['plot_importance_gbr'] 
 
     assert model_type in ['GBR', 'LR'], 'Invalid model type'
 
@@ -66,19 +71,17 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     # Initialize, fit and predict
     fitted_model, predictions = initialize_train_and_predict(predictions, model_type, quantile, best_params, solver, X_train_augmented, y_train, X_test_augmented) 
 
-    if plot_importance_gbr and model_type == 'GBR':
-        logger.opt(colors=True).info(f'<fg 250,128,114> GBR feature importance </fg 250,128,114>')
-        plot_feature_importance(fitted_model.feature_importances_,
-                                df_train_ensemble_augmented.drop(columns=['diff_norm_targ'])) 
-        
     # Store results
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
-               'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
-               'df_train_ensemble_augmented': df_train_ensemble_augmented}
+                'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
+                'df_train_ensemble_augmented': df_train_ensemble_augmented}
+
     return results 
 
 
-def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train_2stage, X_test_2stage, variability_predictions, quantile, iteration, best_results_var):
+def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train_2stage, X_test_2stage, variability_predictions, quantile, iteration, best_results_var, 
+                                             variability_predictions_insample,
+                                             variability_predictions_outsample):
     " Run ensemble variability predictions"
     logger.opt(colors=True).info(f'<fg 72,201,176> Run ensemble variability predictions for quantile {quantile} </fg 72,201,176>')
 
@@ -102,10 +105,14 @@ def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train
         best_params_var = best_results_var[quantile][1][1]
 
     # Initialize, fit and predict
-    var_fitted_model, variability_predictions = initialize_train_and_predict(variability_predictions, var_model_type, quantile, best_params_var, solver, X_train_2stage, y_train_2stage, X_test_2stage)  
+    var_fitted_model, variability_predictions, variability_predictions_insample, variability_predictions_outsample = initialize_train_and_predict(variability_predictions, var_model_type, quantile, best_params_var, solver, X_train_2stage, y_train_2stage, X_test_2stage, insample=True, 
+                                                                                                                                                    predictions_insample = variability_predictions_insample,
+                                                                                                                                                    predictions_outsample = variability_predictions_outsample)  
 
     # Store results
     results = {'variability_predictions': variability_predictions, 
                 'best_results_var': best_results_var, 
-                'var_fitted_model': var_fitted_model}
+                'var_fitted_model': var_fitted_model,
+                'variability_predictions_insample': variability_predictions_insample,
+                'variability_predictions_outsample': variability_predictions_outsample}
     return results
