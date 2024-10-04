@@ -9,10 +9,9 @@ def set_index_datetiemUTC(df):
 
 def filter_offshore(df, offshore_filter):
     assert 'offshoreonshore' in df.columns, "The DataFrame must contain the 'offshoreonshore' column."
-    df = df[df.offshoreonshore == offshore_filter]  # filter by offshore/onshore
-    return df
+    return df[(df.offshoreonshore == offshore_filter)|(df.offshoreonshore == 0)]  # filter by offshore 
 
-def process_file(file, offshore_filter='Offshore'):
+def process_file(file, offshore_filter):
     assert file.endswith('.json'), 'File must be a json file'
     df = pd.read_json(file)
     df = filter_offshore(df, offshore_filter)
@@ -20,12 +19,12 @@ def process_file(file, offshore_filter='Offshore'):
     df[df['measured'] < 0] = 0
     return df
 
-def process_and_concat_files(files, offshore_filter='Offshore'):
+def process_and_concat_files(files, offshore_filter="Offshore"):
     "Process and concatenate files"
     assert len(files) > 0, 'No files to process'
     dataframes = []
     for file in files:
-        df = process_file(file, offshore_filter=offshore_filter)
+        df = process_file(file, offshore_filter)
         dataframes.append(df)
     concatenated_df = pd.concat(dataframes, axis=0)
     return concatenated_df
