@@ -2,8 +2,9 @@ from loguru import logger
 import pickle
 import numpy as np
 from collections import defaultdict
-from source.ensemble.stack_generalization.test_importance.first_stage_importance import wind_power_importance
-from source.ensemble.stack_generalization.test_importance.second_stage_importance import wind_power_ramp_importance
+from source.ensemble.stack_generalization.test_importance.first_stage_importance_shap import wind_power_importance
+from source.ensemble.stack_generalization.test_importance.second_stage_importance_shap import wind_power_ramp_importance
+import time
 
 def load_model_info(file_path):
     " Load model info"
