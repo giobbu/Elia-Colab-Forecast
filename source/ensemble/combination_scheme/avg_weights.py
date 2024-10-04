@@ -104,7 +104,7 @@ def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm,
         df_weighted_avg = pd.DataFrame({
                 'mean_prediction': combination_forecast,
             }, index=df_test_norm.index)
-        df_weighted_avg['target'] = df_test_norm['norm_measured']
+        df_weighted_avg['targets'] = df_test_norm['norm_measured']
         dict_weights = {0.5: {key:value for d in norm_lst_q50_weight for key, value in d.items()}}
         return df_weighted_avg, dict_weights
     
@@ -131,5 +131,5 @@ def create_weighted_avg_df(df_test_norm, combination_forecast, combination_quant
         'mean_prediction': combination_forecast,
         'Q90': combination_quantile90
     }, index=df_test_norm.index)
-    df_weighted_avg['target'] = df_test_norm['norm_measured']
+    df_weighted_avg['targets'] = df_test_norm['norm_measured']
     return df_weighted_avg

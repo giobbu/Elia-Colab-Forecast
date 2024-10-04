@@ -95,7 +95,7 @@ def run_model_selection(sim_params, df_train_norm, df_test_norm,
         df_best_model = pd.DataFrame({
                 'mean_prediction': best_forecast,
             }, index=df_test_norm.index)
-        df_best_model['target'] = df_test_norm['norm_measured']
+        df_best_model['targets'] = df_test_norm['norm_measured']
         return df_best_model
     df_test_norm = df_test_norm[df_test_norm.index >= start_predictions]
     window_validation =  pd.to_datetime(end_observations, utc=True) - pd.Timedelta(days=window_size_valid)
@@ -114,5 +114,5 @@ def create_best_model_df(df_test_norm, best_forecast, best_quantile10, best_quan
         'mean_prediction': best_forecast,
         'Q90': best_quantile90
     }, index = df_test_norm.index)
-    df_best_model['target'] = df_test_norm['norm_measured']
+    df_best_model['targets'] = df_test_norm['norm_measured']
     return df_best_model

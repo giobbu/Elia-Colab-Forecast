@@ -16,5 +16,5 @@ def calculate_equal_weights(df_test_norm, start_prediction_timestamp):
         'mean_prediction': MEAN,
         'Q90': Q90
     }, index=df_test_norm.index)
-    df_equal_weights['target'] = df_test_norm['norm_measured']
+    df_equal_weights['targets'] = df_test_norm['norm_measured']
     return df_equal_weights
