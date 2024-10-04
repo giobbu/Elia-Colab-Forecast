@@ -1,6 +1,7 @@
 /dataset_elia/*
 /results/*
 PREDICO_module.ipynb
+config/PREDICO_setting.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
