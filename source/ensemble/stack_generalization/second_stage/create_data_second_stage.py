@@ -33,6 +33,26 @@ def create_augmented_dataframe_2stage(df_2stage, order_diff, max_lags, augment=F
     df_2stage_process = df_2stage_diff.iloc[max_lags+order_diff:, :]
     return df_2stage_process
 
+# def create_augmented_dataframe_2stage(df_2stage, order_diff, max_lags, augment=False):
+#     " Process 2-stage ensemble dataframe with lags."
+#     assert order_diff > 0, "Order of differentiation must be greater than 0"
+#     assert max_lags > 0, "Maximum number of lags must be greater than 0"
+#     # Differentiate the dataframe
+#     df_2stage_diff = df_2stage.diff(order_diff)
+#     # Create lagged features
+#     for lag in range(1, max_lags + 1):
+#         df_2stage_diff[f'predictions_t-{lag}'] = df_2stage_diff['predictions'].shift(lag)
+#         df_2stage_diff[f'predictions_t-{lag}_sqr'] = df_2stage_diff['predictions'].shift(lag)**2
+#         df_2stage_diff[f'predictions_t-{lag}_cubic'] = df_2stage_diff['predictions'].shift(lag)**3
+#     if augment:
+#         for col in df_2stage_diff.columns:
+#             if 'targets' not in col:
+#                 df_2stage_diff[f'{col}_sqr'] = df_2stage_diff[col]**2
+#                 df_2stage_diff[f'{col}_cubic'] = df_2stage_diff[col]**3
+#     # Drop rows with NaNs resulting from the shift operation
+#     df_2stage_process = df_2stage_diff.iloc[max_lags+order_diff:, :]
+#     return df_2stage_process
+
 def create_var_ensemble_dataframe(buyer_resource_name, quantiles, quantile_predictions_dict, df_test):
     " Create ensemble dataframe from quantile predictions."
     assert len(quantiles) == len(quantile_predictions_dict), "Length mismatch between quantiles and quantile predictions"
