@@ -35,22 +35,34 @@ def plot_forecasts(df_pred, df_target, list_wind_ramps, title, color='blue'):
 
 
 
-def plot_var_ensemble_forecasts(df_pred_ensemble, df_ensemble):
+def plot_var_forecasts(df_pred, df_target, list_wind_ramps, title):
     " Plot ensemble forecasts "
-    assert 'target' in list(df_ensemble), 'target not in df_ensemble'
+    assert 'targets' in list(df_target), 'targets not in df_target'
     # Create a figure and a set of subplots
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 7))
     # Plot '10_predictions' and '90_predictions' on the same axes with blue dashed lines
-    df_plot = df_pred_ensemble[['10_var_predictions', '90_var_predictions']]
-    df_plot.columns = ['Q10_variability', 'Q90_variability']
-    df_plot.plot(ax=ax, color='blue', linestyle='--')
+    df_plot = df_pred[['10_var_predictions', '90_var_predictions']]
+    df_plot.columns = ['Q10', 'Q90']
+    ax.plot(df_plot.index, df_plot['Q10'], color='blue', linestyle='--', alpha=0.1, label='Q10')
+    ax.plot(df_plot.index, df_plot['Q90'], color='blue', linestyle='--', alpha=0.1, label='Q90')
     # Plot '50_predictions' on the same axes with a solid blue line
-    df_plot_mean = df_pred_ensemble[['50_var_predictions']]
-    df_plot_mean.columns = ['MEAN_variability']
-    df_plot_mean.plot(ax=ax, color='blue')
-    df_target = df_ensemble[['target']]
-    df_target.columns = ['target_variability']
-    df_target.plot(ax=ax, color='red')
+    df_plot_mean = df_pred[['50_var_predictions']]
+    df_plot_mean.columns = ['MEAN']
+    ax.plot(df_plot_mean.index, df_plot_mean['MEAN'], color='blue', alpha=0.5, label='Mean')
+    ax.plot(df_target.index, df_target['targets'], color='red', label='Target')
+    ax.fill_between(df_plot.index, df_plot['Q10'], df_plot['Q90'], color='blue', alpha=0.05, label='80% prediction interval')
+    if len(list_wind_ramps) != 0:
+        for i, ramp in enumerate(list_wind_ramps):
+            ax.axvline(ramp, color='black', alpha=0.75, label=f'Wind Ramp {i}')
+    ax.grid(True)
+    ax.legend()
+    plt.title(title)
+    plt.show()
+
+
+
+
+
 
 def plot_ramp_events(df_test_norm_diff, ABS_DIFFERENCIATE):
     "Plot ramp events"
