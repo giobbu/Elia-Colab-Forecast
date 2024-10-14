@@ -7,7 +7,7 @@ def create_df_forecaster_first_stage(df, name, start_prediction_timestamp):
     assert len(df) == 96, "Dataframe must have 96 rows"
     df_forecaster = df[[f'norm_{name}forecast', f'norm_{name}confidence10', f'norm_{name}confidence90', 'norm_measured']]
     df_forecaster = df_forecaster.copy()
-    df_forecaster.loc[:, 'target'] = df_forecaster['norm_measured']
+    df_forecaster.loc[:, 'targets'] = df_forecaster['norm_measured']
     return df_forecaster
 
 def create_df_forecaster_second_stage(df, name, start_prediction_timestamp):
@@ -17,7 +17,7 @@ def create_df_forecaster_second_stage(df, name, start_prediction_timestamp):
     assert len(df) == 96, "Dataframe must have 96 rows"
     df_forecaster = df[[f'norm_{name}forecast', 'norm_measured']]
     df_forecaster = df_forecaster.copy()
-    df_forecaster.loc[:, 'target'] = df_forecaster['norm_measured']
+    df_forecaster.loc[:, 'targets'] = df_forecaster['norm_measured']
     return df_forecaster
 
 def collect_rmse_result(df, forecast_col, lst_rmse):
