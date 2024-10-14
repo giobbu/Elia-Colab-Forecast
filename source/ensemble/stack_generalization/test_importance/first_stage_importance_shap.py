@@ -8,6 +8,24 @@ import seaborn as sns
 
 ############################################################################################################ Utils
 
+def extract_data(info, quantile):
+    """Extract data from the info dictionary.
+    Args:
+        info: The info dictionary
+        quantile: The quantile
+    Returns:
+        fitted_model: The fitted model
+        X_test_augmented: The augmented test set
+        df_train_ensemble_augmented: The augmented training set
+        buyer_scaler_stats: The buyer scaler statistics
+    """
+    return (
+            info[quantile]['fitted_model'],
+            info[quantile]['X_test_augmented'],
+            info[quantile]['df_train_ensemble_augmented'],
+            info[quantile]["buyer_scaler_stats"]
+        )
+
 def validate_inputs(params_model, quantile, y_test, X_test):
     " Validate the inputs."
     assert params_model['nr_permutations'] > 0, "Number of permutations must be positive"
@@ -23,13 +41,6 @@ def get_score_function(quantile):
     }
     return score_functions[quantile]
 
-def extract_data(info, quantile):
-    " Extract data from the info dictionary."
-    return (
-            info[quantile]['fitted_model'],
-            info[quantile]['X_test_augmented'],
-            info[quantile]['df_train_ensemble_augmented']
-        )
 
 def normalize_contributions(df):
     " Normalize the contributions."
@@ -106,7 +117,8 @@ def compute_col_perm_score(seed, params_model, nr_features, X_test_augm, y_test,
 def first_stage_shapley_importance(y_test, params_model, quantile, info_previous_day_first_stage):
     " Compute permutation importances for the first stage model."
     # get info previous day
-    fitted_model, X_test_augm, df_train_ens_augm = extract_data(info_previous_day_first_stage, quantile)
+    fitted_model, X_test_augm, df_train_ens_augm, buyer_scaler_stats = extract_data(info_previous_day_first_stage, quantile)
+    y_test = (y_test - buyer_scaler_stats['mean_buyer']) / buyer_scaler_stats['std_buyer']
     # Validate inputs
     validate_inputs(params_model, quantile, y_test, X_test_augm)
     # Define the score functions for different quantiles
@@ -170,7 +182,9 @@ def compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_fun
 def first_stage_permutation_importance(y_test, params_model, quantile, info_previous_day_first_stage):
     " Compute permutation importances for the first stage model."
     # get info previous day
-    fitted_model, X_test_augm, df_train_ens_augm = extract_data(info_previous_day_first_stage, quantile)
+    fitted_model, X_test_augm, df_train_ens_augm, buyer_scaler_stats = extract_data(info_previous_day_first_stage, quantile)
+    # Standardize the target variable
+    y_test = (y_test - buyer_scaler_stats['mean_buyer'])/buyer_scaler_stats['std_buyer']
     # Validate inputs
     validate_inputs(params_model, quantile, y_test, X_test_augm)
     # Define the score functions for different quantiles
