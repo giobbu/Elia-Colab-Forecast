@@ -265,7 +265,7 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
     return results_contributions
 
 
-def plot_permutation_importance(df_contributions, quantile, top_n=10, figsize=(10, 5), palette='viridis'):
+def plot_importance(df_contributions, quantile, contribution_method , top_n=10, figsize=(10, 5)):
     """
     Plot the top N permutation feature importances using a seaborn bar plot.
     """
@@ -273,11 +273,14 @@ def plot_permutation_importance(df_contributions, quantile, top_n=10, figsize=(1
     df_top_contributions = df_contributions.head(top_n)
     # Create the plot
     plt.figure(figsize=figsize)
-    sns.barplot(y='contribution', x='predictor', data=df_top_contributions, palette=palette)
+    if contribution_method == 'shapley':
+        sns.barplot(y='contribution', x='predictor', data=df_top_contributions, palette='rocket')
+    else:
+        sns.barplot(y='contribution', x='predictor', data=df_top_contributions, palette='magma')
     # Customize plot
     plt.xlabel('Predictor')
     plt.ylabel('Contribution')
     plt.xticks(rotation=45)
-    plt.title(f'Wind Power - Top {top_n} Feature Importances - Quantile {quantile}')
+    plt.title(f'Wind Power - Top {top_n} Feature Importances - Quantile {quantile} - {contribution_method}')
     # Display the plot
     plt.show()
