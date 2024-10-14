@@ -23,19 +23,16 @@ def calculate_contributions(results_challenge_dict, ens_params, y_test, forecast
     assert isinstance(y_test, np.ndarray), 'The y_test must be a numpy array'
     assert len(y_test) >= 192, 'The length of y_test must be at least 192'
     results_contributions = defaultdict(dict)
-    try:
-        # wind power importance
-        start_1_stage = time.time()
-        y_test_1st_stage = y_test[-96:]
-        results_contributions = wind_power_importance(results_challenge_dict, ens_params, y_test_1st_stage, results_contributions)
-        end_1_stage = time.time() - start_1_stage
-        logger.debug(f'Computational Time for 1-Stage {end_1_stage}')
-        # wind power ramp importance
-        start_2_stage = time.time()
-        y_test_2nd_stage = y_test[-192:]
-        results_contributions = wind_power_ramp_importance(results_challenge_dict, ens_params, y_test_2nd_stage, forecast_range, results_contributions)
-        end_2_stage = time.time() - start_2_stage
-        logger.debug(f'Computational Time for 2-Stage {end_2_stage}')
-    except Exception as e:
-        logger.error(f"Failed to calculate contributions: {e}")
+    # wind power importance
+    start_1_stage = time.time()
+    y_test_1st_stage = y_test[-96:]
+    results_contributions = wind_power_importance(results_challenge_dict, ens_params, y_test_1st_stage, results_contributions)
+    end_1_stage = time.time() - start_1_stage
+    logger.debug(f'Computational Time for 1-Stage {end_1_stage}')
+    # wind power ramp importance
+    start_2_stage = time.time()
+    y_test_2nd_stage = y_test[-192:]
+    results_contributions = wind_power_ramp_importance(results_challenge_dict, ens_params, y_test_2nd_stage, forecast_range, results_contributions)
+    end_2_stage = time.time() - start_2_stage
+    logger.debug(f'Computational Time for 2-Stage {end_2_stage}')
     return results_contributions
