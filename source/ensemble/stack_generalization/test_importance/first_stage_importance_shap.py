@@ -247,11 +247,11 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
             logger.info(f'Number of permutations: {num_permutations}')
             # Compute the contributions using the permutation method
             df_contributions = first_stage_permutation_importance(
-                y_test=y_test, 
-                params_model=ens_params, 
-                quantile=quantile, 
-                info_previous_day_first_stage=info_previous_day_first_stage
-            )
+                                                                    y_test=y_test, 
+                                                                    params_model=ens_params, 
+                                                                    quantile=quantile, 
+                                                                    info_previous_day_first_stage=info_previous_day_first_stage
+                                                                )
         else:
             raise ValueError('The contribution method is not implemented')
         
