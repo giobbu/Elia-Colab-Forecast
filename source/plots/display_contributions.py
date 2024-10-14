@@ -35,16 +35,16 @@ def weighted_avg_pivot_data(sim_params, avg_weighted_avg_contributions):
     return df_pivot
 
 
-def permutation_pivot_data(sim_params, avg_permutation_contributions):
+def permutation_pivot_data(sim_params, avg_contributions):
     """
     Collect data for all quantiles into a DataFrame, pivot it, and reorder the columns.
     """
     # Initialize an empty DataFrame
     all_data = []
     # Collect data for all quantiles into a DataFrame
-    for key in avg_permutation_contributions.keys():
-        for quantile in avg_permutation_contributions[key].keys():
-            data = avg_permutation_contributions[key][quantile]
+    for key in avg_contributions.keys():
+        for quantile in avg_contributions[key].keys():
+            data = avg_contributions[key][quantile]
             for series, value in data.items():
                 q_str = str(int(quantile*100))
                 all_data.append([key, f'Q{q_str}', series, value])
