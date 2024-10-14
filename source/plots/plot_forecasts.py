@@ -64,6 +64,43 @@ def plot_var_forecasts(df_pred, df_target, list_wind_ramps, title):
 
 
 
+def plot_ramp_detection(df_test_var_plot, df_pred_var_plot, df_ramp_clusters, list_wind_ramps):
+    """
+    Plot wind ramp detection.
+    args:
+        df_test_var_plot: DataFrame with test data
+        df_pred_var_plot: DataFrame with predictions
+        df_ramp_clusters: DataFrame with ramp event clusters
+        list_wind_ramps: List with wind ramp events
+    """
+    # Ensure 'targets' column is present in df_test_var_plot
+    assert 'targets' in df_test_var_plot.columns, "'targets' not in df_test_var_plot"
+    # Create figure and subplots
+    fig, ax = plt.subplots(figsize=(15, 7))
+    # Prepare data for plotting
+    df_plot = df_pred_var_plot[['10_var_predictions', '90_var_predictions']].rename(columns={'10_var_predictions': 'Q10', '90_var_predictions': 'Q90'})
+    df_plot_mean = df_pred_var_plot[['50_var_predictions']].rename(columns={'50_var_predictions': 'MEAN'})
+    df_test_var_plot = df_test_var_plot.rename(columns={'targets': 'target'})
+    # Plot Q10, Q90, and fill 80% prediction interval
+    ax.plot(df_plot.index, df_plot['Q10'], color='blue', linestyle='--', alpha=0.1, label='Q10')
+    ax.plot(df_plot.index, df_plot['Q90'], color='blue', linestyle='--', alpha=0.1, label='Q90')
+    ax.fill_between(df_plot.index, df_plot['Q10'], df_plot['Q90'], color='blue', alpha=0.05, label='80% prediction interval')
+    # Plot mean predictions and target
+    ax.plot(df_plot_mean.index, df_plot_mean['MEAN'], color='blue', alpha=0.5, label='Mean')
+    ax.plot(df_test_var_plot.index, df_test_var_plot['target'], color='red', linestyle='--', alpha=0.7, label='Target')
+    # Plot ramp event clusters
+    for i, (cluster_id, df_cluster) in enumerate(df_ramp_clusters.groupby('cluster_id'), start=1):
+        ax.fill_between(df_cluster.index, df_cluster['Q90'], df_cluster['Q10'], color='red', alpha=0.3, label=f'Ramp Event {i}')
+    # Plot wind ramp events
+    if len(list_wind_ramps) != 0:
+        for i, ramp in enumerate(list_wind_ramps):
+            ax.axvline(ramp, color='black', alpha=0.75, label=f'Wind Ramp {i}')
+    # Customize plot
+    ax.grid(True)
+    ax.legend()
+    plt.title('Wind Ramp Detection')
+    plt.show()
+
 def plot_ramp_events(df_test_norm_diff, ABS_DIFFERENCIATE):
     "Plot ramp events"
     if ABS_DIFFERENCIATE:
