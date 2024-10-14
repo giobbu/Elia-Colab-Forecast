@@ -215,7 +215,15 @@ def first_stage_permutation_importance(y_test, params_model, quantile, info_prev
 ############################################################################################################
 
 def wind_power_importance(results_challenge_dict, ens_params, y_test, results_contributions):
-    " Get the importance of the wind power"
+    """ Get the importance of the wind power 
+    Args:
+        results_challenge_dict: Dictionary with the results of the challenge
+        ens_params: Dictionary with the ensemble parameters
+        y_test: Series with the true values
+        results_contributions: Dictionary with the contributions of the forecasters
+    Returns:
+        results_contributions: Dictionary with the contributions of the forecasters"""
+    # Validate inputs
     assert 'wind_power' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
     assert 'info_contributions' in results_challenge_dict['wind_power'].keys(), 'The key info_contributions is not present in the results_challenge_dict'
     assert 'quantiles' in ens_params.keys(), 'The key quantiles is not present in the ens_params'
