@@ -118,16 +118,25 @@ def first_stage_shapley_importance(y_test, params_model, quantile, info_previous
     for predictor_index in range(nr_features):
         # Get the predictor name
         predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
-        # Compute the permuted scores in parallel
-        col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
-                                                                        params_model,
-                                                                            nr_features, 
-                                                                            X_test_augm, 
-                                                                            y_test, 
-                                                                            fitted_model, 
-                                                                            score_function, 
-                                                                            predictor_index) 
-                                                                            for seed in range(params_model['nr_col_permutations']))
+        col_scores = []
+        list_set_feat2permutate = []
+        for seed in range(params_model['nr_col_permutations']):
+            col_score, set_feat2permutate = compute_col_perm_score(seed, params_model, nr_features, X_test_augm, y_test, fitted_model, score_function, predictor_index, list_set_feat2permutate)
+            col_scores.append(col_score)
+            list_set_feat2permutate.append(set_feat2permutate)
+
+        # # Compute the permuted scores in parallel
+        # col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
+        #                                                                 params_model,
+        #                                                                     nr_features, 
+        #                                                                     X_test_augm, 
+        #                                                                     y_test, 
+        #                                                                     fitted_model, 
+        #                                                                     score_function, 
+        #                                                                     predictor_index) 
+        #                                                                     for seed in range(params_model['nr_col_permutations']))
+
+
         shapley_score = np.mean(col_scores)
         # Append the importance score to the list
         importance_scores.append({'predictor': predictor_name, 
