@@ -1,4 +1,5 @@
 from loguru import logger
+import numpy as np
 import pandas as pd
 from source.ensemble.stack_generalization.test_importance.forecasters_contributions import load_model_info, calculate_contributions
 
@@ -14,7 +15,7 @@ def compute_forecasters_contributions(buyer_resource_name, ens_params, y_test, f
     """
     assert isinstance(buyer_resource_name, str), 'The buyer_resource_name must be a string'
     assert isinstance(ens_params, dict), 'The ens_params must be a dictionary'
-    assert isinstance(y_test, pd.Series), 'The y_test must be a pandas Series'
+    assert isinstance(y_test, np.ndarray), 'The y_test must be a numpy array'
     assert isinstance(forecast_range, pd.DatetimeIndex), 'The forecast_range must be a pandas DatetimeIndex'
     try:
         # Retrieve path of the previous day result
