@@ -1,6 +1,6 @@
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import augment_with_quantiles
 from source.ensemble.stack_generalization.hyperparam_optimization.optimization import optimize_model, initialize_model
-from source.ensemble.stack_generalization.train_importance.plot_importance import plot_feature_importance
+from sklearn.linear_model import QuantileRegressor, Lasso
 from loguru import logger
 import pandas as pd
 import numpy as np
@@ -23,6 +23,27 @@ def initialize_train_and_predict(predictions, model_type, quantile, best_params,
         predictions_outsample[quantile] = fitted_model.predict(X_test) 
         return fitted_model, predictions, predictions_insample, predictions_outsample
 
+def permutation_quantile_regression(best_params, solver, X, y, quantile, n_permutations=100):
+    " Perform permutation-based quantile regression to calculate p-values."
+    coefs = []
+    # Fit the model on the original dataset to get the observed coefficients
+    model_original = QuantileRegressor(quantile=quantile, solver=solver, **best_params).fit(X, y)
+    coefs_original = model_original.coef_
+    for _ in range(n_permutations):
+        # Permute y (random shuffle)
+        y_permuted = np.random.permutation(y)
+        if quantile == 0.5:
+            # Fit the model on the permuted dataset
+            model = Lasso(**best_params).fit(X, y_permuted)
+        else:
+            # Fit the model on the permuted dataset
+            model = QuantileRegressor(quantile=quantile, solver=solver, **best_params).fit(X, y_permuted)
+        coefs.append(model.coef_)
+    # Convert the list of coefficients to a NumPy array
+    coefs = np.array(coefs)
+    # Calculate p-values by comparing original coefficients to the permuted coefficients
+    p_values = np.mean(np.abs(coefs) >= np.abs(coefs_original), axis=0)
+    return coefs_original, p_values
 
 def predico_ensemble_predictions_per_quantile(ens_params, 
                                                 X_train, X_test, y_train, df_train_ensemble,  
@@ -85,6 +106,22 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
                 'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
                 'df_train_ensemble_augmented': df_train_ensemble_augmented}
+    
+    if ens_params['model_type'] == 'LR':
+        # Compute p-values for the coefficients
+        coefs, p_values_permutation = permutation_quantile_regression(best_params, solver, X_train_augmented, y_train, quantile, n_permutations=ens_params['nr_pvalues_permutations'])
+        model_summary = pd.DataFrame({
+                "Predictor": df_train_ensemble_augmented.drop(['norm_targ'], axis=1).columns,
+                "Coefs": coefs,
+                "p-values": p_values_permutation,
+                "significant": p_values_permutation < ens_params['alpha']/len(coefs)  # Bonferroni correction
+            }).sort_values(by="Coefs", ascending=False)
+        # Store results
+        results['coefs'] = coefs
+        results['p_values'] = np.array([round(p_values_permutation[i], 4) for i in range(len(p_values_permutation))])
+        results['model-summary'] = model_summary
+        logger.info('Model summary')
+        logger.info(model_summary[model_summary['significant'] == True])
     
 
 
