@@ -8,8 +8,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 ############################################################################################################ Utils
+def extract_data(info, quantile):
+    " Extract info previous day"
+    fitted_model = info[quantile]['fitted_model']
+    y_train = info[quantile]['y_train'] 
+    var_fitted_model = info[quantile]['var_fitted_model']
+    X_test_augm_prev = info[quantile]['X_test_augmented_prev'] 
+    df_test_ens_prev = info[quantile]['df_test_ensemble_prev'] 
+    df_train_ens = info[quantile]['df_train_ensemble']
+    df_train_ens_augm = info[quantile]['df_train_ensemble_augmented']  
+    X_train_augmented = info[quantile]['X_train_augmented']
+    buyer_scaler_stats = info[quantile]["buyer_scaler_stats"]
+    return fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats
 
-def validate_inputs(parameters_model, quantile, y_test_prev, X_test_augmented_prev):
+
+def validate_inputs(params_model, quantile, y_test_prev, X_test_augmented_prev):
     " Validate the inputs."
     assert parameters_model['nr_permutations'] > 0, "Number of permutations must be positive"
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
@@ -130,16 +143,6 @@ def second_stage_permutation_importance(y_test_prev, parameters_model, quantile,
 
 
 ############################################################################################################ Shapley
-
-def extract_data(info, quantile):
-    " Extract info previous day"
-    fitted_model = info[quantile]['fitted_model']
-    y_train = info[quantile]['y_train'] 
-    var_fitted_model = info[quantile]['var_fitted_model']
-    X_test_augm_prev = info[quantile]['X_test_augmented_prev'] 
-    df_test_ens_prev = info[quantile]['df_test_ensemble_prev'] 
-    df_train_ens_augm = info[quantile]['df_train_ensemble_augmented']
-    return fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm
 
 def run_col_permutation(seed, nr_features):
     " Run column permutation."
