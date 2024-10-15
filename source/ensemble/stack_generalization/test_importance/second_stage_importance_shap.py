@@ -43,11 +43,12 @@ def create_norm_import_scores_df(importance_scores):
     """
     # Create a DataFrame with the importance scores and sort it
     results_df = pd.DataFrame(importance_scores)
-    results_df = results_df.sort_values(by='contribution', ascending=False)
     # Drop the forecasters standard deviation and variance rows
     results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
     # Normalize contributions
     results_df = normalize_contributions(results_df)
+    # Sort the DataFrame by the contributions
+    results_df = results_df.sort_values(by='contribution', ascending=False)
     return results_df
 
 ############################################################################################################ Permutation
