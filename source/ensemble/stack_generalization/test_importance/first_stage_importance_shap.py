@@ -249,8 +249,7 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
     logger.opt(colors=True).info(f'<blue>Wind Power</blue>')
     # Get the info from the previous day
     info_previous_day_first_stage = results_challenge_dict['wind_power']['info_contributions']
-    num_permutations = ens_params['nr_permutations']
-    logger.info(f'Number of permutations: {num_permutations}')
+
     # Get the contributions per quantile
     for quantile in ens_params['quantiles']:
         logger.opt(colors=True).info(f'<blue>Quantile: {quantile}</blue>')
