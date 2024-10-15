@@ -159,9 +159,16 @@ def first_stage_shapley_importance(y_test, params_model, quantile, info_previous
 
 ############################################################################################################ Permutation
 
-def decrease_performance(base_score, permuted_scores):
-    " Decrease performance."
-    return max(0, np.mean(permuted_scores) - base_score)
+def decrease_performance(base_score, scores_with_permutation):
+    """Compute the decrease in performance.
+    Args:
+        base_score: The base score
+        scores_with_permutation: The scores with permutation
+    Returns:
+        decrease_performance: The decrease in performance 
+    """
+    decrease_performance = max(0, np.mean(scores_with_permutation) - base_score)
+    return decrease_performance
 
 def permute_predictor(X, index, seed):
     " Permute the predictor."
@@ -170,7 +177,17 @@ def permute_predictor(X, index, seed):
     return X
 
 def compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_function, permutate=False, predictor_index=None):
-    " Compute  score for a single predictor."
+    """Compute the loss score for predictor with/without permutation. 
+    Args:
+        seed: The seed
+        X_test_augm: The augmented test set
+        y_test: The target variable
+        fitted_model: The fitted model
+        score_function: The score function
+        permutate: Whether to permute the predictor
+        predictor_index: The predictor index
+    Returns:
+        score: The loss score"""
     # Generate predictions from the first-stage model
     X_test = X_test_augm.copy()
     if permutate:
