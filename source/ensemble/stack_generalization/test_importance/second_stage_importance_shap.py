@@ -23,8 +23,8 @@ def prepare_second_stage_data(parameters_model, df_train_ensemble, df_test_ensem
 
 def normalize_contributions(df):
     " Normalize the contributions."
-    total_contribution = df['contribution'].sum()
-    df['contribution'] = df['contribution']/total_contribution
+    total_contribution = abs(df['contribution']).sum()
+    df['contribution'] = abs(df['contribution'])/total_contribution
     return df
 
 def get_score_function(quantile):

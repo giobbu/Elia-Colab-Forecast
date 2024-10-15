@@ -41,11 +41,10 @@ def get_score_function(quantile):
     }
     return score_functions[quantile]
 
-
 def normalize_contributions(df):
     " Normalize the contributions."
-    total_contribution = df['contribution'].sum()
-    df['contribution'] = df['contribution']/total_contribution
+    total_contribution = abs(df['contribution']).sum()
+    df['contribution'] = abs(df['contribution'])/total_contribution
     return df
 
 def create_norm_import_scores_df(importance_scores):
