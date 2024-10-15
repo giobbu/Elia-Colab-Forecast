@@ -55,7 +55,8 @@ def create_norm_import_scores_df(importance_scores):
 
 def decrease_performance(base_score, permuted_scores):
     " Decrease performance."
-    return max(0, np.mean(permuted_scores) - base_score)
+    decrease_score = max(0, np.mean(permuted_scores) - base_score)
+    return decrease_score
 
 def permute_predictor(X, index, seed):
     " Permute the predictor."
