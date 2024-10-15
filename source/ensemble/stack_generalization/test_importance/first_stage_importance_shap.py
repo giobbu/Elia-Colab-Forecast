@@ -261,11 +261,11 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
             logger.info(f'Number of row permutations: {row_permutation}')
             # Compute the contributions using the Shapley method
             df_contributions = first_stage_shapley_importance(
-                y_test=y_test, 
-                params_model=ens_params, 
-                quantile=quantile, 
-                info_previous_day_first_stage=info_previous_day_first_stage
-            )
+                                                            y_test=y_test, 
+                                                            params_model=ens_params, 
+                                                            quantile=quantile, 
+                                                            info_previous_day_first_stage=info_previous_day_first_stage
+                                                            )
         elif ens_params['contribution_method'] == 'permutation':
             num_permutations = ens_params['nr_permutations']
             logger.info(f'Number of permutations: {num_permutations}')
