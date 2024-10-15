@@ -253,28 +253,34 @@ def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forec
     logger.opt(colors=True).info(f'<blue>Wind Power Ramp</blue>')
     # Get the info from the previous day
     info_previous_day_second_stage = results_challenge_dict['wind_power_ramp']['info_contributions']
-    num_permutations = ens_params['nr_permutations']
-    logger.info(f'Number of permutations: {num_permutations}')
+    # Loop through each quantile
     for quantile in ens_params['quantiles']:
         logger.opt(colors=True).info(f'<blue>Quantile: {quantile}</blue>')
         # Get the contributions
         if ens_params['contribution_method'] == 'shapley':
-            # Get the contributions using the SHAP method
+            col_permutation = ens_params['nr_col_permutations']
+            row_permutation = ens_params['nr_row_permutations']
+            logger.info(f'Number of column permutations: {col_permutation}')
+            logger.info(f'Number of row permutations: {row_permutation}')
+            # Get the contributions using the SHAPLEY method
             df_contributions = second_stage_shapley_importance(
-                y_test_prev=y_test, 
-                parameters_model=ens_params, 
-                quantile=quantile, 
-                info=info_previous_day_second_stage, 
-                forecast_range = forecast_range
-            )
+                                                                y_test_prev=y_test, 
+                                                                params_model=ens_params, 
+                                                                quantile=quantile, 
+                                                                info=info_previous_day_second_stage, 
+                                                                forecast_range = forecast_range
+                                                            )
         elif ens_params['contribution_method'] == 'permutation':
+            num_permutations = ens_params['nr_permutations']
+            logger.info(f'Number of permutations: {num_permutations}')
+            # Get the contributions using the PERMUTATION method
             df_contributions = second_stage_permutation_importance(
-                y_test_prev=y_test, 
-                parameters_model=ens_params, 
-                quantile=quantile, 
-                info=info_previous_day_second_stage, 
-                forecast_range = forecast_range
-            )
+                                                                    y_test_prev=y_test, 
+                                                                    params_model=ens_params, 
+                                                                    quantile=quantile, 
+                                                                    info=info_previous_day_second_stage, 
+                                                                    forecast_range = forecast_range
+                                                                )
         else:
             raise ValueError('The contribution method is not valid')
         
