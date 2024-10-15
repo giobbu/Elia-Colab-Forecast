@@ -283,17 +283,16 @@ def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forec
                                                                 )
         else:
             raise ValueError('The contribution method is not valid')
-        
-        if ens_params['plot_importance_permutation_first_stage']:
-            plot_permutation_importance(df_contributions, quantile)
-
+        # Plot the importance scores
+        if ens_params['plot_importance_second_stage']:
+            plot_importance(df_contributions, quantile)
         # Get the predictor name
         df_contributions['predictor'] = df_contributions['predictor'].apply(lambda x: x.split('_')[1])
         # Save the contributions
         results_contributions['wind_power_ramp'][quantile] = dict(df_contributions.groupby('predictor')['contribution'].sum())
     return results_contributions
 
-def plot_permutation_importance(df_contributions, quantile, top_n=10, figsize=(10, 5), palette='viridis'):
+def plot_importance(df_contributions, quantile, top_n=10, figsize=(10, 5), palette='viridis'):
     """
     Plot the top N permutation feature importances using a seaborn bar plot.
     """

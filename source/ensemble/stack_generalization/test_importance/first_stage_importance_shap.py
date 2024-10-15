@@ -279,8 +279,8 @@ def wind_power_importance(results_challenge_dict, ens_params, y_test, results_co
         else:
             raise ValueError('The contribution method is not implemented')
         
-        if ens_params['plot_importance_permutation_first_stage']:
-            plot_permutation_importance(df_contributions, quantile)
+        if ens_params['plot_importance_first_stage']:
+            plot_importance(df_contributions= df_contributions, quantile= quantile, contribution_method = ens_params['contribution_method'])
 
         # Get the predictor name
         df_contributions['predictor'] = df_contributions['predictor'].apply(lambda x: x.split('_')[1])
