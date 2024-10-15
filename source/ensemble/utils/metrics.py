@@ -32,8 +32,8 @@ def calculate_pinball_losses(df, confidence_10_col, confidence_90_col, targ_col=
     " Calculate Pinball Losses for 10% and 90% quantiles."
     assert 'targets' in df.columns, "target column is missing"
     pinball_losses = pd.DataFrame()
-    score_10 = mean_pinball_loss( list(df[targ_col].values),  list(df[confidence_10_col].values), alpha=0.1)
-    score_90 = mean_pinball_loss( list(df[targ_col].values),  list(df[confidence_90_col].values), alpha=0.9)
+    score_10 = mean_pinball_loss(list(df[targ_col].values), list(df[confidence_10_col].values), alpha=0.1)
+    score_90 = mean_pinball_loss(list(df[targ_col].values), list(df[confidence_90_col].values), alpha=0.9)
     pinball_losses['pb_loss_10'] =  np.array([score_10]) 
     pinball_losses['pb_loss_90'] = np.array([score_90]) 
     return pinball_losses
