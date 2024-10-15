@@ -194,7 +194,10 @@ def compute_first_stage_score(seed, X_test_augm, y_test, fitted_model, score_fun
     X_test = X_test_augm.copy()
     if permutate:
         # Permute the predictor if permute is True
-        X_test = permute_predictor(X_test, predictor_index, seed)
+        X_test_perm = permute_predictor(X_test, predictor_index, seed)
+        # Compute the score with the permuted predictor
+        score_perm = score_function(fitted_model, X_test_perm, y_test)['mean_loss']
+        return score_perm
     score = score_function(fitted_model, X_test, y_test)['mean_loss']
     return score
 
