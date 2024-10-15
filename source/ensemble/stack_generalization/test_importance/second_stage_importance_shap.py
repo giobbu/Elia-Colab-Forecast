@@ -227,21 +227,41 @@ def second_stage_shapley_importance(y_test_prev, parameters_model, quantile, inf
     for predictor_index in range(nr_features):
         # Get the predictor name
         predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
-        # Compute the permuted scores in parallel
-        col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
-                                                                        parameters_model,
-                                                                        nr_features, 
-                                                                        y_test_prev, 
-                                                                        fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm,
-                                                                        predictions_insample, 
-                                                                        score_function, 
-                                                                        predictor_index,
-                                                                        forecast_range) 
-                                                                        for seed in range(parameters_model['nr_col_permutations']))
-        shapley_score = np.mean(col_scores)
+        col_scores = []
+        list_set_feat2permutate = []
+        for seed in range(params_model['nr_col_permutations']):
+            col_score, set_feat2permutate = compute_col_perm_score(seed, 
+                                                                params_model,
+                                                                nr_features, 
+                                                                y_test_prev, 
+                                                                fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, 
+                                                                df_train_ens,
+                                                                predictions_insample, 
+                                                                score_function, 
+                                                                predictor_index,
+                                                                forecast_range, 
+                                                                list_set_feat2permutate)
+            # Append the importance score to the list
+            col_scores.append(col_score)
+            # Append the set of features to permute to the list
+            list_set_feat2permutate.append(set_feat2permutate)
+        # Increment the seed
+        seed += 1
+        shapley_score = np.mean(col_scores)  # Compute the average marginal contribution
         # Append the importance score to the list
         importance_scores.append({'predictor': predictor_name, 
                                 'contribution': shapley_score})
+        # # Compute the permuted scores in parallel
+        # col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
+        #                                                                 parameters_model,
+        #                                                                 nr_features, 
+        #                                                                 y_test_prev, 
+        #                                                                 fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm,
+        #                                                                 predictions_insample, 
+        #                                                                 score_function, 
+        #                                                                 predictor_index,
+        #                                                                 forecast_range) 
+        #                                                                 for seed in range(parameters_model['nr_col_permutations']))
     # Create a DataFrame with the importance scores, sort, and normalize it
     results_df = create_norm_import_scores_df(importance_scores)
     return results_df

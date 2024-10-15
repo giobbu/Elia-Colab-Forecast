@@ -134,9 +134,17 @@ def first_stage_shapley_importance(y_test, params_model, quantile, info_previous
         list_set_feat2permutate = []
         for seed in range(params_model['nr_col_permutations']):
             col_score, set_feat2permutate = compute_col_perm_score(seed, params_model, nr_features, X_test_augm, y_test, fitted_model, score_function, predictor_index, list_set_feat2permutate)
+            # Append the importance score to the list
             col_scores.append(col_score)
+            # Append the set of features to permute to the list
             list_set_feat2permutate.append(set_feat2permutate)
-
+        # Increment the seed
+        seed += 1
+        # Compute the average marginal contribution
+        shapley_score = np.mean(col_scores)
+        # Append the importance score to the list
+        importance_scores.append({'predictor': predictor_name, 
+                                'contribution': shapley_score})
         # # Compute the permuted scores in parallel
         # col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
         #                                                                 params_model,
@@ -147,12 +155,6 @@ def first_stage_shapley_importance(y_test, params_model, quantile, info_previous
         #                                                                     score_function, 
         #                                                                     predictor_index) 
         #                                                                     for seed in range(params_model['nr_col_permutations']))
-
-
-        shapley_score = np.mean(col_scores)
-        # Append the importance score to the list
-        importance_scores.append({'predictor': predictor_name, 
-                                'contribution': shapley_score})
     # Create a DataFrame with the importance scores, sort, and normalize it
     results_df = create_norm_import_scores_df(importance_scores)
     return results_df
