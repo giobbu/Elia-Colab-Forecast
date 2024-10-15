@@ -83,10 +83,10 @@ def run_row_permutation_set_features(seed, X_test, set_feat2permutate):
 
 def compute_row_perm_score(seed, fitted_model, set_feat2permutate, predictor_index, X_test_augm, y_test, score_function, X_test_perm_with, X_test_perm_without):
     " Compute row permutation score."
-    # compute error by PERMUTATING WITHOUT feature of interest
+    # compute error by WITHOUT PERMUTATING feature of interest (error should be lower)
     X_test_perm_without[:, set_feat2permutate] = run_row_permutation_set_features(seed, X_test_augm, set_feat2permutate)
     score_without_permutation = score_function(fitted_model, X_test_perm_without, y_test)['mean_loss']
-    # compute error by PERMUTATING WITH feature of interest
+    # compute error by PERMUTATING feature of interest (error should be higher)
     X_test_perm_with[:, set_feat2permutate] = run_row_permutation_set_features(seed, X_test_augm, set_feat2permutate)
     X_test_perm_with[:, predictor_index] = run_row_permutation_predictor(seed, X_test_augm, predictor_index)
     score_with_permutation = score_function(fitted_model, X_test_perm_with, y_test)['mean_loss']
