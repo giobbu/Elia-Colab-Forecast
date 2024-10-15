@@ -165,6 +165,10 @@ def create_ensemble_forecasts(ens_params,
     predictions = {}
     previous_day_results_first_stage = {}
 
+    # # for conformalized quantile regression
+    # if ens_params['conformalized_qr']:
+    #     conformalized_qr = {}
+
     # Loop over quantiles
     for quantile in tqdm(ens_params['quantiles'], desc='Quantile Regression'):
 
@@ -185,7 +189,14 @@ def create_ensemble_forecasts(ens_params,
         fitted_model = results_per_quantile_wp['fitted_model'] 
         X_train_augmented = results_per_quantile_wp['X_train_augmented']
         X_test_augmented = results_per_quantile_wp['X_test_augmented'] 
-        df_train_ensemble_augmented = results_per_quantile_wp['df_train_ensemble_augmented']
+
+
+
+        # if ens_params['conformalized_qr'] and quantile != 0.5:
+        #     # for conformalized quantile regression
+        #     conformalized_qr[quantile] = {'fitted_model': results_per_quantile_wp['fitted_model'],
+        #                                     'X_calibrate_augmented': results_per_quantile_wp['X_calibrate_augmented'],
+        #                                     'y_calibrate': results_per_quantile_wp['y_calibrate']}
 
         # Store results
         previous_day_results_first_stage[quantile] = {"fitted_model" : fitted_model, 
@@ -205,9 +216,14 @@ def create_ensemble_forecasts(ens_params,
             
             predictions_insample = fitted_model.predict(X_train_augmented)
             predictions_outsample = fitted_model.predict(X_test_augmented_prev)
+
+            # if ens_params['conformalized_qr']:
+            #     df_train_ensemble = df_train_ensemble.iloc[ens_params['day_calibration']*96:]
+            #     y_train = y_train[ens_params['day_calibration']*96:]
             
             # Create 2-stage dataframe
             df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
+    
 
             # Augment 2-stage dataframe
             df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
@@ -296,6 +312,20 @@ def create_ensemble_forecasts(ens_params,
             del df_2stage, df_2stage_buyer, df_2stage_train
             gc.collect()
 
+    # if ens_params['conformalized_qr']:
+    #     import numpy as np
+    #     # get predictions quantile .1 and .9
+    #     n = len(conformalized_qr[0.1]['y_calibrate'])
+    #     alpha = 0.2
+    #     predictions_quantile10 = conformalized_qr[0.1]['fitted_model'].predict(conformalized_qr[0.1]['X_calibrate_augmented'])
+    #     predictions_quantile90 = conformalized_qr[0.9]['fitted_model'].predict(conformalized_qr[0.9]['X_calibrate_augmented'])
+    #     # get conformal scores
+    #     cal_scores = ((conformalized_qr[0.1]['y_calibrate'] - predictions_quantile10) + (predictions_quantile90 - conformalized_qr[0.9]['y_calibrate']))/2
+    #     print('length of cal_scores:', len(cal_scores))
+    #     # Get the score quantile
+    #     qhat = np.quantile(cal_scores, np.ceil((n+1)*(1-alpha))/n, interpolation='higher')
+    #     predictions[0.1] = predictions[0.1] - qhat
+    #     predictions[0.9] = predictions[0.9] + qhat
 
     # Loop over quantiles
     for quantile in ens_params['quantiles']:

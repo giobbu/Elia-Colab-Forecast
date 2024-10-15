@@ -57,6 +57,16 @@ def predico_ensemble_predictions_per_quantile(ens_params,
                                                                                         X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10,
                                                                                         X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90,
                                                                                         quantile, augment_q50=augment_q50)
+    
+    # if ens_params['conformalized_qr']:
+    #     # retain first two days for calibration
+    #     X_train_augmented = X_train_augmented[ens_params['day_calibration']*96:]
+    #     y_train = y_train[ens_params['day_calibration']*96:]
+    #     X_calibrate_augmented = X_train_augmented[:ens_params['day_calibration']*96]
+    #     y_calibrate = y_train[:ens_params['day_calibration']*96]
+    #     df_train_ensemble_augmented = df_train_ensemble_augmented.iloc[ens_params['day_calibration']*96:]
+
+    
     # Optimize model hyperparameters
     if iteration % gbr_update_every_days == 0:  # Optimize hyperparameters every gbr_update_every_days
         logger.opt(colors=True).info(f'<fg 250,128,114> Optimizing model hyperparameters - updating every {gbr_update_every_days} days</fg 250,128,114>')
@@ -75,6 +85,13 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     results = {'predictions': predictions, 'best_results': best_results, 'fitted_model': fitted_model, 
                 'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
                 'df_train_ensemble_augmented': df_train_ensemble_augmented}
+    
+
+
+    # # Store calibration data
+    # if ens_params['conformalized_qr']:
+    #     results['X_calibrate_augmented'] = X_calibrate_augmented
+    #     results['y_calibrate'] = y_calibrate
 
     return results 
 
@@ -115,4 +132,5 @@ def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train
                 'var_fitted_model': var_fitted_model,
                 'variability_predictions_insample': variability_predictions_insample,
                 'variability_predictions_outsample': variability_predictions_outsample}
+
     return results
