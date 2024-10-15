@@ -270,10 +270,12 @@ def second_stage_shapley_importance(y_test_prev, parameters_model, quantile, inf
 
 def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forecast_range, results_contributions):
     " Get the importance of the wind power ramp"
+
     assert 'wind_power_ramp' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
     assert 'info_contributions' in results_challenge_dict['wind_power_ramp'].keys(), 'The key info_contributions is not present in the results_challenge_dict'
     assert 'quantiles' in ens_params.keys(), 'The key quantiles is not present in the ens_params'
     assert 'nr_permutations' in ens_params.keys(), 'The key nr_permutations is not present in the ens_params'
+
     logger.opt(colors=True).info(f'<blue>--</blue>' * 79)
     logger.opt(colors=True).info(f'<blue>Wind Power Ramp</blue>')
     # Get the info from the previous day
