@@ -24,14 +24,14 @@ def extract_data(info, quantile):
 
 def validate_inputs(params_model, quantile, y_test_prev, X_test_augmented_prev):
     " Validate the inputs."
-    assert parameters_model['nr_permutations'] > 0, "Number of permutations must be positive"
+    assert params_model['nr_permutations'] > 0, "Number of permutations must be positive"
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
     assert len(y_test_prev) == len(X_test_augmented_prev), "The length of y_test_prev and X_test_augmented_prev must be the same"
 
-def prepare_second_stage_data(parameters_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample):
+def prepare_second_stage_data(params_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample):
     " Prepare the second stage data."
     df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
-    df_2stage_processed = create_augmented_dataframe_2stage(df_2stage, parameters_model['order_diff'], max_lags=parameters_model['max_lags_var'], augment=parameters_model['augment_var'])
+    df_2stage_processed = create_augmented_dataframe_2stage(df_2stage, params_model['order_diff'], max_lags=params_model['max_lags_var'], augment=params_model['augment_var'])
     return df_2stage_processed
 
 def normalize_contributions(df):
@@ -77,7 +77,7 @@ def permute_predictor(X, index, seed):
     X[:, index] = rng.permutation(X[:, index])
     return X
 
-def compute_second_stage_score(seed, parameters_model, 
+def compute_second_stage_score(seed, params_model, 
                                     fitted_model, var_fitted_model, X_test_augmented_prev, df_train_ensemble, df_test_ensemble_prev, y_train, 
                                     y_test_prev, score_function, predictions_insample, forecast_range, permutate=False, predictor_index=None):
     "Compute the permuted score for a single predictor in the second stage model."
@@ -88,19 +88,21 @@ def compute_second_stage_score(seed, parameters_model,
         X_test = permute_predictor(X_test, predictor_index, seed)
     predictions_outsample = fitted_model.predict(X_test)
     # Prepare second stage data
-    df_2stage_processed = prepare_second_stage_data(parameters_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
+    df_2stage_processed = prepare_second_stage_data(params_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
+    # Get the test data
     df_2stage_test = df_2stage_processed[(df_2stage_processed.index >= forecast_range[0]) & (df_2stage_processed.index <= forecast_range[-1])]
+    # Get the features and target
     X_test_2stage, y_test_2stage = df_2stage_test.drop(columns=['targets']).values, df_2stage_test['targets'].values
     # Compute and return the score
     score = score_function(var_fitted_model, X_test_2stage, y_test_2stage)['mean_loss']
     return score
 
-def second_stage_permutation_importance(y_test_prev, parameters_model, quantile, info, forecast_range):
+def second_stage_permutation_importance(y_test_prev, params_model, quantile, info, forecast_range):
     """
     Compute permutation importances for the second stage model.
     """
     # Initial validations 
-    validate_inputs(parameters_model, quantile, y_test_prev, info[quantile]['X_test_augmented_prev'])
+    validate_inputs(params_model, quantile, y_test_prev, X_test_augm_prev)
     # Get the score function
     score_function = get_score_function(quantile)
     # Compute the base score
