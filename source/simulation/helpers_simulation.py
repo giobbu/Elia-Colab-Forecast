@@ -5,6 +5,12 @@ import seaborn as sns
 
 def process_combination_scheme(df_train, df_test, end_training_timestamp, start_prediction_timestamp):
     " Process data for the combination scheme"
+
+    assert isinstance(df_train, pd.DataFrame), 'df_train must be a pandas DataFrame'
+    assert isinstance(df_test, pd.DataFrame), 'df_test must be a pandas DataFrame'
+    assert isinstance(end_training_timestamp, pd.Timestamp), 'end_training_timestamp must be a pandas Timestamp'
+    assert isinstance(start_prediction_timestamp, pd.Timestamp), 'start_prediction_timestamp must be a pandas Timestamp'
+    
     # Concatenate train and test dataframes
     df_comb_scheme = pd.concat([df_train, df_test], axis=0)
     df_comb_scheme_norm = df_comb_scheme.copy()
@@ -20,6 +26,11 @@ def process_combination_scheme(df_train, df_test, end_training_timestamp, start_
 
 def update_dict_weights(mu, observation, iteration):
     " Update the contributions of the forecasters" 
+
+    assert isinstance(mu, dict), 'mu must be a dictionary'
+    assert isinstance(observation, dict), 'observation must be a dictionary'
+    assert isinstance(iteration, int), 'iteration must be an integer'
+
     n = iteration + 1   
     if n == 1:
         mu = observation.copy()
@@ -32,8 +43,6 @@ def update_dict_weights(mu, observation, iteration):
                     for k in set(mu[key].get(subkey, {}).keys()) | set(observation[key].get(subkey, {}).keys())
                 }
     return mu
-
-
 
 
 def normalize_coefficients(df_coefs):
