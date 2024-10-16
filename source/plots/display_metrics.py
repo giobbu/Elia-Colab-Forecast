@@ -5,10 +5,10 @@ def calculate_and_concatenate_stats(dfs, group_by_col, calc_col, prefixes):
     result_list = []
     for df, prefix in zip(dfs, prefixes):
         # Calculate the mean and standard deviation of the specified column grouped by the group_by_col
-        df_stats = df.groupby(group_by_col)[calc_col].agg(['mean', 'std'])
+        df_stats = df.groupby(group_by_col)[calc_col].agg(['mean', 'sem'])
         # Rename the columns to the desired names
         df_stats.columns = [f'mean_{calc_col}', 
-                            f'std_{calc_col}']
+                            f'sem_{calc_col}']
         # Create a MultiIndex for the columns
         df_stats.columns = pd.MultiIndex.from_product([[prefix], df_stats.columns])
         result_list.append(df_stats)
