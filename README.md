@@ -1,11 +1,17 @@
-## Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace (Ongoing Project)
+# Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace (Ongoing Project)
 
 ### [INESC TEC Power and Energy Systems Centre](https://www.inesctec.pt/en/centres/cpes#intro)
 
 <img src="img/schema_predico.png" alt="Image Alt Text" width="700"/>
 
-### Forecasting Module
+## Forecasting Module
 
-### Forecasters Contribution Module
+## Forecasters Contribution Module
 
-### Wind Ramp Detection Module
+### Permutation Importance
+<img src="img/permutation.png" alt="Image Alt Text" width="700"/>
+
+### Shapley Values Importance
+<img src="img/shapley.png" alt="Image Alt Text" width="700"/>
+
+## Wind Ramp Detection Module
