@@ -1,5 +1,7 @@
 from collections import defaultdict
 import pandas as pd 
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def process_combination_scheme(df_train, df_test, end_training_timestamp, start_prediction_timestamp):
     " Process data for the combination scheme"
@@ -31,26 +33,60 @@ def update_dict_weights(mu, observation, iteration):
                 }
     return mu
 
-def compute_coefficients(previous_day, quantiles=[0.1, 0.5, 0.9], stages=['wind_power', 'wind_power_ramp']):
-    " Compute the coefficients of the forecasters for the different stages"
+
+
+
+def normalize_coefficients(df_coefs):
+    """Normalize the coefficients by their absolute sum."""
+    coef_sum = abs(df_coefs['coef']).sum()
+    df_coefs['coef'] = abs(df_coefs['coef']) / coef_sum if coef_sum != 0 else 0
+    return df_coefs
+
+def plot_top_contributions(df_coefs, quantile, top_n=10, figsize=(10, 5)):
+    """Plot the top N contributions of the predictors."""
+    df_top_contributions = df_coefs.head(top_n)
+    plt.figure(figsize=figsize)
+    sns.barplot(y='coef', x='predictor', data=df_top_contributions, palette='magma')
+    plt.xlabel('Predictor')
+    plt.ylabel('Coefficient')
+    plt.xticks(rotation=45)
+    plt.title(f'Wind Power - Top {top_n} LASSO coefs - Quantile {quantile}')
+    plt.show()
+
+def compute_coefficients(ens_params, previous_day, quantiles=[0.1, 0.5, 0.9], stages=['wind_power', 'wind_power_ramp'], p_values=False):
+    """Compute the coefficients of the forecasters for different stages."""
+
+    assert isinstance(ens_params, dict), 'ens_params must be a dictionary'
+    assert isinstance(previous_day, dict), 'previous_day must be a dictionary'
+    assert isinstance(quantiles, list), 'quantiles must be a list'
+    assert isinstance(stages, list), 'stages must be a list'
+    assert isinstance(p_values, bool), 'p_values must be a boolean'
+
     iter_coefficients = defaultdict(dict)
     for stage in stages:
         for quantile in quantiles:
-            # Extracting the necessary data
-            if stage == 'wind_power_ramp':
-                quantile = 0.5
-            df_train_ensemble = previous_day[stage]['info_contributions'][quantile]['df_train_ensemble_augmented'].drop(['norm_targ'], axis=1)
-            fitted_model = previous_day[stage]['info_contributions'][quantile]['fitted_model']
-            # Creating DataFrame of coefficients
-            df_coefs = pd.DataFrame(fitted_model.coef_, 
-                                    index=df_train_ensemble.columns, 
-                                    columns=['coef']).reset_index()
-            df_coefs.columns = ['predictor', 'coef']
-            # Filtering out specific predictors
-            df_coefs = df_coefs[~df_coefs.predictor.isin(['forecasters_var', 'forecasters_std'])]
-            # Modifying predictors and normalizing coefficients
-            df_coefs['predictor'] = df_coefs['predictor'].apply(lambda x: x.split('_')[1])
-            df_coefs['coef'] = abs(df_coefs['coef'])/abs(df_coefs['coef']).sum()
-            # Summarizing coefficients by predictor
-            iter_coefficients[stage][quantile] = df_coefs.groupby('predictor').coef.sum().sort_values(ascending=False).to_dict()
+            # Handle 'wind_power' stage
+            if stage == 'wind_power':
+                df_summary = previous_day[stage]['info_contributions'][quantile]['model-summary']
+                if p_values:
+                    # Set coefficients to 0 where significance is False
+                    df_summary['Coefs'] = df_summary.apply(
+                        lambda x: 0 if not x['significant'] else x['Coefs'], axis=1
+                    )
+                coefs = df_summary['Coefs'].values
+                df_coefs = pd.DataFrame({'predictor': df_summary['Predictor'], 'coef': abs(coefs)})
+                # Filter out unwanted predictors
+                df_coefs = df_coefs[~df_coefs['predictor'].isin(['forecasters_var', 'forecasters_std'])]
+                df_coefs = df_coefs.sort_values(by='coef', ascending=False)
+                # Plot if requested
+                if ens_params.get('plot_importance_lasso_coefs', False):
+                    plot_top_contributions(df_coefs, quantile)
+                # Normalize coefficients
+                df_coefs = normalize_coefficients(df_coefs)
+                df_coefs['predictor'] = df_coefs['predictor'].apply(lambda x: x.split('_')[1])
+                # Summarize coefficients by predictor
+                iter_coefficients[stage][quantile] = df_coefs.groupby('predictor')['coef'].sum().sort_values(ascending=False).to_dict()
+            # Handle 'wind_power_ramp' stage (only for quantile 0.5)
+            elif stage == 'wind_power_ramp' and quantile == 0.5:
+                iter_coefficients[stage][quantile] = iter_coefficients['wind_power'][0.5].copy()
     return iter_coefficients
