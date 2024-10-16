@@ -188,9 +188,12 @@ def create_ensemble_forecasts(ens_params,
         best_results = results_per_quantile_wp['best_results'] 
         fitted_model = results_per_quantile_wp['fitted_model'] 
         X_train_augmented = results_per_quantile_wp['X_train_augmented']
-        X_test_augmented = results_per_quantile_wp['X_test_augmented'] 
-
-
+        X_test_augmented = results_per_quantile_wp['X_test_augmented']
+        df_train_ensemble_augmented = results_per_quantile_wp['df_train_ensemble_augmented']
+        if ens_params['model_type'] == 'LR':
+            coefs = results_per_quantile_wp['coefs']
+            p_values = results_per_quantile_wp['p_values']
+            model_summary = results_per_quantile_wp['model-summary'] 
 
         # if ens_params['conformalized_qr'] and quantile != 0.5:
         #     # for conformalized quantile regression
@@ -202,7 +205,11 @@ def create_ensemble_forecasts(ens_params,
         previous_day_results_first_stage[quantile] = {"fitted_model" : fitted_model, 
                                                         "X_train_augmented" : X_train_augmented, 
                                                         "X_test_augmented" : X_test_augmented, 
-                                                        "df_train_ensemble_augmented" : df_train_ensemble_augmented}
+                                                        "df_train_ensemble_augmented" : df_train_ensemble_augmented,
+                                                        "buyer_scaler_stats": buyer_scaler_stats
+                                                        }
+        if ens_params['model_type'] == 'LR':
+            previous_day_results_first_stage[quantile].update({"coefs": coefs, "p_values": p_values, "model-summary": model_summary})
         
         # compute variability predictions with as input the predictions of the first stage
         if  quantile == 0.5:
