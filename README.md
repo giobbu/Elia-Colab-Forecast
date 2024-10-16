@@ -9,9 +9,9 @@
 ## Forecasters Contribution Module
 
 ### Permutation Importance
-<img src="img/permutation.png" alt="Image Alt Text" width="700"/>
+<img src="img/permutation.jpg" alt="Image Alt Text" width="700"/>
 
 ### Shapley Values Importance
-<img src="img/shapley.png" alt="Image Alt Text" width="700"/>
+<img src="img/shapley.jpg" alt="Image Alt Text" width="700"/>
 
 ## Wind Ramp Detection Module
