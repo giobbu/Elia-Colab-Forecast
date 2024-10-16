@@ -287,7 +287,9 @@ def create_ensemble_forecasts(ens_params,
                                                                 "df_train_ensemble_augmented": df_train_ensemble_augmented, 
                                                                 "df_train_ensemble": df_train_ensemble, 
                                                                 "df_test_ensemble_prev": df_test_ensemble_prev,
-                                                                "y_train": y_train}
+                                                                "y_train": y_train,
+                                                                "buyer_scaler_stats": buyer_scaler_stats
+                                                                }
 
                 # Rescale predictions for variability
                 variability_predictions = rescale_predictions(variability_predictions, ens_params, buyer_scaler_stats, quantile, stage='2nd')
