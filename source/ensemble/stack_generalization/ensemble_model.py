@@ -87,7 +87,6 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     #     y_calibrate = y_train[:ens_params['day_calibration']*96]
     #     df_train_ensemble_augmented = df_train_ensemble_augmented.iloc[ens_params['day_calibration']*96:]
 
-    
     # Optimize model hyperparameters
     if iteration % gbr_update_every_days == 0:  # Optimize hyperparameters every gbr_update_every_days
         logger.opt(colors=True).info(f'<fg 250,128,114> Optimizing model hyperparameters - updating every {gbr_update_every_days} days</fg 250,128,114>')
@@ -123,8 +122,6 @@ def predico_ensemble_predictions_per_quantile(ens_params,
         logger.info('Model summary')
         logger.info(model_summary[model_summary['significant'] == True])
     
-
-
     # # Store calibration data
     # if ens_params['conformalized_qr']:
     #     results['X_calibrate_augmented'] = X_calibrate_augmented
