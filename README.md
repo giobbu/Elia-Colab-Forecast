@@ -8,6 +8,13 @@
 
 ## Forecasters Contribution Module
 
+#### WARNING
+
+* #### A forecaster considered to have low importance in a poorly performing model might be crucial for a high-performing model.
+
+* #### Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model.
+
+
 ### Permutation Importance
 <img src="img/permutation.jpg" alt="Image Alt Text" width="700"/>
 
