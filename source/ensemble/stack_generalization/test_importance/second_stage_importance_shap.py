@@ -224,8 +224,7 @@ def second_stage_shapley_importance(y_test_prev, parameters_model, quantile, inf
     # Standardize the observed target
     y_test_prev = (y_test_prev - buyer_scaler_stats['mean_buyer'])/buyer_scaler_stats['std_buyer']
     # Get In-sample Predictions
-    X_train_augm = info[quantile]['X_train_augmented']
-    predictions_insample = fitted_model.predict(X_train_augm)
+    predictions_insample = fitted_model.predict(X_train_augmented)
     # Validate inputs
     validate_inputs(parameters_model, quantile, y_test_prev, X_test_augm_prev)
     # Define the score functions for different quantiles
