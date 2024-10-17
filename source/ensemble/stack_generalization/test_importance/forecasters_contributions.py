@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from collections import defaultdict
 from source.ensemble.stack_generalization.test_importance.first_stage_importance_shap import wind_power_importance
-from source.ensemble.stack_generalization.test_importance.second_stage_importance_shap import wind_power_ramp_importance
+from source.ensemble.stack_generalization.test_importance.second_stage_importance_shap import wind_power_variability_importance
 import time
 
 def load_model_info(file_path):
@@ -32,7 +32,7 @@ def calculate_contributions(results_challenge_dict, ens_params, y_test, forecast
     # wind power ramp importance
     start_2_stage = time.time()
     y_test_2nd_stage = y_test[-192:]
-    results_contributions = wind_power_ramp_importance(results_challenge_dict, ens_params, y_test_2nd_stage, forecast_range, results_contributions)
+    results_contributions = wind_power_variability_importance(results_challenge_dict, ens_params, y_test_2nd_stage, forecast_range, results_contributions)
     end_2_stage = time.time() - start_2_stage
     logger.debug(f'Computational Time for 2-Stage {end_2_stage}')
     return results_contributions

@@ -293,7 +293,7 @@ def second_stage_shapley_importance(y_test_prev, params_model, quantile, info, f
 
 ############################################################################################################
 
-def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forecast_range, results_contributions):
+def wind_power_variability_importance(results_challenge_dict, ens_params, y_test, forecast_range, results_contributions):
     " Get the importance of the wind power ramp"
 
     assert 'wind_power_variability' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
