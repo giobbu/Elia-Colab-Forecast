@@ -218,9 +218,9 @@ def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_
         # transform set_feat2permutate to an unique string
         str_set_feat2permutate = ''.join(str(e) for e in set_feat2permutate)
     X_test_perm_with, X_test_perm_without = X_test_augm_prev.copy(), X_test_augm_prev.copy()
-    row_scores = Parallel(n_jobs=2)(delayed(compute_row_perm_score)(seed,
+    row_scores = Parallel(n_jobs=4)(delayed(compute_row_perm_score)(seed,
                                                                     params_model,
-                                                                    set_feat2perm,
+                                                                    set_feat2permutate,
                                                                     predictor_index,
                                                                     y_test_prev,
                                                                     fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm,
