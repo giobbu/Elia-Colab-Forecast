@@ -226,10 +226,11 @@ def first_stage_permutation_importance(y_test, params_model, quantile, info_prev
                                                                                 permutate=True, predictor_index=predictor_index) 
                                                                                 for seed in range(params_model['nr_permutations']))
         # Compute the mean contribution
-        mean_contribution = decrease_performance(base_score, permuted_scores)
+        contribution = decrease_performance(base_score, permuted_scores)
         # Append the importance score to the list
         importance_scores.append({'predictor': predictor_name, 
-                                'contribution': mean_contribution})
+                                'contribution': contribution})
+
     # Create a DataFrame with the importance scores, sort, and normalize it
     results_df = create_norm_import_scores_df(importance_scores)
     return results_df
