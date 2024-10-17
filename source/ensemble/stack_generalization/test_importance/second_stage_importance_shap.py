@@ -202,7 +202,7 @@ def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_
     col_perm = run_col_permutation(seed, nr_features)
     # 2) Ensure that the first element of col_perm is not the predictor_index
     while col_perm[0] == predictor_index:
-
+        seed += 1
         col_perm = run_col_permutation(seed, nr_features)
     # 3) Get the set of features to permute
     set_feat2permutate = col_perm[np.arange(0, np.where(col_perm == predictor_index)[0][0])]
