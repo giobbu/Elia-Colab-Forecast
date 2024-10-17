@@ -296,15 +296,15 @@ def second_stage_shapley_importance(y_test_prev, params_model, quantile, info, f
 def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forecast_range, results_contributions):
     " Get the importance of the wind power ramp"
 
-    assert 'wind_power_ramp' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
-    assert 'info_contributions' in results_challenge_dict['wind_power_ramp'].keys(), 'The key info_contributions is not present in the results_challenge_dict'
+    assert 'wind_power_variability' in results_challenge_dict.keys(), 'The key wind_power_variability is not present in the results_challenge_dict'
+    assert 'info_contributions' in results_challenge_dict['wind_power_variability'].keys(), 'The key info_contributions is not present in the results_challenge_dict'
     assert 'quantiles' in ens_params.keys(), 'The key quantiles is not present in the ens_params'
     assert 'nr_permutations' in ens_params.keys(), 'The key nr_permutations is not present in the ens_params'
 
     logger.opt(colors=True).info(f'<blue>--</blue>' * 79)
     logger.opt(colors=True).info(f'<blue>Wind Power Ramp</blue>')
     # Get the info from the previous day
-    info_previous_day_second_stage = results_challenge_dict['wind_power_ramp']['info_contributions']
+    info_previous_day_second_stage = results_challenge_dict['wind_power_variability']['info_contributions']
     # Loop through each quantile
     for quantile in ens_params['quantiles']:
         logger.opt(colors=True).info(f'<blue>Quantile: {quantile}</blue>')
@@ -341,7 +341,7 @@ def wind_power_ramp_importance(results_challenge_dict, ens_params, y_test, forec
         # Get the predictor name
         df_contributions['predictor'] = df_contributions['predictor'].apply(lambda x: x.split('_')[1])
         # Save the contributions
-        results_contributions['wind_power_ramp'][quantile] = dict(df_contributions.groupby('predictor')['contribution'].sum())
+        results_contributions['wind_power_variability'][quantile] = dict(df_contributions.groupby('predictor')['contribution'].sum())
     return results_contributions
 
 def plot_importance(df_contributions, quantile, top_n=10, figsize=(10, 5), palette='viridis'):

@@ -11,7 +11,7 @@ def load_or_initialize_results(ens_params, buyer_resource_name):
             results_challenge_dict = pickle.load(handle)
         iteration = results_challenge_dict['iteration'] + 1
         best_results = results_challenge_dict['wind_power']['best_results']
-        best_results_var = results_challenge_dict['wind_power_ramp']['best_results']
+        best_results_var = results_challenge_dict['wind_power_variability']['best_results']
     else:
         iteration = 0
         best_results = {}
