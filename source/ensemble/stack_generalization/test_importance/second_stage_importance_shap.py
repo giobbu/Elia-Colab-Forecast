@@ -111,7 +111,8 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
     predictions_insample = fitted_model.predict(X_train_augmented)
     # Normalize the target
     y_test_prev = (y_test_prev - buyer_scaler_stats['mean_buyer']) / buyer_scaler_stats['std_buyer']
-
+    # Set the seed
+    seed = 42
     # Compute the base score
     base_score = compute_second_stage_score(seed, 
                                             params_model,  
@@ -139,13 +140,15 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
                                                                                         y_test_prev, score_function, predictions_insample, forecast_range, 
                                                                                         permutate=True, predictor_index=predictor_index) 
                                                                                         for seed in range(params_model['nr_permutations']))
+        
+        # Increment the seed
+        seed += 1
 
         # Compute the mean contribution
         mean_contribution = decrease_performance(base_score, permuted_scores)
         # Append the importance score
         importance_scores.append({'predictor': predictor_name, 
                                     'contribution': mean_contribution})
-
     # Create a DataFrame and normalize contributions
     results_df = create_norm_import_scores_df(importance_scores)
     return results_df
