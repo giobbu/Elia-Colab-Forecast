@@ -1,23 +1,29 @@
 from dataclasses import dataclass
-# set solver for quantile regression
+import os
+from dotenv import load_dotenv
 from sklearn.utils.fixes import parse_version, sp_version
+
+# load the environment variables
+load_dotenv()
+current_path = os.getenv("PATH_CURRENT")
+# set solver for quantile regression
 solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
 
 @dataclass(frozen=True)
 class Simulation:
     testing_period = dict(
-        file_1 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/01.json',
-        file_2 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/02.json',
-        file_3 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/03.json',
-        file_4 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/04.json',
-        file_5 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/05.json',
-        file_6 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/06.json',
-        file_7 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/07.json',
-        file_8 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/08.json',
-        file_9 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/09.json',
-        file_10 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/10.json',
-        file_11 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/11.json',
-        file_12 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/12.json',
+        file_1 = current_path + '/dataset_elia/2023/01.json',
+        file_2 = current_path + '/dataset_elia/2023/02.json',
+        file_3 = current_path + '/dataset_elia/2023/03.json',
+        file_4 = current_path + '/dataset_elia/2023/04.json',
+        file_5 = current_path + '/dataset_elia/2023/05.json',
+        file_6 = current_path + '/dataset_elia/2023/06.json',
+        file_7 = current_path + '/dataset_elia/2023/07.json',
+        file_8 = current_path + '/dataset_elia/2023/08.json',
+        file_9 = current_path + '/dataset_elia/2023/09.json',
+        file_10 = current_path + '/dataset_elia/2023/10.json',
+        file_11 = current_path + '/dataset_elia/2023/11.json',
+        file_12 = current_path + '/dataset_elia/2023/12.json',
         replace_nan = True,
         random_seed = 42,
         window_size = 30,

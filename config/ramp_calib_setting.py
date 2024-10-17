@@ -1,31 +1,37 @@
 from dataclasses import dataclass
-# set solver for quantile regression
+import os
+from dotenv import load_dotenv
 from sklearn.utils.fixes import parse_version, sp_version
+
+# load the environment variables
+load_dotenv()
+current_path = os.getenv("PATH_CURRENT")
+# set solver for quantile regression
 solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
 
 @dataclass(frozen=True)
 class Simulation:
     testing_period = dict(
-        file_1 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/01.json',
-        file_2 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/02.json',
-        file_3 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/03.json',
-        file_4 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/04.json',
-        file_5 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/05.json',
-        file_6 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/06.json',
-        file_7 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/07.json',
-        file_8 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/08.json',
-        file_9 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/09.json',
-        file_10 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/10.json',
-        file_11 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/11.json',
-        file_12 = '/Users/gio/Desktop/elia_group/dataset_elia/2023/12.json',
+        file_1 = current_path + '/dataset_elia/2023/01.json',
+        file_2 = current_path + '/dataset_elia/2023/02.json',
+        file_3 = current_path + '/dataset_elia/2023/03.json',
+        file_4 = current_path + '/dataset_elia/2023/04.json',
+        file_5 = current_path + '/dataset_elia/2023/05.json',
+        file_6 = current_path + '/dataset_elia/2023/06.json',
+        file_7 = current_path + '/dataset_elia/2023/07.json',
+        file_8 = current_path + '/dataset_elia/2023/08.json',
+        file_9 = current_path + '/dataset_elia/2023/09.json',
+        file_10 = current_path + '/dataset_elia/2023/10.json',
+        file_11 = current_path + '/dataset_elia/2023/11.json',
+        file_12 = current_path + '/dataset_elia/2023/12.json',
         replace_nan = True,
         random_seed = 42,
         window_size = 30,
-        start_training = '2023-10-08',
+        start_training = '2023-02-01',
         num_test_days = 300,
         forecasts_col = ['forecast', 'confidence10', 'confidence90'],
         measured_col = 'measured',
-        most_recent = False,
+        most_recent = True,
         malicious = False,
         malicious_name= 'mostrecent',
         noise_degree = 10,
@@ -51,13 +57,13 @@ class Stack:
         
         # scaling with normalization or standardization
         scale_features = True,
-        axis=0,
+        axis = 0,
         normalize = False,
         standardize = True,
 
         # add quantile predictions
         add_quantile_predictions = True,
-        augment_q50 = False,
+        augment_q50 = True,
 
         # prediction pipeline
         nr_cv_splits = 3,
@@ -87,10 +93,10 @@ class Stack:
         day_calibration = 2,
 
         # forecasts model parameters
-        gbr_config_params = {'learning_rate': [0.0001, 0.001, 0.005, 0.01],
+        gbr_config_params = {'learning_rate': [0.00001, 0.0001, 0.001, 0.005, 0.01],
                                 'max_features' : [.98, 1.0],
-                                'max_depth': [3, 4, 5],
-                                'max_iter': [25]},
+                                'max_depth': [2, 3, 4],
+                                'max_iter': [150]},
 
         lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005, 0.0075, 0.01],
                             'fit_intercept' : [True, False]},
@@ -99,7 +105,7 @@ class Stack:
         order_diff = 1,
         var_gbr_config_params = {'learning_rate': [0.0001, 0.001, 0.005, 0.01],
                                     'max_features' : [.98, 1.0],
-                                    'max_depth': [3, 4, 5],
+                                    'max_depth': [2, 3, 4],
                                     'max_iter': [25]},
         var_lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005, 0.0075, 0.01],
                                 'fit_intercept' : [True, False]},
@@ -108,14 +114,14 @@ class Stack:
 
         # Lasso coefs importance
         alpha = 0.01,  # significance level for the permutation test
-        nr_pvalues_permutations = 100,  # number of permutations for the p-values
+        nr_pvalues_permutations = 1,  # number of permutations for the p-values
 
         # permutation importance
-        nr_permutations = 100,
+        nr_permutations = 50,
 
         # shapeley importance
         nr_row_permutations = 10,
-        nr_col_permutations = 10,
+        nr_col_permutations = 5,
 
         # plot settings
         plt_wind_power_ensemble = True,  # plot the wind power ensemble forecasts
@@ -124,10 +130,10 @@ class Stack:
         plot_weighted_avg = False,  # plot the weighted average predictions
         plot_importance_gbr = False,  # plot the feature importances for the GBR model
         
-        plot_importance_first_stage = True,  # plot the permutation importances first stage
+        plot_importance_first_stage = False,  # plot the permutation importances first stage
         plot_importance_second_stage = False,  # plot the permutation importances second stage
 
-        plot_importance_lasso_coefs = True,  # plot the lasso coefficients
+        plot_importance_lasso_coefs = False,  # plot the lasso coefficients
         
         plot_importance_weighted_avg = False,  # plot the feature importances for the weighted average model
         zoom_in_variability = True, # zoom in the variability forecasts
