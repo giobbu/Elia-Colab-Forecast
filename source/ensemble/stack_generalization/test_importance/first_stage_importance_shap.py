@@ -101,16 +101,14 @@ def compute_col_perm_score(seed, params_model, nr_features, X_test_augm, y_test,
         col_perm = run_col_permutation(seed, nr_features)
     set_feat2permutate = col_perm[np.arange(0, np.where(col_perm == predictor_index)[0][0])]
     X_test_perm_with, X_test_perm_without = X_test_augm.copy(), X_test_augm.copy()
-    row_scores = Parallel(n_jobs=2)(delayed(compute_row_perm_score)(seed,
-                                                                    fitted_model,
-                                                                    set_feat2permutate,
-                                                                    predictor_index,
-                                                                    X_test_augm,
-                                                                    y_test,
-                                                                    score_function,
-                                                                    X_test_perm_with,
-                                                                    X_test_perm_without
-                                                                    ) for seed in range(params_model['nr_row_permutations']))
+    # Compute row scores using parallel processing
+    row_scores = Parallel(n_jobs=4)(
+        delayed(compute_row_perm_score)(
+            seed, fitted_model, set_feat2permutate, predictor_index, X_test_augm, 
+            y_test, score_function, X_test_perm_with, X_test_perm_without
+        ) for seed in range(params_model['nr_row_permutations'])
+    )
+    # Compute the final column score
     col_score = np.mean(row_scores)
     return col_score
 
