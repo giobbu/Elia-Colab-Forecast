@@ -182,7 +182,6 @@ def compute_row_perm_score(seed, params_model, set_feat2perm, predictor_index, y
     df_2stage_test_without_perm = df_2stage_without_perm[(df_2stage_without_perm.index >= forecast_range[0]) & (df_2stage_without_perm.index <= forecast_range[-1])]
     X_test_2stage_without_perm, y_test_2stage_without_perm = df_2stage_test_without_perm.drop(columns=['targets']).values, df_2stage_test_without_perm['targets'].values
     score_without_perm = score_function(var_fit_model, X_test_2stage_without_perm, y_test_2stage_without_perm)['mean_loss']
-    
     # compute error by PERMUTATING WITH feature of interest
     X_test_perm_with[:, set_feat2perm] = run_row_permutation_set_features(seed, X_test_augm_prev, set_feat2perm)
     X_test_perm_with[:, predictor_index] = run_row_permutation_predictor(seed, X_test_augm_prev, predictor_index)
@@ -191,7 +190,6 @@ def compute_row_perm_score(seed, params_model, set_feat2perm, predictor_index, y
     df_2stage_test_with_perm = df_2stage_with_perm[(df_2stage_with_perm.index >= forecast_range[0]) & (df_2stage_with_perm.index <= forecast_range[-1])]
     X_test_2stage_with_perm, y_test_2stage_with_perm = df_2stage_test_with_perm.drop(columns=['targets']).values, df_2stage_test_with_perm['targets'].values
     score_with_perm = score_function(var_fit_model, X_test_2stage_with_perm, y_test_2stage_with_perm)['mean_loss']
-
     # return the difference in error
     return max(0, score_with_perm - score_without_perm)
 
@@ -223,7 +221,8 @@ def second_stage_shapley_importance(y_test_prev, parameters_model, quantile, inf
     " Compute permutation importances for the first stage model."
     # get info previous day
     fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
-
+    # Standardize the observed target
+    y_test_prev = (y_test_prev - buyer_scaler_stats['mean_buyer'])/buyer_scaler_stats['std_buyer']
     # Get In-sample Predictions
     X_train_augm = info[quantile]['X_train_augmented']
     predictions_insample = fitted_model.predict(X_train_augm)
