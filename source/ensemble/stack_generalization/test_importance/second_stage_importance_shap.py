@@ -193,13 +193,20 @@ def compute_row_perm_score(seed, params_model, set_feat2perm, predictor_index, y
     # return the difference in error
     return max(0, score_with_perm - score_without_perm)
 
-def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm, predictions_insample, score_function, predictor_index, forecast_range):
+def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm, predictions_insample, score_function, predictor_index, forecast_range, list_set_feat2permutate):
     " Compute  score for a single predictor."
+    # Define the maximum number of iterations
+    max_iterations = 2 * nr_features - 1
+    iteration_count = 0
+    # 1) Get the column permutation
     col_perm = run_col_permutation(seed, nr_features)
+    # 2) Ensure that the first element of col_perm is not the predictor_index
     while col_perm[0] == predictor_index:
         seed = seed + 1
         col_perm = run_col_permutation(seed, nr_features)
-    set_feat2perm = col_perm[np.arange(0, np.where(col_perm == predictor_index)[0][0])]
+        set_feat2permutate = col_perm[np.arange(0, np.where(col_perm == predictor_index)[0][0])]
+        # transform set_feat2permutate to an unique string
+        str_set_feat2permutate = ''.join(str(e) for e in set_feat2permutate)
     X_test_perm_with, X_test_perm_without = X_test_augm_prev.copy(), X_test_augm_prev.copy()
     row_scores = Parallel(n_jobs=2)(delayed(compute_row_perm_score)(seed,
                                                                     params_model,
@@ -214,7 +221,7 @@ def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_
                                                                     forecast_range
                                                                     ) for seed in range(params_model['nr_row_permutations']))
     col_score = np.mean(row_scores)
-    return col_score
+    return col_score, str_set_feat2permutate
 
 def second_stage_shapley_importance(y_test_prev, params_model, quantile, info, forecast_range):
     " Compute permutation importances for the first stage model."
