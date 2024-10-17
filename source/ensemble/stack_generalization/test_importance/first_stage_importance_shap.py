@@ -225,6 +225,8 @@ def first_stage_permutation_importance(y_test, params_model, quantile, info_prev
                                                                                 y_test, fitted_model, score_function,
                                                                                 permutate=True, predictor_index=predictor_index) 
                                                                                 for seed in range(params_model['nr_permutations']))
+        # Increment the seed
+        seed += 1
         # Compute the mean contribution
         contribution = decrease_performance(base_score, permuted_scores)
         # Append the importance score to the list
