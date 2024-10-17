@@ -222,7 +222,8 @@ def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_
 def second_stage_shapley_importance(y_test_prev, parameters_model, quantile, info, forecast_range):
     " Compute permutation importances for the first stage model."
     # get info previous day
-    fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm = extract_data(info, quantile)
+    fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
+
     # Get In-sample Predictions
     X_train_augm = info[quantile]['X_train_augmented']
     predictions_insample = fitted_model.predict(X_train_augm)
