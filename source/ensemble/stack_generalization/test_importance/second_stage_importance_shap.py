@@ -101,38 +101,43 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
     """
     Compute permutation importances for the second stage model.
     """
+    # Get the info from the previous day
+    fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
     # Initial validations 
     validate_inputs(params_model, quantile, y_test_prev, X_test_augm_prev)
     # Get the score function
     score_function = get_score_function(quantile)
     # Compute the base score
-    predictions_insample = info[quantile]['fitted_model'].predict(info[quantile]['X_train_augmented'])
-    seed=42
-    base_score = compute_second_stage_score(seed, parameters_model,  
-                                                info[quantile]['fitted_model'], 
-                                                info[quantile]['var_fitted_model'], 
-                                                info[quantile]['X_test_augmented_prev'], 
-                                                info[quantile]['df_train_ensemble'], 
-                                                info[quantile]['df_test_ensemble_prev'], 
-                                                info[quantile]['y_train'], 
-                                                y_test_prev, score_function, predictions_insample, forecast_range)
+    predictions_insample = fitted_model.predict(X_train_augmented)
+
+    # Compute the base score
+    base_score = compute_second_stage_score(seed, 
+                                            params_model,  
+                                            fitted_model, 
+                                            var_fitted_model, 
+                                            X_test_augm_prev, 
+                                            df_train_ens, #info[quantile]['df_train_ensemble'], 
+                                            df_test_ens_prev, 
+                                            y_train, 
+                                            y_test_prev, score_function, predictions_insample, forecast_range)
     # Compute importance scores for each predictor
     importance_scores = []
-    for predictor_index in range(info[quantile]['X_test_augmented_prev'].shape[1]):
+    for predictor_index in range(X_test_augm_prev.shape[1]):
         # Get the predictor name
-        predictor_name = info[quantile]['df_train_ensemble_augmented'].drop(columns=['norm_targ']).columns[predictor_index]
+        predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
         # Compute permuted scores in parallel
         permuted_scores = Parallel(n_jobs=4)(delayed(compute_second_stage_score)(seed, 
-                                                                                        parameters_model, 
-                                                                                        info[quantile]['fitted_model'], 
-                                                                                        info[quantile]['var_fitted_model'], 
-                                                                                        info[quantile]['X_test_augmented_prev'], 
-                                                                                        info[quantile]['df_train_ensemble'], 
-                                                                                        info[quantile]['df_test_ensemble_prev'], 
-                                                                                        info[quantile]['y_train'],
+                                                                                        params_model, 
+                                                                                        fitted_model, 
+                                                                                        var_fitted_model, 
+                                                                                        X_test_augm_prev, 
+                                                                                        df_train_ens, 
+                                                                                        df_test_ens_prev, 
+                                                                                        y_train,
                                                                                         y_test_prev, score_function, predictions_insample, forecast_range, 
                                                                                         permutate=True, predictor_index=predictor_index) 
-                                                                                        for seed in range(parameters_model['nr_permutations']))
+                                                                                        for seed in range(params_model['nr_permutations']))
+
         # Compute the mean contribution
         mean_contribution = decrease_performance(base_score, permuted_scores)
         # Append the importance score
