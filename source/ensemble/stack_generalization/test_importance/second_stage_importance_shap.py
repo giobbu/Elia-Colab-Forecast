@@ -109,6 +109,8 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
     score_function = get_score_function(quantile)
     # Compute the base score
     predictions_insample = fitted_model.predict(X_train_augmented)
+    # Normalize the target
+    y_test_prev = (y_test_prev - buyer_scaler_stats['mean_buyer']) / buyer_scaler_stats['std_buyer']
 
     # Compute the base score
     base_score = compute_second_stage_score(seed, 
