@@ -28,7 +28,15 @@ def score_func_90(estimator, X, y):
     }
 
 def evaluate(model, X, y, cv, quantile):
-    " Evaluate model using cross-validation."
+    """ Evaluate model using cross-validation.
+    args:
+        model: model object
+        X: np.array, training data
+        y: np.array, target data
+        cv: int, number of cross-validation splits
+        quantile: float, quantile
+    returns:
+        score_mean: float, mean score"""
     assert isinstance(X, np.ndarray), "X should be a numpy array"
     assert isinstance(y, np.ndarray), "y should be a numpy array"
     assert quantile in [0.1, 0.5, 0.9], "Invalid quantile value. Must be 0.1, 0.5, or 0.9."
