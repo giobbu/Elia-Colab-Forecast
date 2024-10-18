@@ -2,7 +2,14 @@ import pandas as pd
 import numpy as np
 
 def create_pre_test_dataframe(df_buyer, df_ensemble, pre_start_prediction, buyer_name):
-    " Create test dataframes for buyer and ensemble predictions"
+    """ Create test dataframes for buyer and ensemble predictions 
+    args:
+        df_buyer: pd.DataFrame, buyer predictions
+        df_ensemble: pd.DataFrame, ensemble predictions
+        pre_start_prediction: pd.Timestamp, start prediction timestamp
+        buyer_name: str, buyer name
+    returns:
+        df_test_ensemble_pre: pd.DataFrame, test ensemble predictions"""
     # Ensure the DataFrame indices are datetime types
     if not pd.api.types.is_datetime64_any_dtype(df_buyer.index):
         raise TypeError("The df_buyer_norm index must be a datetime type.")
@@ -68,7 +75,11 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     return X_test, y_test
 
 def split_train_test_data(df, end_train, start_prediction):
-    "Split the data into training and test sets"
+    """ Split the data into training and test sets 
+    args:
+        df: pd.DataFrame, dataframe
+        end_train: pd.Timestamp, end training timestamp
+        start_prediction: pd.Timestamp, start prediction timestamp"""
     assert isinstance(df, pd.DataFrame), "df should be a DataFrame"
     assert isinstance(end_train, pd.Timestamp), "end_training should be a Timestamp"
     assert isinstance(start_prediction, pd.Timestamp), "start_predictions should be a Timestamp"
@@ -77,7 +88,17 @@ def split_train_test_data(df, end_train, start_prediction):
     return df_train, df_test
 
 def concatenate_feat_targ_dataframes(buyer_resource_name, df_train_ensemble, df_test_ensemble, df_train, df_test,  max_lag):
-    "Prepare train and test data for ensemble model"
+    """ Prepare train and test data for ensemble model
+    args:
+        buyer_resource_name: str, buyer resource name
+        df_train_ensemble: pd.DataFrame, ensemble training data
+        df_test_ensemble: pd.DataFrame, ensemble testing data
+        df_train: pd.DataFrame, training data
+        df_test: pd.DataFrame, testing data
+        max_lag: int, maximum lag value
+    returns:
+        df_train_ensemble: pd.DataFrame, ensemble training data
+        df_test_ensemble: pd.DataFrame, ensemble testing data"""
     assert isinstance(df_train_ensemble, pd.DataFrame), "df_train_ensemble should be a DataFrame"
     assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
     assert isinstance(df_train, pd.DataFrame), "df_train should be a DataFrame"
@@ -92,7 +113,16 @@ def concatenate_feat_targ_dataframes(buyer_resource_name, df_train_ensemble, df_
     return df_train_ensemble, df_test_ensemble
 
 def get_numpy_Xy_train_test(df_train_ensemble, df_test_ensemble):
-    "Get numpy arrays for X_train, y_train, X_test, y_test"
+    """Get numpy arrays for X_train, y_train, X_test, y_test
+    Args:
+        df_train_ensemble: pd.DataFrame, ensemble training data
+        df_test_ensemble: pd.DataFrame, ensemble testing data
+    Returns:
+        X_train: np.array, training features
+        y_train: np.array, training target
+        X_test: np.array, testing features
+        y_test: np.array, testing target
+    """
     assert isinstance(df_train_ensemble, pd.DataFrame), "df_train_ensemble should be a DataFrame"
     assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
     X_train, y_train = df_train_ensemble.iloc[:, :-1].values, df_train_ensemble.iloc[:, -1].values
