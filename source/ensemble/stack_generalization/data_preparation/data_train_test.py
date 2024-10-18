@@ -17,13 +17,25 @@ def create_pre_test_dataframe(df_buyer, df_ensemble, pre_start_prediction, buyer
     return df_test_ensemble_pre
 
 def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q10=pd.DataFrame([]), df_test_ensemble_q90=pd.DataFrame([])):
-    " Prepare test set for 2-stage model"
+    """Prepare test set for 2-stage model.
+    Args:
+        params: dict, ensemble parameters
+        quantile: float, quantile value
+        df_test_ensemble: pd.DataFrame, test data
+        df_test_ensemble_q10: pd.DataFrame, quantile 10% test data
+        df_test_ensemble_q90: pd.DataFrame, quantile 90% test data
+    Returns:
+        X_test: np.array, test features
+        y_test: np.array, test target
+    """
+    # Assertions for input validation
     assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
     assert len(df_test_ensemble) == 192, "df_test_ensemble should have 192 rows"
     assert len(df_test_ensemble_q10) == 192 or df_test_ensemble_q10.empty, "df_test_ensemble_q10 should have 192 rows or be empty"
     assert len(df_test_ensemble_q90) == 192 or df_test_ensemble_q90.empty, "df_test_ensemble_q90 should have 192 rows or be empty"
-    assert "norm_targ" in df_test_ensemble.columns, "norm_targ should be in df_test_ensemble columns"
+    assert "norm_targ" in df_test_ensemble.columns, "'norm_targ' should be in df_test_ensemble columns"
     target_column = "norm_targ"
+    # Get the test data (features and target)
     X_test = df_test_ensemble.drop(columns=[target_column]).values
     y_test = df_test_ensemble[target_column].values
     # If quantile is 0.5 and no need to augment, return the original test data
