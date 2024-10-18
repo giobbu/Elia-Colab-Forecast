@@ -26,22 +26,34 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     target_column = "norm_targ"
     X_test = df_test_ensemble.drop(columns=[target_column]).values
     y_test = df_test_ensemble[target_column].values
-    if params['add_quantile_predictions']:
-        X_test_q10 = df_test_ensemble_q10.values if not df_test_ensemble_q10.empty else np.array([])  # Get the 10th quantile predictions
-        X_test_q90 = df_test_ensemble_q90.values if not df_test_ensemble_q90.empty else np.array([])  # Get the 90th quantile predictions
-        # Create a dictionary with the quantile predictions
-        quantile_data = {
-            0.1: X_test_q10,  
-            0.9: X_test_q90
-        }
-        quantile_data.update({0.5: np.concatenate([X_test_q10, X_test_q90], axis=1) if not (df_test_ensemble_q10.empty or df_test_ensemble_q90.empty) else (X_test_q10 if not df_test_ensemble_q10.empty else X_test_q90),  # Get the 50th quantile predictions
-                                })  # Add the 50th quantile predictions
-        if quantile not in quantile_data:
-            raise ValueError('Invalid quantile value. Must be 0.1, 0.5, or 0.9.')
-        X_test_part = quantile_data[quantile]
-        if quantile == 0.5 and not params['augment_q50']:
+    # If quantile is 0.5 and no need to augment, return the original test data
+    if quantile == 0.5 and not params.get('augment_q50', False):
             return X_test, y_test
-        X_test = np.concatenate([X_test, X_test_part], axis=1) if X_test_part.size else X_test
+    # If quantile predictions need to be added
+    if params['add_quantile_predictions']:
+        # Extract quantile data, default to empty arrays if unavailable
+        X_test_q10 = df_test_ensemble_q10.values if not df_test_ensemble_q10.empty else np.array([])
+        X_test_q90 = df_test_ensemble_q90.values if not df_test_ensemble_q90.empty else np.array([])
+        # Prepare quantile data dictionary
+        quantile_data = {
+            0.1: X_test_q10,
+            0.9: X_test_q90,
+        }
+        # Add the median quantile data if available
+        if not (df_test_ensemble_q10.empty or df_test_ensemble_q90.empty):
+            quantile_data[0.5] = np.concatenate([X_test_q10, X_test_q90], axis=1)
+        elif not df_test_ensemble_q10.empty:
+            quantile_data[0.5] = X_test_q10
+        elif not df_test_ensemble_q90.empty:
+            quantile_data[0.5] = X_test_q90
+        else:
+            quantile_data[0.5] = np.array([])
+        # Validate the requested quantile
+        if quantile not in quantile_data:
+            raise ValueError("Invalid quantile value. Must be 0.1, 0.5, or 0.9.")
+        # Concatenate the selected quantile data if it's not empty
+        if quantile_data[quantile].size != 0:
+            X_test = np.concatenate([X_test, quantile_data[quantile]], axis=1)
     return X_test, y_test
 
 
