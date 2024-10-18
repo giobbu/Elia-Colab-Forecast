@@ -10,7 +10,26 @@ def predico_ensemble_predictions_per_quantile(ens_params,
                                                 best_results, iteration, 
                                                 X_train_quantile10=np.array([]), X_test_quantile10=np.array([]), df_train_ensemble_quantile10=pd.DataFrame(), 
                                                 X_train_quantile90=np.array([]), X_test_quantile90=np.array([]), df_train_ensemble_quantile90=pd.DataFrame()):
-    " Run ensemble predictions for a specific quantile."
+    """ Run ensemble predictions for a specific quantile.
+    args:
+        ens_params: dict, ensemble parameters
+        X_train: np.array, training data
+        X_test: np.array, testing data
+        y_train: np.array, target data
+        df_train_ensemble: pd.DataFrame, training data
+        predictions: dict, predictions
+        quantile: float, quantile
+        best_results: dict, best results
+        iteration: int, iteration number
+        X_train_quantile10: np.array, training data for quantile 10
+        X_test_quantile10: np.array, testing data for quantile 10
+        df_train_ensemble_quantile10: pd.DataFrame, training data for quantile 10
+        X_train_quantile90: np.array, training data for quantile 90
+        X_test_quantile90: np.array, testing data for quantile 90
+        df_train_ensemble_quantile90: pd.DataFrame, training data for quantile 90
+    returns:
+            results: dict, results"""
+    
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Run ensemble predictions for quantile {quantile} </fg 250,128,114>')
 
@@ -89,12 +108,32 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     return results 
 
 
-def predico_ensemble_variability_predictions(ens_params, X_train_2stage, y_train_2stage, X_test_2stage, variability_predictions, quantile, iteration, best_results_var, 
-                                             variability_predictions_insample,
-                                             variability_predictions_outsample):
-    " Run ensemble variability predictions"
+def predico_ensemble_variability_predictions(ens_params, 
+                                            X_train_2stage,
+                                            y_train_2stage, 
+                                            X_test_2stage, 
+                                            variability_predictions, 
+                                            quantile, 
+                                            iteration, 
+                                            best_results_var, 
+                                            variability_predictions_insample,
+                                            variability_predictions_outsample):
+    """ Run ensemble variability predictions 
+    args:
+        ens_params: dict, ensemble parameters
+        X_train_2stage: np.array, training data for the 2nd stage
+        y_train_2stage: np.array, target data for the 2nd stage
+        X_test_2stage: np.array, testing data for the 2nd stage
+        variability_predictions: dict, predictions
+        quantile: float, quantile
+        iteration: int, iteration number
+        best_results_var: dict, best results
+        variability_predictions_insample: dict, insample predictions
+        variability_predictions_outsample: dict, outsample predictions
+    returns:
+        results: dict, results
+    """
     logger.opt(colors=True).info(f'<fg 72,201,176> Run ensemble variability predictions for quantile {quantile} </fg 72,201,176>')
-
     # Initialize variables
     nr_cv_splits = ens_params['nr_cv_splits'] 
     var_model_type = ens_params['var_model_type'] 
