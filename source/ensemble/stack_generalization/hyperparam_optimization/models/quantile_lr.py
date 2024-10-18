@@ -1,10 +1,20 @@
 import numpy as np
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.linear_model import LinearRegression, QuantileRegressor, Lasso
+from sklearn.linear_model import QuantileRegressor, Lasso
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import evaluate
 
 def optimize_lr(X_train, y_train, quantile, nr_cv_splits, solver, params):
-    " Hyperparameter optimization for Quantile Linear Regression. "
+    """ Hyperparameter optimization for Quantile Linear Regression. 
+    args:
+        X_train: np.array, training data
+        y_train: np.array, target data
+        quantile: float, quantile
+        nr_cv_splits: int, number of cross-validation splits
+        solver: str, solver
+        params: dict, parameters
+    returns:
+        best_score: float, best score
+        best_lr_params: dict, best parameters"""
     assert isinstance(X_train, np.ndarray), "X_train should be a numpy array"
     assert isinstance(y_train, np.ndarray), "y_train should be a numpy array"
     assert quantile in [0.1, 0.5, 0.9], "Invalid quantile value. Must be 0.1, 0.5, or 0.9."

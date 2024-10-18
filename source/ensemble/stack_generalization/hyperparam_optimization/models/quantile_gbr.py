@@ -4,7 +4,16 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from source.ensemble.stack_generalization.hyperparam_optimization.models.utils.cross_validation import evaluate
 
 def optimize_gbr(X_train, y_train, quantile, nr_cv_splits, params):
-    " Hyperparameter optimization for Quantile Gradient Boosting Regressor."
+    """ Hyperparameter optimization for Quantile Gradient Boosting Regressor.
+    args:
+        X_train: np.array, training data
+        y_train: np.array, target data
+        quantile: float, quantile
+        nr_cv_splits: int, number of cross-validation splits
+        params: dict, parameters
+    returns:
+        best_score: float, best score
+        best_gbr_params: dict, best parameters"""
     assert isinstance(X_train, np.ndarray), "X_train should be a numpy array"
     assert isinstance(y_train, np.ndarray), "y_train should be a numpy array"
     assert quantile in [0.1, 0.5, 0.9], "Invalid quantile value. Must be 0.1, 0.5, or 0.9."
