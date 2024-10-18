@@ -84,15 +84,17 @@ def predico_ensemble_predictions_per_quantile(ens_params,
                 'X_train_augmented': X_train_augmented, 'X_test_augmented': X_test_augmented,
                 'df_train_ensemble_augmented': df_train_ensemble_augmented}
     
+    # Compute p-values for the coefficients
     if ens_params['model_type'] == 'LR':
         # Compute p-values for the coefficients
         coefs, p_values_permutation = permutation_quantile_regression(best_params, solver, X_train_augmented, y_train, quantile, n_permutations=ens_params['nr_pvalues_permutations'])
         model_summary = pd.DataFrame({
-                "Predictor": df_train_ensemble_augmented.drop(['norm_targ'], axis=1).columns,
-                "Coefs": coefs,
-                "p-values": p_values_permutation,
-                "significant": p_values_permutation < ens_params['alpha']/len(coefs)  # Bonferroni correction
-            }).sort_values(by="Coefs", ascending=False)
+                                        "Predictor": df_train_ensemble_augmented.drop(['norm_targ'], axis=1).columns,
+                                        "Coefs": coefs,
+                                        "p-values": p_values_permutation,
+                                        "significant": p_values_permutation < ens_params['alpha']/len(coefs)  # Bonferroni correction
+                                    })
+        model_summary = model_summary.sort_values(by="Coefs", ascending=False)
         # Store results
         results['coefs'] = coefs
         results['p_values'] = np.array([round(p_values_permutation[i], 4) for i in range(len(p_values_permutation))])
