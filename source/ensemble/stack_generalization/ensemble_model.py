@@ -88,11 +88,13 @@ def predico_ensemble_predictions_per_quantile(ens_params,
     if ens_params['model_type'] == 'LR':
         # Compute p-values for the coefficients
         coefs, p_values_permutation = permutation_quantile_regression(best_params, solver, X_train_augmented, y_train, quantile, n_permutations=ens_params['nr_pvalues_permutations'])
+        # Bonferroni correction
+        is_significant = p_values_permutation < ens_params['alpha']/len(coefs)
         model_summary = pd.DataFrame({
                                         "Predictor": df_train_ensemble_augmented.drop(['norm_targ'], axis=1).columns,
                                         "Coefs": coefs,
                                         "p-values": p_values_permutation,
-                                        "significant": p_values_permutation < ens_params['alpha']/len(coefs)  # Bonferroni correction
+                                        "significant": is_significant
                                     })
         model_summary = model_summary.sort_values(by="Coefs", ascending=False)
         # Store results
