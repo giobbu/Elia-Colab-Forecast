@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
- 
 
 def create_pre_test_dataframe(df_buyer, df_ensemble, pre_start_prediction, buyer_name):
     " Create test dataframes for buyer and ensemble predictions"
@@ -68,7 +67,6 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
             X_test = np.concatenate([X_test, quantile_data[quantile]], axis=1)
     return X_test, y_test
 
-
 def split_train_test_data(df, end_train, start_prediction):
     "Split the data into training and test sets"
     assert isinstance(df, pd.DataFrame), "df should be a DataFrame"
@@ -77,7 +75,6 @@ def split_train_test_data(df, end_train, start_prediction):
     df_train = df[df.index < end_train]
     df_test = df[df.index >= start_prediction]
     return df_train, df_test
-
 
 def concatenate_feat_targ_dataframes(buyer_resource_name, df_train_ensemble, df_test_ensemble, df_train, df_test,  max_lag):
     "Prepare train and test data for ensemble model"
