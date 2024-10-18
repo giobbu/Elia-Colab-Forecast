@@ -2,7 +2,16 @@ import pandas as pd
 import numpy as np
 
 def create_augmented_dataframe(df, max_lags, forecasters_diversity=False, lagged=False, augmented=False, differenciate=False):
-    " Create feature engineering dataframe with forecasters diversity, lagged, augmented and differenciate features"
+    """ Create feature engineering dataframe with forecasters diversity, lagged, augmented and differenciate features 
+    args:
+        df: pd.DataFrame, dataframe
+        max_lags: int, maximum lag value
+        forecasters_diversity: bool, create forecasters diversity features
+        lagged: bool, create lagged features
+        augmented: bool, create augmented features
+        differenciate: bool, create differenciate features
+    returns:
+        df: pd.DataFrame, dataframe with the new features"""
     assert isinstance(df, pd.DataFrame), "df should be a DataFrame"
     assert isinstance(max_lags, int), "max_lags should be an integer"
     assert max_lags > 0, "max_lags should be greater than 0"
@@ -89,7 +98,24 @@ def augment_with_quantiles(X_train, X_test, df_train_ensemble,
                             X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10,
                             X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90,  
                             quantile, augment_q50=False):
-    " Augment the training and testing data with the quantiles predictions from forecasters"
+    """ Augment the training and testing data with the quantiles predictions from forecasters
+    args:
+        X_train: np.array, training data
+        X_test: np.array, testing data
+        df_train_ensemble: pd.DataFrame, training data
+        X_train_quantile10: np.array, training data for quantile 10
+        X_test_quantile10: np.array, testing data for quantile 10
+        df_train_ensemble_quantile10: pd.DataFrame, training data for quantile 10
+        X_train_quantile90: np.array, training data for quantile 90
+        X_test_quantile90: np.array, testing data for quantile 90
+        df_train_ensemble_quantile90: pd.DataFrame, training data for quantile 90
+        quantile: float, quantile value
+        augment_q50: bool, augment with quantiles predictions
+    returns:
+        X_train: np.array, augmented training data
+        X_test: np.array, augmented testing data
+        df_train_ensemble: pd.DataFrame, augmented training data"""
+    
     assert isinstance(X_train, np.ndarray), "X_train should be a numpy array"
     assert isinstance(X_test, np.ndarray), "X_test should be a numpy array"
     assert isinstance(df_train_ensemble, pd.DataFrame), "df_train_ensemble should be a DataFrame"
