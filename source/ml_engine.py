@@ -23,7 +23,18 @@ def create_ensemble_forecasts(ens_params,
                                 forecast_range,
                                 challenge_usecase = None,
                                 simulation = False):
-    " Create ensemble forecasts for wind power and wind power variability using forecasters predictions"
+    """Create ensemble forecasts for wind power and wind power variability using forecasters predictions
+    args:
+        ens_params: dict, ensemble parameters
+        df_buyer: pd.DataFrame, buyer data
+        df_market: pd.DataFrame, market data
+        end_training_timestamp: pd.Timestamp, end of training timestamp
+        forecast_range: pd.DatetimeIndex, forecast range
+        challenge_usecase: str, challenge usecase
+        simulation: bool, simulation
+    returns:
+        results_challenge_dict: dict, results for the challenge
+        results_challenge_dict_simulation: dict, results for the challenge simulation"""
 
     pre_start_prediction_timestamp = forecast_range[0] - pd.Timedelta('1day')
     start_prediction_timestamp = forecast_range[0] 
