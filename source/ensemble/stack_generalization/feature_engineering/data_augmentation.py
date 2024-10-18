@@ -100,39 +100,38 @@ def augment_with_quantiles(X_train, X_test, df_train_ensemble,
     assert isinstance(X_test_quantile90, np.ndarray), "X_test_quantile90 should be a numpy array"
     assert isinstance(df_train_ensemble_quantile90, pd.DataFrame), "df_train_ensemble_quantile90 should be a DataFrame"
     assert quantile in [0.1, 0.5, 0.9], "Invalid quantile value. Must be 0.1, 0.5, or 0.9."
-
-    if not df_train_ensemble_quantile10.empty or not df_train_ensemble_quantile90.empty:
-        # Create a dictionary with the quantile data
-        if not df_train_ensemble_quantile10.empty and not df_train_ensemble_quantile90.empty: 
-            quantile_data = {
-                0.1: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
-                0.5: (np.concatenate([X_train_quantile10, X_train_quantile90], axis=1),
-                        np.concatenate([X_test_quantile10, X_test_quantile90], axis=1),
-                        pd.concat([df_train_ensemble_quantile10, df_train_ensemble_quantile90], axis=1)),
-                0.9: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90)
-            }
-        elif not df_train_ensemble_quantile10.empty:
-            quantile_data = {
-                0.1: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
-                0.5: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
-                0.9: (np.array([]), np.array([]), pd.DataFrame([]))
-            }
-        elif not df_train_ensemble_quantile90.empty:
-            quantile_data = {
-                0.1: (np.array([]), np.array([]), pd.DataFrame([])),
-                0.5: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90),
-                0.9: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90)
-            }
-        if quantile not in quantile_data:
-            raise ValueError('Invalid quantile value. Must be 0.1, 0.5, or 0.9.')
-        " Get the quantile data and augment the training and testing data with it"
-        X_train_part, X_test_part, df_train_ensemble_part = quantile_data[quantile]
-        if quantile == 0.5 and not augment_q50:
-            " Do not augment with augmented quantiles"
-            return X_train, X_test, df_train_ensemble
-        X_train = np.concatenate([X_train, X_train_part], axis=1)
-        X_test = np.concatenate([X_test, X_test_part], axis=1)
-        df_train_ensemble = pd.concat([df_train_ensemble, df_train_ensemble_part], axis=1)
+    # If quantile is 0.5 and no need to augment, return the original training and testing data
+    if quantile == 0.5 and not augment_q50:
+        " Do not augment with augmented quantiles"
         return X_train, X_test, df_train_ensemble
+    # Create a dictionary with the quantile data
+    if not df_train_ensemble_quantile10.empty and not df_train_ensemble_quantile90.empty: 
+        quantile_data = {
+            0.1: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
+            0.5: (np.concatenate([X_train_quantile10, X_train_quantile90], axis=1),
+                    np.concatenate([X_test_quantile10, X_test_quantile90], axis=1),
+                    pd.concat([df_train_ensemble_quantile10, df_train_ensemble_quantile90], axis=1)),
+            0.9: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90)
+        }
+    elif not df_train_ensemble_quantile10.empty:
+        quantile_data = {
+            0.1: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
+            0.5: (X_train_quantile10, X_test_quantile10, df_train_ensemble_quantile10),
+            0.9: (np.array([]), np.array([]), pd.DataFrame([]))
+        }
+    elif not df_train_ensemble_quantile90.empty:
+        quantile_data = {
+            0.1: (np.array([]), np.array([]), pd.DataFrame([])),
+            0.5: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90),
+            0.9: (X_train_quantile90, X_test_quantile90, df_train_ensemble_quantile90)
+        }
     else:
         return X_train, X_test, df_train_ensemble
+    if quantile not in quantile_data:
+        raise ValueError('Invalid quantile value. Must be 0.1, 0.5, or 0.9.')
+    " Get the quantile data and augment the training and testing data with it"
+    X_train_part, X_test_part, df_train_ensemble_part = quantile_data[quantile]
+    X_train = np.concatenate([X_train, X_train_part], axis=1)
+    X_test = np.concatenate([X_test, X_test_part], axis=1)
+    df_train_ensemble = pd.concat([df_train_ensemble, df_train_ensemble_part], axis=1)
+    return X_train, X_test, df_train_ensemble
