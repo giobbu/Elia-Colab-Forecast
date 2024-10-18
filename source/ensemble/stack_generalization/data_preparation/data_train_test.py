@@ -27,13 +27,15 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     X_test = df_test_ensemble.drop(columns=[target_column]).values
     y_test = df_test_ensemble[target_column].values
     if params['add_quantile_predictions']:
-        X_test_q10 = df_test_ensemble_q10.values if not df_test_ensemble_q10.empty else np.array([])
-        X_test_q90 = df_test_ensemble_q90.values if not df_test_ensemble_q90.empty else np.array([])
+        X_test_q10 = df_test_ensemble_q10.values if not df_test_ensemble_q10.empty else np.array([])  # Get the 10th quantile predictions
+        X_test_q90 = df_test_ensemble_q90.values if not df_test_ensemble_q90.empty else np.array([])  # Get the 90th quantile predictions
+        # Create a dictionary with the quantile predictions
         quantile_data = {
-            0.1: X_test_q10 if not df_test_ensemble_q10.empty else np.array([]),
-            0.5: np.concatenate([X_test_q10, X_test_q90], axis=1) if not (df_test_ensemble_q10.empty or df_test_ensemble_q90.empty) else (X_test_q10 if not df_test_ensemble_q10.empty else X_test_q90),
-            0.9: X_test_q90 if not df_test_ensemble_q90.empty else np.array([])
+            0.1: X_test_q10,  
+            0.9: X_test_q90
         }
+        quantile_data.update({0.5: np.concatenate([X_test_q10, X_test_q90], axis=1) if not (df_test_ensemble_q10.empty or df_test_ensemble_q90.empty) else (X_test_q10 if not df_test_ensemble_q10.empty else X_test_q90),  # Get the 50th quantile predictions
+                                })  # Add the 50th quantile predictions
         if quantile not in quantile_data:
             raise ValueError('Invalid quantile value. Must be 0.1, 0.5, or 0.9.')
         X_test_part = quantile_data[quantile]
