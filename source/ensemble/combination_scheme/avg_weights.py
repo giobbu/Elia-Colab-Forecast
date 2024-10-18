@@ -85,7 +85,18 @@ def normalize_weights(lst_weight):
 #     return norm_lst_weight
 
 def calculate_combination_forecast(df_test_norm, lst_cols_forecasts, norm_lst_q50_pb_loss, norm_lst_q10_pb_loss, norm_lst_q90_pb_loss):
-    " Calculate the combination forecast based on the pinball loss-based weights"
+    """ Calculate the combination forecast based on the pinball loss-based weights 
+    args:
+        df_test_norm: pd.DataFrame, test data
+        lst_cols_forecasts: list, list of forecast columns
+        norm_lst_q50_pb_loss: list, list of normalized quantile 50 weights
+        norm_lst_q10_pb_loss: list, list of normalized quantile 10 weights
+        norm_lst_q90_pb_loss: list, list of normalized quantile 90 weights
+    returns:
+        combination_forecast: np.array, combination forecast
+        combination_quantile10: np.array, combination quantile 10
+        combination_quantile90: np.array, combination quantile 90
+    """
     combination_forecast = np.zeros(len(df_test_norm))
     combination_quantile10 = np.zeros(len(df_test_norm))
     combination_quantile90 = np.zeros(len(df_test_norm))
@@ -107,8 +118,21 @@ def calculate_combination_forecast(df_test_norm, lst_cols_forecasts, norm_lst_q5
     return combination_forecast, combination_quantile10, combination_quantile90
 
 def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm, 
-                           end_observations, start_predictions, window_size_valid=1, var=False, norm='sum'):
-    " Calculate the weights based on the pinball loss of the forecasts "
+                            end_observations, start_predictions, window_size_valid=1, var=False, norm='sum'):
+    """ Calculate the weights based on the pinball loss of the forecasts
+    args:
+        sim_params: dict, simulation parameters
+        df_train_norm: pd.DataFrame, training data
+        df_test_norm: pd.DataFrame, test data
+        end_observations: pd.Timestamp, end observations timestamp
+        start_predictions: pd.Timestamp, start predictions timestamp
+        window_size_valid: int, window size for validation
+        var: bool, variance
+        norm: str, normalization method
+    returns:
+        df_weighted_avg: pd.DataFrame, weighted average forecast
+        dict_weights: dict, dictionary of weights
+    """
     assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
     if var:
         df = pd.concat([df_train_norm, df_test_norm], axis=0).diff().dropna()
@@ -144,7 +168,15 @@ def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm,
 
 
 def create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90):
-    " Create dataframe with the weighted average forecast"
+    """ Create dataframe with the weighted average forecast
+    args:
+        df_test_norm: pd.DataFrame, test data
+        combination_forecast: np.array, combination forecast
+        combination_quantile10: np.array, combination quantile 10
+        combination_quantile90: np.array, combination quantile 90
+    returns:
+        df_weighted_avg: pd.DataFrame, weighted average forecast
+    """
     assert len(df_test_norm) == len(combination_forecast) == len(combination_quantile10) == len(combination_quantile90), 'Length mismatch'
     df_weighted_avg = pd.DataFrame({
         'Q10': combination_quantile10,
