@@ -1,5 +1,17 @@
 import numpy as np
 import pandas as pd
+from loguru import logger
+
+def log_ramp_alarm_status(alarm_status_list, df_outsample_list):
+    """
+    Logs the ramp alarm status and associated datetime ranges.
+    """
+    logger.info(' ')
+    logger.info('Intraday Wind Ramp Detection')
+    logger.info(' ')
+    for i, (alarm_status_i, df) in enumerate(zip(alarm_status_list, df_outsample_list), start=1):
+        logger.info(f"Ramp Alarm Status {i}: {alarm_status_i} - Datetime Range: {df.index[0]} - {df.index[-1]}")
+
 
 def process_ramp_events(measurements_df):
     """ Process ramp events in the measurements_df DataFrame.
