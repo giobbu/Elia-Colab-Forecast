@@ -18,7 +18,17 @@ def compute_weight(loss, norm):
     return weight
 
 def calculate_weights(sim_params, df_val_norm, norm='sum'):
-    " Calculate weights based on the pinball loss of the forecasts"
+    """ Calculate weights based on the pinball loss of the forecasts
+    args:
+        sim_params: dict, simulation parameters
+        df_val_norm: pd.DataFrame, validation data
+        norm: str, normalization method
+    returns:
+        lst_cols_forecasts: list, list of forecast columns
+        lst_q10_weight: list, list of quantile 10 weights
+        lst_q50_weight: list, list of quantile 50 weights
+        lst_q90_weight: list, list of quantile 90 weights
+    """
     assert len(df_val_norm) > 0, 'Dataframe is empty'
     if not sim_params['most_recent']:
         lst_cols = [name for name in list(df_val_norm.columns) if 'mostrecent' not in name]
@@ -51,7 +61,12 @@ def calculate_weights(sim_params, df_val_norm, norm='sum'):
     return lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight
     
 def normalize_weights(lst_weight):
-    " Normalize weights, the sum should be 1"
+    """ Normalize weights, the sum should be 1
+    args:
+        lst_weight: list, list of weights
+    returns:
+        norm_lst_weight: list, list of normalized weights
+    """
     assert len(lst_weight) > 0, 'List of weights is empty'  
     total_sum = sum(list(loss.values())[0] for loss in lst_weight)
     norm_lst_weight = [{key: value/total_sum for key, value in d.items()} for d in lst_weight]
