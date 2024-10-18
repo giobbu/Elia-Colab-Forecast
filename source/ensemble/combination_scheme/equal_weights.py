@@ -1,7 +1,12 @@
 import pandas as pd
 
 def calculate_equal_weights(df_test_norm, start_prediction_timestamp):
-    " Calculate the mean prediction and quantiles using equal weights"
+    """Calculate the mean prediction and quantiles using equal weights
+    Args:
+        df_test_norm: pd.DataFrame, test data
+        start_prediction_timestamp: pd.Timestamp, start prediction timestamp
+    Returns:
+        df_equal_weights: pd.DataFrame, equal weights forecast"""
     assert 'norm_measured' in df_test_norm.columns, "norm_measured column is missing"
     df_test_norm = df_test_norm[df_test_norm.index >= start_prediction_timestamp]
     assert len(df_test_norm) == 96, "Dataframe must have 96 rows"
