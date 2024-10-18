@@ -1,43 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_pinball_loss, mean_squared_error
-from source.ensemble.combination_scheme.utils import compute_weight
-
-def calculate_weights(sim_params, df_val_norm, norm='sum'):
-    " Calculate weights based on the pinball loss of the forecasts"
-    assert len(df_val_norm) > 0, 'Dataframe is empty'
-    if not sim_params['most_recent']:
-        lst_cols = [name for name in list(df_val_norm.columns) if 'mostrecent' not in name]
-    elif not sim_params['malicious']:
-        lst_cols = [name for name in list(df_val_norm.columns) if 'malicious' not in name]
-    else:
-        lst_cols = list(df_val_norm.columns)
-    targ_col = [name for name in lst_cols if 'measured' in name]
-    targets =  df_val_norm[targ_col[0]]
-    lst_cols_forecasts = [name for name in lst_cols if 'measured' not in name]
-    lst_q10_weight = []
-    lst_q50_weight = []
-    lst_q90_weight = []
-    for col in lst_cols_forecasts:
-        if 'forecast' in col:
-            forecast = df_val_norm[col]
-            q50_pb_loss = mean_squared_error(targets.values,  forecast.values)  # 
-            weight_q50 = compute_weight(q50_pb_loss, norm)
-            lst_q50_weight.append({col : weight_q50})
-        elif 'confidence10' in col:
-            forecast = df_val_norm[col]
-            q10_pb_loss = mean_pinball_loss(targets.values,  forecast.values, alpha=0.1)
-            weight_q10 = compute_weight(q10_pb_loss, norm)
-            lst_q10_weight.append({col : weight_q10})
-        elif 'confidence90' in col:
-            forecast = df_val_norm[col]
-            q90_pb_loss = mean_pinball_loss(targets.values,  forecast.values, alpha=0.9)
-            weight_q90 = compute_weight(q90_pb_loss, norm)
-            lst_q90_weight.append({col : weight_q90})
-        else:
-            raise ValueError('Not a valid column')
-    return lst_cols_forecasts, lst_q10_weight, lst_q50_weight, lst_q90_weight
-    
+from source.ensemble.combination_scheme.utils import calculate_weights
 
 def calculate_best_model(df_test_norm, lst_cols_forecasts, norm_lst_q50_pb_loss, norm_lst_q10_pb_loss, norm_lst_q90_pb_loss):
     " Calculate the combination forecast based on the pinball loss-based weights"
