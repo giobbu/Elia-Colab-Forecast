@@ -24,11 +24,9 @@
 ## Wind Ramp Detection Module
 
 #### Contacts
-* ##### Giovanni Buroni, giovanni.buroni@inesctec.pt 
-* ##### Carla Gonçalves, carla.s.goncalves@inesctec.pt
-* ##### José Andrade, jose.r.andrade@inesctec.pt
-* ##### Andre Garcia, andre.f.garcia@inesctec.pt
-* ##### Ricardo Bessa, ricardo.j.bessa@inesctec.pt
+* Giovanni Buroni, giovanni.buroni@inesctec.pt (Researcher)
+* Carla Gonçalves, carla.s.goncalves@inesctec.pt (Researcher)
+* Ricardo Bessa, ricardo.j.bessa@inesctec.pt (CPES Coordinator, Senior Researcher)
 
 
 
