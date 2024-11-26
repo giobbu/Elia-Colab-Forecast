@@ -1,3 +1,4 @@
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Status](https://img.shields.io/badge/status-development-orange)
 # Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace
 
