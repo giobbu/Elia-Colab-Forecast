@@ -1,4 +1,5 @@
-# Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace (Ongoing Project)
+![Status](https://img.shields.io/badge/status-development-orange)
+# Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace
 
 ### [INESC TEC Power and Energy Systems Centre](https://www.inesctec.pt/en/centres/cpes#intro)
 
