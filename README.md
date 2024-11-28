@@ -4,9 +4,11 @@
 
 ### [INESC TEC Power and Energy Systems Centre](https://www.inesctec.pt/en/centres/cpes#intro)
 
-<img src="img/schema_predico.png" alt="Image Alt Text" width="700"/>
+<img src="img/schema_predico.png" alt="Image Alt Text" width="500"/>
 
-## Forecasting Module
+## Collaborative Forecasting Engine
+
+<img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
 
 ## Forecasters Contribution Module
 
@@ -16,14 +18,12 @@
 
 * #### Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model.
 
-
 ### Permutation Importance
 <img src="img/permutation.jpg" alt="Image Alt Text" width="700"/>
 
 ### Shapley Values Importance
 <img src="img/shapley.jpg" alt="Image Alt Text" width="700"/>
 
-## Wind Ramp Detection Module
 
 #### Contributions
 * Giovanni Buroni giovanni.buroni@inesctec.pt
