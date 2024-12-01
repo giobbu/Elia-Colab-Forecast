@@ -178,6 +178,7 @@ def scale_forecasters_dataframe(ens_params, stats, df_ensemble_quantile50, df_en
     df_ensemble_normalized = pd.DataFrame()
     df_ensemble_normalized_quantile10 = pd.DataFrame()
     df_ensemble_normalized_quantile90 = pd.DataFrame()
+
     # Normalize dataframes
     if ens_params['scale_features'] and ens_params['normalize']:
         logger.info('   ')
@@ -186,8 +187,16 @@ def scale_forecasters_dataframe(ens_params, stats, df_ensemble_quantile50, df_en
         df_ensemble_normalized = normalize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q50)
         if ens_params['add_quantile_predictions']:
             logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            list_max_forecasters_q10 = get_maximum_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
-            list_max_forecasters_q90 = get_maximum_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            # Get maximum values for forecasters
+            if not df_ensemble_quantile10.empty:
+                list_max_forecasters_q10 = get_maximum_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
+            else:
+                list_max_forecasters_q10 = []
+            if not df_ensemble_quantile90.empty:
+                list_max_forecasters_q90 = get_maximum_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            else:
+                list_max_forecasters_q90 = []
+            # Normalize quantile predictions
             df_ensemble_normalized_quantile10 = normalize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], 
                                                                     max_cap=maximum_capacity, max_cap_forecasters_list=list_max_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
             df_ensemble_normalized_quantile90 = normalize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], 
@@ -200,8 +209,14 @@ def scale_forecasters_dataframe(ens_params, stats, df_ensemble_quantile50, df_en
         df_ensemble_normalized = standardize_dataframe(df_ensemble_quantile50, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, mean_forecasters_list=mean_forecasters_q50, std_forecasters_list=std_forecasters_q50)
         if ens_params['add_quantile_predictions']:
             logger.opt(colors=True).info(f'<fg 250,128,114> -- Add quantile predictions </fg 250,128,114>')
-            mean_forecasters_q10, std_forecasters_q10 = get_mean_std_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
-            mean_forecasters_q90, std_forecasters_q90 = get_mean_std_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            if not df_ensemble_quantile10.empty:
+                mean_forecasters_q10, std_forecasters_q10 = get_mean_std_values(df=df_ensemble_quantile10, end_train=end_training_timestamp)
+            else:
+                mean_forecasters_q10, std_forecasters_q10 = [], []
+            if not df_ensemble_quantile90.empty:
+                mean_forecasters_q90, std_forecasters_q90 = get_mean_std_values(df=df_ensemble_quantile90, end_train=end_training_timestamp)
+            else:
+                mean_forecasters_q90, std_forecasters_q90 = [], []
             df_ensemble_normalized_quantile10 = standardize_dataframe(df_ensemble_quantile10, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
                                                                         mean_forecasters_list=mean_forecasters_q10, std_forecasters_list=std_forecasters_q10) if not df_ensemble_quantile10.empty else pd.DataFrame()
             df_ensemble_normalized_quantile90 = standardize_dataframe(df_ensemble_quantile90, axis=ens_params['axis'], mean_buyer=mean_buyer, std_buyer=std_buyer, 
