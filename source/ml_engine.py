@@ -159,13 +159,20 @@ def create_ensemble_forecasts(ens_params,
 
     # # Split train and test dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
-        df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_test_ensemble_quantile10_prev = split_quantile_train_test_data(
-            df_ensemble_normalized_lag_quantile10, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
-        df_train_ensemble_quantile90, df_test_ensemble_quantile90, df_test_ensemble_quantile90_prev = split_quantile_train_test_data(
-            df_ensemble_normalized_lag_quantile90, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp)
+        if not df_ensemble_normalized_quantile10.empty:
+            # Quantile 10
+            df_train_ensemble_quantile10, df_test_ensemble_quantile10 = split_quantile_train_test_data(
+                df_ensemble_normalized_lag_quantile10, end_training_timestamp, start_prediction_timestamp)
+        else:
+            df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = pd.DataFrame()
+        if not df_ensemble_normalized_quantile90.empty:
+            # Quantile 90
+            df_train_ensemble_quantile90, df_test_ensemble_quantile90 = split_quantile_train_test_data(
+                df_ensemble_normalized_lag_quantile90, end_training_timestamp, start_prediction_timestamp)
+        else:
+            df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = pd.DataFrame()
     else:
         df_train_ensemble_quantile10 = df_test_ensemble_quantile10 = df_train_ensemble_quantile90 = df_test_ensemble_quantile90 = pd.DataFrame()
-        df_test_ensemble_quantile10_prev = df_test_ensemble_quantile90_prev = pd.DataFrame()
 
     
     # Assert df_test matches df_ensemble_test
