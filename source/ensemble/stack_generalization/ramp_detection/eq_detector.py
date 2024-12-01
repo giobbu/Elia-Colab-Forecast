@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from loguru import logger
-from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters
+from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters, log_ramp_alarm_status
 
 def get_quantile(score_data, threshold):
     " Get the quantile threshold of the data. "
@@ -25,7 +25,6 @@ def is_anomalous(testing_pi_values, quantile_anomaly_threshold):
     Determine if data points are anomalous based on the KDE and threshold.
     """
     return testing_pi_values > quantile_anomaly_threshold  
-
 
 def plot_hist_and_anomalies(preprocessed_training_eq, testing_eq, quantile_anomaly_threshold, threshold_quantile, max_value, anomalies_eq=None):
     """
@@ -124,26 +123,20 @@ def detect_wind_ramp_eq(df_train, df_insample, df_outsample, list_ramp_alarm, li
     df_outsample, alarm_status = anomaly_detection_eq(df_train, df_insample, df_outsample, threshold_quantile, preprocess_ramps, max_value)
     # trigger alarm for ramp clusters
     list_ramp_alarm, alarm_status, df_ramp_clusters = alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecutive_points)
-    # intraday wind ramp detection
-    # divide df_outsample in 3 dataframes of 32 rows each
-    df_outsample_1 = df_outsample.iloc[:32]
-    df_outsample_2 = df_outsample.iloc[32:64]
-    df_outsample_3 = df_outsample.iloc[64:]
+    # Intraday Detection
+    # Divide df_outsample into three DataFrames of 32 rows each
+    df_outsample_list = [df_outsample.iloc[i:i + 32] for i in range(0, len(df_outsample), 32)]
     # wind ramp detection intraday
-    list_ramp_alarm_1, list_ramp_alarm_2, list_ramp_alarm_3 = [], [], []
-    _, alarm_status_1, _ = alarm_policy_rule(alarm_status, df_outsample_1, list_ramp_alarm_1, max_consecutive_points)
-    _, alarm_status_2, _ = alarm_policy_rule(alarm_status, df_outsample_2, list_ramp_alarm_2, max_consecutive_points)
-    _, alarm_status_3, _ = alarm_policy_rule(alarm_status, df_outsample_3, list_ramp_alarm_3, max_consecutive_points)
-    # log intraday ramp alarms
-    list_ramp_alarm_intraday.append((alarm_status_1, alarm_status_2, alarm_status_3))
+    alarm_status_list = []
+    for df_ in df_outsample_list:
+        list_ramp_alarm_ = []
+        _, alarm_status_i, _ = alarm_policy_rule(alarm_status, df_, list_ramp_alarm_, max_consecutive_points)
+        alarm_status_list.append(alarm_status_i)
+    # log alarma status 1, 2, 3
+    list_ramp_alarm_intraday.append(alarm_status_list)
+    # Log the forecast range and alarm status
     logger.info(' ')
     logger.info(f"Ramp Alarm Status: {alarm_status}")
     if alarm_status:
-        # log alarma status 1, 2, 3
-        logger.info(' ')
-        logger.info('Intraday Wind Ramp Detection')
-        logger.info(' ')
-        logger.info(f"Ramp Alarm Status 1: {alarm_status_1} - Datetime Range: {df_outsample_1.index[0]} - {df_outsample_1.index[-1]}")
-        logger.info(f"Ramp Alarm Status 2: {alarm_status_2} - Datetime Range: {df_outsample_2.index[0]} - {df_outsample_2.index[-1]}")
-        logger.info(f"Ramp Alarm Status 3: {alarm_status_3} - Datetime Range: {df_outsample_3.index[0]} - {df_outsample_3.index[-1]}")
+        log_ramp_alarm_status(alarm_status_list, df_outsample_list)
     return list_ramp_alarm, list_ramp_alarm_intraday, alarm_status, df_ramp_clusters

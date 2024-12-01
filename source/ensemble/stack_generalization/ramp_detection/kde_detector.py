@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 from loguru import logger
-
-from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters
+from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters, log_ramp_alarm_status
 
 def generate_bandwidths(bandwidth_range, num_bandwidths):
     """
@@ -62,34 +61,26 @@ def anomaly_detection_kde(df_train, df_insample, df_outsample, threshold_quantil
     # compute IQW column for df_insample and df_outsample
     df_insample['IQW'] = df_insample['Q90'] - df_insample['Q10']
     df_outsample['IQW'] = df_outsample['Q90'] - df_outsample['Q10']
-
     # Process Ramp Events if preprocessing is enabled
     if preprocess_ramps:
         df_insample_preprocessed = process_ramps_train_data(df_train, df_insample)
     else:
         df_insample_preprocessed = df_insample.copy()
-
     # get the IQW values for training and testing data
     preprocessed_training_kde = df_insample_preprocessed['IQW'].values
     testing_kde = df_outsample['IQW'].values 
-
     # optimize bandwidth with grid search
     bandwidths = generate_bandwidths(bandwidth_range = (-1, 100), num_bandwidths=500)
     grid_search = kde_mle_optimization(training_data=preprocessed_training_kde, bandwidths=bandwidths, cv_folds=cv_folds)
-
     # employ optimized bandwidth on all training data
     fitted_kde = kde_fitting(preprocessed_training_kde, bandwidth=grid_search.best_params_['bandwidth'])
-
     # evaluate on training data as probability densities
     sorted_preprocessed_training_kde = np.sort(preprocessed_training_kde)
     kde_training_pdf = np.exp(fitted_kde.score_samples(sorted_preprocessed_training_kde[:, None]))
-
     # evaluate on testing data as probability densities
     kde_testing_pdf = kde_predict(testing_kde, fitted_kde) 
-
     # get quantile for anomalies
     quantile_anomaly_threshold_empirical = get_quantile(sorted_preprocessed_training_kde, threshold_quantile)
-
     # get quantile for anomalies
     # sample 1000 points from kde
     kde_samples = fitted_kde.sample(n_samples=10000, random_state=42)
@@ -97,7 +88,6 @@ def anomaly_detection_kde(df_train, df_insample, df_outsample, threshold_quantil
     kde_samples = np.concatenate((preprocessed_training_kde, kde_samples[:, 0]))
     # get the quantile threshold
     quantile_anomaly_threshold_kde = get_quantile(kde_samples, threshold_quantile)
-
     # get points with density above quantile threshold
     anomalies_kde = get_anomalies(testing_kde, quantile_anomaly_threshold_kde)
     # get the probability densities of the anomalies
@@ -106,17 +96,15 @@ def anomaly_detection_kde(df_train, df_insample, df_outsample, threshold_quantil
     else:
         anomalies_kde = []
         kde_anomalies_pdf = []
-
     # detect anomalies 
     df_outsample = detect_anomalies(df_outsample, quantile_anomaly_threshold_kde, testing_kde)
-
+    # determine alarm status
     alarm_status = 1 if np.any(df_outsample['is_anomalous'] == True) else 0
-
+    # plot the KDE and anomalies
     plot_kde_and_anomalies(sorted_preprocessed_training_kde, kde_training_pdf, 
                             testing_kde, kde_testing_pdf, 
                             quantile_anomaly_threshold_kde, threshold_quantile, max_value,
                             anomalies_kde, kde_anomalies_pdf, quantile_anomaly_threshold_empirical)
-
     return df_outsample, alarm_status
 
 def alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecutive_points):
@@ -141,43 +129,42 @@ def detect_wind_ramp_kde(df_train, df_insample, df_outsample, list_ramp_alarm, l
     and checks if a ramp alarm is triggered based on the number of outliers.
     """
 
+    assert isinstance(df_train, pd.DataFrame), "df_train must be a DataFrame"
+    assert isinstance(df_insample, pd.DataFrame), "df_insample must be a DataFrame"
+    assert isinstance(df_outsample, pd.DataFrame), "df_outsample must be a DataFrame"
+    assert isinstance(list_ramp_alarm, list), "list_ramp_alarm must be a list"
+    assert isinstance(list_ramp_alarm_intraday, list), "list_ramp_alarm_intraday must be a list"
+    assert isinstance(threshold_quantile, float), "threshold_quantile must be a float"
+    assert isinstance(preprocess_ramps, bool), "preprocess_ramps must be a boolean"
+    assert isinstance(max_value, int), "max_value must be an integer"
+    assert isinstance(cv_folds, int), "cv_folds must be an integer"
+    assert isinstance(max_consecutive_points, int), "max_consecutive_points must be an integer"
+
     # Process variability forecasts variables names
     df_insample.columns = df_insample.columns.map(lambda x: f'Q{x*100:.0f}') 
-    df_outsample.columns = df_outsample.columns.map(lambda x: f'Q{x*100:.0f}')
+
     # detect IQW anomalies for wind ramps using KDE
     df_outsample, alarm_status = anomaly_detection_kde(df_train, df_insample, df_outsample, threshold_quantile, preprocess_ramps, max_value, cv_folds)
     # trigger alarm for ramp clusters
     list_ramp_alarm, alarm_status, df_ramp_clusters = alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecutive_points)
-
     # intraday wind ramp detection
-    # divide df_outsample in 3 dataframes of 32 rows each
-    df_outsample_1 = df_outsample.iloc[:32]
-    df_outsample_2 = df_outsample.iloc[32:64]
-    df_outsample_3 = df_outsample.iloc[64:]
-
+    # Divide df_outsample into three DataFrames of 32 rows each
+    df_outsample_list = [df_outsample.iloc[i:i + 32] for i in range(0, len(df_outsample), 32)]
     # wind ramp detection intraday
-    list_ramp_alarm_1, list_ramp_alarm_2, list_ramp_alarm_3 = [], [], []
-    _, alarm_status_1, _ = alarm_policy_rule(alarm_status, df_outsample_1, list_ramp_alarm_1, max_consecutive_points)
-    _, alarm_status_2, _ = alarm_policy_rule(alarm_status, df_outsample_2, list_ramp_alarm_2, max_consecutive_points)
-    _, alarm_status_3, _ = alarm_policy_rule(alarm_status, df_outsample_3, list_ramp_alarm_3, max_consecutive_points)
-
-    list_ramp_alarm_intraday.append((alarm_status_1, alarm_status_2, alarm_status_3))
-
+    alarm_status_list = []
+    for df_ in df_outsample_list:
+        list_ramp_alarm_ = []
+        _, alarm_status_i, _ = alarm_policy_rule(alarm_status, df_, list_ramp_alarm_, max_consecutive_points)
+        alarm_status_list.append(alarm_status_i)
+    # log alarma status 1, 2, 3
+    list_ramp_alarm_intraday.append(alarm_status_list)
+    # Log the forecast range and alarm status
     logger.info(' ')
     logger.info(f"Ramp Alarm Status: {alarm_status}")
-
     if alarm_status:
-        # log alarma status 1, 2, 3
-        logger.info(' ')
-        logger.info('Intraday Wind Ramp Detection')
-        logger.info(' ')
-        logger.info(f"Ramp Alarm Status 1: {alarm_status_1} - Datetime Range: {df_outsample_1.index[0]} - {df_outsample_1.index[-1]}")
-        logger.info(f"Ramp Alarm Status 2: {alarm_status_2} - Datetime Range: {df_outsample_2.index[0]} - {df_outsample_2.index[-1]}")
-        logger.info(f"Ramp Alarm Status 3: {alarm_status_3} - Datetime Range: {df_outsample_3.index[0]} - {df_outsample_3.index[-1]}")
+        log_ramp_alarm_status(alarm_status_list, df_outsample_list)
     return list_ramp_alarm, list_ramp_alarm_intraday, alarm_status, df_ramp_clusters
 
-    
-    
 def plot_kde_and_anomalies(sorted_preprocessed_training_kde, kde_training_pdf, testing_kde, kde_testing_pdf, quantile_anomaly_threshold, threshold_quantile, max_value, anomalies_kde=None, kde_anomalies_pdf=None, quantile_anomaly_threshold_empirical=None):
     """
     This function plots the KDE of the training data, testing data, and anomalies.

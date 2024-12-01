@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from loguru import logger
-from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters
+from source.ensemble.stack_generalization.ramp_detection.utils import process_ramps_train_data, detect_anomalous_clusters, log_ramp_alarm_status
 from sklearn.neighbors import LocalOutlierFactor
 
 
@@ -32,7 +32,6 @@ def alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecuti
     """
     Check if a Ramp Alarm is triggered based on the number of outliers.
     """
-    
     # If alarm is triggered and max_consecutive_points is specified
     df_ramp_clusters = pd.DataFrame()  # Default empty DataFrame
     if alarm_status == 1 and max_consecutive_points != 0:
@@ -50,47 +49,45 @@ def detect_wind_ramp_lof(pred_insample, pred_outsample, df_train_norm, df_test_n
     handles the upper bound calculation for boxplot outlier detection, 
     and checks if a ramp alarm is triggered based on the number of outliers.
     """
-    try:
-        pred_insample.columns = pred_insample.columns.map(lambda x: f'Q{x*100:.0f}') 
-        pred_outsample.columns = pred_outsample.columns.map(lambda x: f'Q{x*100:.0f}')
+    assert isinstance(df_train, pd.DataFrame), "df_train must be a DataFrame"
+    assert isinstance(pred_insample, pd.DataFrame), "pred_insample must be a DataFrame"
+    assert isinstance(pred_outsample, pd.DataFrame), "pred_outsample must be a DataFrame"
+    assert isinstance(list_ramp_alarm, list), "list_ramp_alarm must be a list"
+    assert isinstance(list_ramp_alarm_intraday, list), "list_ramp_alarm_intraday must be a list"
+    assert isinstance(df_train_norm, pd.DataFrame), "df_train_norm must be a DataFrame"
+    assert isinstance(df_test_norm, pd.DataFrame), "df_test_norm must be a DataFrame"
+    assert isinstance(n_neighbors, int), "n_neighbors must be an integer"
+    assert isinstance(contamination, float), "contamination must be a float"
+    assert isinstance(preprocess_ramps, bool), "preprocess_ramps must be a boolean"
+    assert isinstance(max_consecutive_points, int), "max_consecutive_points must be an integer"
 
-        # compute IQW column for pred_insample and pred_outsample
-        pred_insample['IQW'] = pred_insample['Q90'] - pred_insample['Q10']
-        pred_outsample['IQW'] = pred_outsample['Q90'] - pred_outsample['Q10']
+    # Rename columns to Q10, Q90
+    pred_insample.columns = pred_insample.columns.map(lambda x: f'Q{x*100:.0f}') 
+    pred_outsample.columns = pred_outsample.columns.map(lambda x: f'Q{x*100:.0f}')
+    # compute IQW column for pred_insample and pred_outsample
+    pred_insample['IQW'] = pred_insample['Q90'] - pred_insample['Q10']
+    pred_outsample['IQW'] = pred_outsample['Q90'] - pred_outsample['Q10']
+    # wind ramp detection day-ahead
+    alarm_status, df_outsample = anomaly_detection_lof(df_train, pred_insample, pred_outsample, preprocess_ramps, n_neighbors, contamination)
+    list_ramp_alarm, alarm_status, df_ramp_clusters = alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecutive_points)
+    # intraday wind ramp detection
+    # Divide df_outsample into three DataFrames of 32 rows each
+    df_outsample_list = [df_outsample.iloc[i:i + 32] for i in range(0, len(df_outsample), 32)]
+    # wind ramp detection intraday
+    alarm_status_list = []
+    for df_ in df_outsample_list:
+        list_ramp_alarm_ = []
+        _, alarm_status_i, _ = alarm_policy_rule(alarm_status, df_, list_ramp_alarm_, max_consecutive_points)
+        alarm_status_list.append(alarm_status_i)
+    # log alarma status 1, 2, 3
+    list_ramp_alarm_intraday.append(alarm_status_list)
+    # Log the forecast range and alarm status
+    logger.info(' ')
+    logger.info(f"Ramp Alarm Status: {alarm_status}")
+    if alarm_status:
+        log_ramp_alarm_status(alarm_status_list, df_outsample_list)
+    return list_ramp_alarm, list_ramp_alarm_intraday, alarm_status, df_ramp_clusters
 
-        alarm_status, df_outsample = anomaly_detection_lof(df_train, pred_insample, pred_outsample, preprocess_ramps, n_neighbors, contamination)
-        list_ramp_alarm, alarm_status, df_ramp_clusters = alarm_policy_rule(alarm_status, df_outsample, list_ramp_alarm, max_consecutive_points)
-        
-        # intraday wind ramp detection
-        # divide df_outsample in 3 dataframes of 32 rows each
-        df_outsample_1 = df_outsample.iloc[:32]
-        df_outsample_2 = df_outsample.iloc[32:64]
-        df_outsample_3 = df_outsample.iloc[64:]
-
-        # wind ramp detection intraday
-        list_ramp_alarm_1, list_ramp_alarm_2, list_ramp_alarm_3 = [], [], []
-        _, alarm_status_1, _ = alarm_policy_rule(alarm_status, df_outsample_1, list_ramp_alarm_1, max_consecutive_points)
-        _, alarm_status_2, _ = alarm_policy_rule(alarm_status, df_outsample_2, list_ramp_alarm_2, max_consecutive_points)
-        _, alarm_status_3, _ = alarm_policy_rule(alarm_status, df_outsample_3, list_ramp_alarm_3, max_consecutive_points)
-
-        list_ramp_alarm_intraday.append((alarm_status_1, alarm_status_2, alarm_status_3))
-
-        logger.info(' ')
-        logger.info(f"Ramp Alarm Status: {alarm_status}")
-
-        if alarm_status:
-            # log alarma status 1, 2, 3
-            logger.info(' ')
-            logger.info('Intraday Wind Ramp Detection')
-            logger.info(' ')
-            logger.info(f"Ramp Alarm Status 1: {alarm_status_1} - Datetime Range: {df_outsample_1.index[0]} - {df_outsample_1.index[-1]}")
-            logger.info(f"Ramp Alarm Status 2: {alarm_status_2} - Datetime Range: {df_outsample_2.index[0]} - {df_outsample_2.index[-1]}")
-            logger.info(f"Ramp Alarm Status 3: {alarm_status_3} - Datetime Range: {df_outsample_3.index[0]} - {df_outsample_3.index[-1]}")
-        return list_ramp_alarm, list_ramp_alarm_intraday, alarm_status, df_ramp_clusters
-
-    except Exception as e:
-        logger.error(f"Error processing forecast data: {e}")
-        return None
 
 
 
