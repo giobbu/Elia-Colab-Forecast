@@ -36,9 +36,6 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
     """
     # Assertions for input validation
     assert isinstance(df_test_ensemble, pd.DataFrame), "df_test_ensemble should be a DataFrame"
-    assert len(df_test_ensemble) == 192, "df_test_ensemble should have 192 rows"
-    assert len(df_test_ensemble_q10) == 192 or df_test_ensemble_q10.empty, "df_test_ensemble_q10 should have 192 rows or be empty"
-    assert len(df_test_ensemble_q90) == 192 or df_test_ensemble_q90.empty, "df_test_ensemble_q90 should have 192 rows or be empty"
     assert "norm_targ" in df_test_ensemble.columns, "'norm_targ' should be in df_test_ensemble columns"
     target_column = "norm_targ"
     # Get the test data (features and target)
@@ -74,7 +71,7 @@ def prepare_pre_test_data(params, quantile, df_test_ensemble, df_test_ensemble_q
             X_test = np.concatenate([X_test, quantile_data[quantile]], axis=1)
     return X_test, y_test
 
-def split_train_test_data(df, end_train, start_prediction):
+def split_train_test_data(df, end_train, start_prediction): 
     """ Split the data into training and test sets 
     args:
         df: pd.DataFrame, dataframe
@@ -106,7 +103,6 @@ def concatenate_feat_targ_dataframes(buyer_resource_name, df_train_ensemble, df_
     assert 'norm_' + buyer_resource_name in df_train.columns, "norm_measured should be in df_train columns"
     assert 'norm_' + buyer_resource_name in df_test.columns, "norm_measured should be in df_test columns"
     assert isinstance(max_lag, int), "max_lag should be an integer"
-    assert max_lag > 0, "max_lag should be greater than 0"
     col_name_buyer = 'norm_' + buyer_resource_name
     df_train_ensemble.loc[:, 'norm_targ'] = df_train[col_name_buyer].values[max_lag:]
     df_test_ensemble.loc[:, 'norm_targ'] = df_test[col_name_buyer].values

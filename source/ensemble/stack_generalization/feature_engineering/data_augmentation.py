@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from loguru import logger
 
 def create_augmented_dataframe(df, max_lags, forecasters_diversity=False, add_lags=False, 
                                 augment_with_poly=False, augment_with_roll_stats=False, differenciate=False,
