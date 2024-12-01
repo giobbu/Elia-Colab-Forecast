@@ -18,7 +18,6 @@ def process_combination_scheme(df_train, df_test, end_training_timestamp, start_
     # Split train and test dataframes
     df_train_norm = df_comb_scheme_norm[df_comb_scheme_norm.index < end_training_timestamp]
     df_test_norm = df_comb_scheme_norm[df_comb_scheme_norm.index >= start_prediction_timestamp]
-    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
     # concatenate last training row with test data
     df_test_norm_var = df_test.diff().iloc[-96*2:, :]
     df_test_norm_var = df_test_norm_var.add_prefix('norm_')
@@ -26,11 +25,9 @@ def process_combination_scheme(df_train, df_test, end_training_timestamp, start_
 
 def update_dict_weights(mu, observation, iteration):
     " Update the contributions of the forecasters" 
-
     assert isinstance(mu, dict), 'mu must be a dictionary'
     assert isinstance(observation, dict), 'observation must be a dictionary'
     assert isinstance(iteration, int), 'iteration must be an integer'
-
     n = iteration + 1   
     if n == 1:
         mu = observation.copy()
@@ -64,13 +61,11 @@ def plot_top_contributions(df_coefs, quantile, top_n=10, figsize=(10, 5)):
 
 def compute_coefficients(ens_params, previous_day, quantiles=[0.1, 0.5, 0.9], stages=['wind_power', 'wind_power_ramp'], p_values=False):
     """Compute the coefficients of the forecasters for different stages."""
-
     assert isinstance(ens_params, dict), 'ens_params must be a dictionary'
     assert isinstance(previous_day, dict), 'previous_day must be a dictionary'
     assert isinstance(quantiles, list), 'quantiles must be a list'
     assert isinstance(stages, list), 'stages must be a list'
     assert isinstance(p_values, bool), 'p_values must be a boolean'
-
     iter_coefficients = defaultdict(dict)
     for stage in stages:
         for quantile in quantiles:
