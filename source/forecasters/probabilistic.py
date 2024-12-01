@@ -82,7 +82,6 @@ def create_week_ahead_quantiles10(df_val):
     df_week_ahead_quantile10 = dict2df_quantiles10(week_ahead_elia_quantile10, 'week_ahead')
     return df_week_ahead_quantile10
 
-
 # noisy
 def create_noisy_quantiles90(df, column):
     " Create most recent quantiles 90 with cheat option "
@@ -113,7 +112,6 @@ def create_malicious_quantiles90(df, column, cheat=False, df_train=None):
             raise ValueError("cheat must be either True or False")
     dfcheat_pred = dict2df_quantiles90(cheat_prediction, 'malicious')
     return dfcheat_pred
-
 
 # most recent
 def create_most_recent_quantiles90(df_val):

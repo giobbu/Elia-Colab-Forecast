@@ -3,7 +3,6 @@ import numpy as np
 from config.simulation_setting import Simulation
 sim_params = Simulation.testing_period
 
-
 # noisy
 def create_noisy_predictions(df, column):
     " Create most recent predictions with cheat option "
@@ -39,7 +38,7 @@ def create_malicious_predictions(df, column, cheat=False, df_train=None):
 
 # most recent
 def create_most_recent_predictions(df_val):
-    " Create most recent predictions "
+    """ Create most recent predictions """
     assert df_val.index.name == 'datetime', "Index must be datetime"
     assert 'mostrecentforecast' in df_val.columns, "dayaheadforecast column must be present"
     most_recent_elia_prediction = []
@@ -51,7 +50,7 @@ def create_most_recent_predictions(df_val):
 
 # day ahead
 def create_day_ahead_predictions(df_val):
-    " Create day ahead predictions "
+    """ Create day ahead predictions """
     assert df_val.index.name == 'datetime', "Index must be datetime"
     assert 'dayaheadforecast' in df_val.columns, "dayaheadforecast column must be present"
     day_ahead_elia_prediction = []
@@ -63,7 +62,7 @@ def create_day_ahead_predictions(df_val):
 
 # day ahead 11
 def create_day_ahead_11_predictions(df_val):
-    " Create day ahead 11 predictions"
+    """ Create day ahead 11 predictions """
     assert df_val.index.name == 'datetime', "Index must be datetime"
     assert 'dayahead11hforecast' in df_val.columns, "dayahead11hforecast column must be present"
     day_ahead_11_elia_prediction = []
@@ -75,7 +74,7 @@ def create_day_ahead_11_predictions(df_val):
 
 # week ahead
 def create_week_ahead_predictions(df_val):
-    " Create week ahead predictions"
+    """ Create week ahead predictions """
     assert df_val.index.name == 'datetime', "Index must be datetime"
     assert 'weekaheadforecast' in df_val.columns, "weekaheadforecast column must be present"
     week_ahead_elia_prediction = []
