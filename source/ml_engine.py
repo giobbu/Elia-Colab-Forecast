@@ -5,7 +5,7 @@ import pickle
 from tqdm import tqdm
 
 from source.utils.session_ml_info import load_or_initialize_results
-from source.utils.data_preprocess import scale_forecasters_dataframe, scale_buyer_dataframe, buyer_scaler_statistics
+from source.utils.data_preprocess import scale_forecasters_dataframe, scale_buyer_dataframe, buyer_scaler_statistics, impute_mean_for_nan
 from source.utils.data_preprocess import rescale_predictions, rescale_targets, set_non_negative_predictions
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data, get_numpy_Xy_train_test_quantile
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
@@ -42,13 +42,22 @@ def create_ensemble_forecasts(ens_params,
 
     # Extract quantile columns with checks
     df_ensemble_quantile50 = extract_quantile_columns(df_market, 'q50')  # get the quantile 50 predictions
+    # impute mean for NaN values by looping over columns
+    if not df_ensemble_quantile50.empty:
+        df_ensemble_quantile50 = impute_mean_for_nan(df_ensemble_quantile50) 
+
     df_ensemble_quantile10 = extract_quantile_columns(df_market, 'q10')  # get the quantile 10 predictions
+    if not df_ensemble_quantile10.empty:
+        df_ensemble_quantile10 = impute_mean_for_nan(df_ensemble_quantile10)
+
     df_ensemble_quantile90 = extract_quantile_columns(df_market, 'q90')  # get the quantile 90 predictions
+    if not df_ensemble_quantile90.empty:
+        df_ensemble_quantile90 = impute_mean_for_nan(df_ensemble_quantile90)
 
     # Ensure at least one quantile DataFrame is not empty
     if df_ensemble_quantile50.empty:
         raise ValueError("Quantile columns 'q50' were not found in the DataFrame.")
-
+    
     buyer_resource_name = df_buyer.columns[0]  # get the name of the buyer resource
     
     # if the model type is LR, normalization must be True

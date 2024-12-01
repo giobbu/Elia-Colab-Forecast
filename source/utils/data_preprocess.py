@@ -276,3 +276,21 @@ def set_non_negative_predictions(predictions, quantile):
     else:
         raise KeyError(f"Quantile '{quantile}' not found in predictions.")
     return predictions
+
+def impute_mean_for_nan(df):
+    """
+    Imputes the mean for NaN values in each column of a DataFrame.
+    Args:
+        df (pd.DataFrame): The DataFrame in which to impute mean for NaN values.
+    Returns:
+        df (pd.DataFrame): The DataFrame with NaN values replaced by the column mean.
+    """
+    for col in df.columns:
+        # Log number of NaNs in the current column
+        num_nans = df[col].isna().sum()
+        if num_nans > 0:
+            logger.warning(f'Number of NaNs in {col}: {num_nans}')
+            logger.warning(f'Imputing mean for NaN values in {col}')
+            # Impute mean for NaN values
+            df[col].fillna(df[col].mean(), inplace=True)
+    return df
