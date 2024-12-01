@@ -13,13 +13,13 @@ def extract_data(info, quantile):
     fitted_model = info[quantile]['fitted_model']
     y_train = info[quantile]['y_train'] 
     var_fitted_model = info[quantile]['var_fitted_model']
-    X_test_augm_prev = info[quantile]['X_test_augmented_prev'] 
-    df_test_ens_prev = info[quantile]['df_test_ensemble_prev'] 
+    X_test_augm = info[quantile]['X_test_augmented'] 
+    df_test_ens = info[quantile]['df_test_ensemble'] 
     df_train_ens = info[quantile]['df_train_ensemble']
     df_train_ens_augm = info[quantile]['df_train_ensemble_augmented']  
     X_train_augmented = info[quantile]['X_train_augmented']
     buyer_scaler_stats = info[quantile]["buyer_scaler_stats"]
-    return fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats
+    return fitted_model, y_train, var_fitted_model, X_test_augm, df_test_ens, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats
 
 
 def validate_inputs(params_model, quantile, y_test_prev, X_test_augmented_prev):
@@ -28,10 +28,17 @@ def validate_inputs(params_model, quantile, y_test_prev, X_test_augmented_prev):
     assert quantile in [0.1, 0.5, 0.9], "Quantile must be one of 0.1, 0.5, 0.9"
     assert len(y_test_prev) == len(X_test_augmented_prev), "The length of y_test_prev and X_test_augmented_prev must be the same"
 
-def prepare_second_stage_data(params_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample):
+def prepare_second_stage_data(params_model, df_train_ensemble, df_test_ensemble, y_train, y_test_prev, predictions_insample, predictions_outsample):
     " Prepare the second stage data."
-    df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
-    df_2stage_processed = create_augmented_dataframe_2stage(df_2stage, params_model['order_diff'], max_lags=params_model['max_lags_var'], augment=params_model['augment_var'])
+    df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test_prev, predictions_insample, predictions_outsample)
+    df_2stage_processed = create_augmented_dataframe_2stage(df_2stage, 
+                                                                order_diff = params_model['order_diff'],
+                                                                differentiate=params_model['differenciate_var'], 
+                                                                max_lags=params_model['max_lags_var'], 
+                                                                add_lags = params_model['add_lags_var'],
+                                                                augment_with_poly=params_model['augment_with_poly_var'],
+                                                                end_train=df_train_ensemble.index[-1],
+                                                                start_prediction=df_test_ensemble.index[0])
     return df_2stage_processed
 
 def normalize_contributions(df):
@@ -88,7 +95,13 @@ def compute_second_stage_score(seed, params_model,
         X_test = permute_predictor(X_test, predictor_index, seed)
     predictions_outsample = fitted_model.predict(X_test)
     # Prepare second stage data
-    df_2stage_processed = prepare_second_stage_data(params_model, df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
+    df_2stage_processed = prepare_second_stage_data(params_model, 
+                                                    df_train_ensemble, 
+                                                    df_test_ensemble_prev, 
+                                                    y_train, 
+                                                    y_test_prev, 
+                                                    predictions_insample, 
+                                                    predictions_outsample)
     # Get the test data
     df_2stage_test = df_2stage_processed[(df_2stage_processed.index >= forecast_range[0]) & (df_2stage_processed.index <= forecast_range[-1])]
     # Get the features and target
@@ -102,9 +115,9 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
     Compute permutation importances for the second stage model.
     """
     # Get the info from the previous day
-    fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
+    fitted_model, y_train, var_fitted_model, X_test_augm, df_test_ens, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
     # Initial validations 
-    validate_inputs(params_model, quantile, y_test_prev, X_test_augm_prev)
+    validate_inputs(params_model, quantile, y_test_prev, X_test_augm)
     # Get the score function
     score_function = get_score_function(quantile)
     # Compute the base score
@@ -118,14 +131,14 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
                                             params_model,  
                                             fitted_model, 
                                             var_fitted_model, 
-                                            X_test_augm_prev, 
+                                            X_test_augm, 
                                             df_train_ens, #info[quantile]['df_train_ensemble'], 
-                                            df_test_ens_prev, 
+                                            df_test_ens, 
                                             y_train, 
                                             y_test_prev, score_function, predictions_insample, forecast_range)
     # Compute importance scores for each predictor
     importance_scores = []
-    for predictor_index in range(X_test_augm_prev.shape[1]):
+    for predictor_index in range(X_test_augm.shape[1]):
         # Get the predictor name
         predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
         # Compute permuted scores in parallel
@@ -133,9 +146,9 @@ def second_stage_permutation_importance(y_test_prev, params_model, quantile, inf
                                                                                         params_model, 
                                                                                         fitted_model, 
                                                                                         var_fitted_model, 
-                                                                                        X_test_augm_prev, 
+                                                                                        X_test_augm, 
                                                                                         df_train_ens, 
-                                                                                        df_test_ens_prev, 
+                                                                                        df_test_ens, 
                                                                                         y_train,
                                                                                         y_test_prev, score_function, predictions_insample, forecast_range, 
                                                                                         permutate=True, predictor_index=predictor_index) 
@@ -173,20 +186,32 @@ def run_row_permutation_set_features(seed, X_test, set_feat2permutate):
     X_set_permutated = rng.permutation(X_test[:, set_feat2permutate])
     return X_set_permutated
 
-def compute_row_perm_score(seed, params_model, set_feat2perm, predictor_index, y_test_prev, fit_model, y_train, var_fit_model, X_test_augm_prev, df_test_ens_prev, df_train_ens_augm, pred_insample, score_function, X_test_perm_with, X_test_perm_without, forecast_range):
+def compute_row_perm_score(seed, params_model, set_feat2perm, predictor_index, y_test_prev, fit_model, y_train, var_fit_model, X_test_augm, df_test_ens, df_train_ens_augm, pred_insample, score_function, X_test_perm_with, X_test_perm_without, forecast_range):
     " Compute row permutation score."
     # compute error by PERMUTATING WITHOUT feature of interest
-    X_test_perm_without[:, set_feat2perm] = run_row_permutation_set_features(seed, X_test_augm_prev, set_feat2perm)
+    X_test_perm_without[:, set_feat2perm] = run_row_permutation_set_features(seed, X_test_augm, set_feat2perm)
     pred_outsample_perm_without = fit_model.predict(X_test_perm_without)
-    df_2stage_without_perm = prepare_second_stage_data(params_model, df_train_ens_augm, df_test_ens_prev, y_train, y_test_prev, pred_insample, pred_outsample_perm_without)
+    df_2stage_without_perm = prepare_second_stage_data(params_model, 
+                                                    df_train_ens_augm, 
+                                                    df_test_ens, 
+                                                    y_train, 
+                                                    y_test_prev, 
+                                                    pred_insample, 
+                                                    pred_outsample_perm_without)
     df_2stage_test_without_perm = df_2stage_without_perm[(df_2stage_without_perm.index >= forecast_range[0]) & (df_2stage_without_perm.index <= forecast_range[-1])]
     X_test_2stage_without_perm, y_test_2stage_without_perm = df_2stage_test_without_perm.drop(columns=['targets']).values, df_2stage_test_without_perm['targets'].values
     score_without_perm = score_function(var_fit_model, X_test_2stage_without_perm, y_test_2stage_without_perm)['mean_loss']
     # compute error by PERMUTATING WITH feature of interest
-    X_test_perm_with[:, set_feat2perm] = run_row_permutation_set_features(seed, X_test_augm_prev, set_feat2perm)
-    X_test_perm_with[:, predictor_index] = run_row_permutation_predictor(seed, X_test_augm_prev, predictor_index)
+    X_test_perm_with[:, set_feat2perm] = run_row_permutation_set_features(seed, X_test_augm, set_feat2perm)
+    X_test_perm_with[:, predictor_index] = run_row_permutation_predictor(seed, X_test_augm, predictor_index)
     pred_outsample_perm_with = fit_model.predict(X_test_perm_with)
-    df_2stage_with_perm = prepare_second_stage_data(params_model, df_train_ens_augm, df_test_ens_prev, y_train, y_test_prev, pred_insample, pred_outsample_perm_with)
+    df_2stage_with_perm = prepare_second_stage_data(params_model, 
+                                                    df_train_ens_augm, 
+                                                    df_test_ens, 
+                                                    y_train, 
+                                                    y_test_prev, 
+                                                    pred_insample, 
+                                                    pred_outsample_perm_with)
     df_2stage_test_with_perm = df_2stage_with_perm[(df_2stage_with_perm.index >= forecast_range[0]) & (df_2stage_with_perm.index <= forecast_range[-1])]
     X_test_2stage_with_perm, y_test_2stage_with_perm = df_2stage_test_with_perm.drop(columns=['targets']).values, df_2stage_test_with_perm['targets'].values
     score_with_perm = score_function(var_fit_model, X_test_2stage_with_perm, y_test_2stage_with_perm)['mean_loss']
@@ -236,19 +261,19 @@ def compute_col_perm_score(seed, params_model, nr_features, y_test_prev, fitted_
 def second_stage_shapley_importance(y_test_prev, params_model, quantile, info, forecast_range):
     " Compute permutation importances for the first stage model."
     # get info previous day
-    fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
+    fitted_model, y_train, var_fitted_model, X_test_augm, df_test_ens, df_train_ens, df_train_ens_augm, X_train_augmented, buyer_scaler_stats = extract_data(info, quantile)
     # Standardize the observed target
     y_test_prev = (y_test_prev - buyer_scaler_stats['mean_buyer'])/buyer_scaler_stats['std_buyer']
     # Get In-sample Predictions
     predictions_insample = fitted_model.predict(X_train_augmented)
     # Validate inputs
-    validate_inputs(params_model, quantile, y_test_prev, X_test_augm_prev)
+    validate_inputs(params_model, quantile, y_test_prev, X_test_augm)
     # Define the score functions for different quantiles
     score_function = get_score_function(quantile)
     # Initialize the list to store the importance scores
     importance_scores = []
     # Loop through each predictor
-    nr_features = X_test_augm_prev.shape[1]
+    nr_features = X_test_augm.shape[1]
     for predictor_index in range(nr_features):
         # Get the predictor name
         predictor_name = df_train_ens_augm.drop(columns=['norm_targ']).columns[predictor_index]
@@ -259,7 +284,7 @@ def second_stage_shapley_importance(y_test_prev, params_model, quantile, info, f
                                                                 params_model,
                                                                 nr_features, 
                                                                 y_test_prev, 
-                                                                fitted_model, y_train, var_fitted_model, X_test_augm_prev, df_test_ens_prev, 
+                                                                fitted_model, y_train, var_fitted_model, X_test_augm, df_test_ens, 
                                                                 df_train_ens,
                                                                 predictions_insample, 
                                                                 score_function, 

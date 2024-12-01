@@ -10,14 +10,13 @@ def extract_quantile_columns(df, quantile):
         print(f"No columns found for {quantile}")
         return pd.DataFrame()
 
-def split_quantile_train_test_data(df, end_training_timestamp, start_prediction_timestamp, pre_start_prediction_timestamp):
+def split_quantile_train_test_data(df, end_training_timestamp, start_prediction_timestamp):
     """Split the quantile data into training and test sets."""
     if df.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     df_train = df[df.index < end_training_timestamp]
     df_test = df[df.index >= start_prediction_timestamp]
-    df_test_pre = df[df.index >= pre_start_prediction_timestamp]
-    return df_train, df_test, df_test_pre
+    return df_train, df_test
 
 def get_numpy_Xy_train_test_quantile(ens_params, df_train_ensemble_quantile10, df_test_ensemble_quantile10, df_train_ensemble_quantile90, df_test_ensemble_quantile90):
     "Make X-y train and test sets for quantile"

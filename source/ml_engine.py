@@ -10,7 +10,7 @@ from source.utils.data_preprocess import rescale_predictions, rescale_targets, s
 from source.utils.quantile_preprocess import extract_quantile_columns, split_quantile_train_test_data, get_numpy_Xy_train_test_quantile
 from source.ensemble.stack_generalization.feature_engineering.data_augmentation import create_augmented_dataframe
 from source.ensemble.stack_generalization.data_preparation.data_train_test import split_train_test_data, concatenate_feat_targ_dataframes, get_numpy_Xy_train_test
-from source.ensemble.stack_generalization.data_preparation.data_train_test import create_pre_test_dataframe, prepare_pre_test_data
+from source.ensemble.stack_generalization.data_preparation.data_train_test import prepare_pre_test_data
 from source.ensemble.stack_generalization.ensemble_model import predico_ensemble_predictions_per_quantile, predico_ensemble_variability_predictions
 from source.ensemble.stack_generalization.second_stage.create_data_second_stage import create_2stage_dataframe, create_augmented_dataframe_2stage, create_var_ensemble_dataframe, get_numpy_Xy_train_test_2stage
 from source.ensemble.stack_generalization.utils.results import collect_quantile_ensemble_predictions, create_ensemble_dataframe, melt_dataframe
@@ -36,9 +36,8 @@ def create_ensemble_forecasts(ens_params,
         results_challenge_dict: dict, results for the challenge
         results_challenge_dict_simulation: dict, results for the challenge simulation"""
 
-    pre_start_prediction_timestamp = forecast_range[0] - pd.Timedelta('1day')
-    start_prediction_timestamp = forecast_range[0] 
-    end_prediction_timestamp = forecast_range[-1]
+    start_prediction_timestamp = forecast_range[0]  # get the start prediction timestamp
+    end_prediction_timestamp = forecast_range[-1]  # get the end prediction timestamp
 
     # Extract quantile columns with checks
     df_ensemble_quantile50 = extract_quantile_columns(df_market, 'q50')  # get the quantile 50 predictions
@@ -63,7 +62,7 @@ def create_ensemble_forecasts(ens_params,
     # if the model type is LR, normalization must be True
     if ens_params['model_type'] == 'LR':
         assert ens_params['normalize'] == True or ens_params['standardize'] == True, "Normalize or Standardize must be True for model_type 'LR'"
- 
+
     # ML ENGINE PREDICO PLATFORM
     logger.info('  ')
     logger.opt(colors=True).info(f'<fg 250,128,114> PREDICO Machine Learning Engine </fg 250,128,114> ')
@@ -131,12 +130,6 @@ def create_ensemble_forecasts(ens_params,
                                                                             df_train_ensemble=df_train_feat, df_test_ensemble=df_test_feat, 
                                                                             df_train=df_train_targ, df_test=df_test_targ,  
                                                                             max_lag=ens_params['max_lags'])
-
-    # Create pre test dataframe
-    df_test_ensemble_prev = create_pre_test_dataframe(df_buyer = df_buyer_norm, 
-                                                        df_ensemble = df_ensemble_normalized_lag, 
-                                                        pre_start_prediction = pre_start_prediction_timestamp, 
-                                                        buyer_name = buyer_resource_name)
 
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Train and Test Dataframes </fg 250,128,114>')
@@ -238,20 +231,18 @@ def create_ensemble_forecasts(ens_params,
 
             ## ------
             
-            X_test_augmented_prev, y_test_prev = prepare_pre_test_data(ens_params, quantile, df_test_ensemble_prev, df_test_ensemble_quantile10_prev, df_test_ensemble_quantile90_prev)
-            assert len(X_test_augmented_prev) == len(y_test_prev) == 192, 'Test dataframe must have 192 rows'
+            X_test_augmented, y_test = prepare_pre_test_data(ens_params, quantile, df_test_ensemble, df_test_ensemble_quantile10, df_test_ensemble_quantile90)
             
             predictions_insample = fitted_model.predict(X_train_augmented)
-            predictions_outsample = fitted_model.predict(X_test_augmented_prev)
+            predictions_outsample = fitted_model.predict(X_test_augmented)
 
             # if ens_params['conformalized_qr']:
             #     df_train_ensemble = df_train_ensemble.iloc[ens_params['day_calibration']*96:]
             #     y_train = y_train[ens_params['day_calibration']*96:]
             
             # Create 2-stage dataframe
-            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble_prev, y_train, y_test_prev, predictions_insample, predictions_outsample)
+            df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test, predictions_insample, predictions_outsample)
     
-
             # Augment 2-stage dataframe
             df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
             
@@ -259,7 +250,6 @@ def create_ensemble_forecasts(ens_params,
             df_2stage_train, df_2stage_test = split_train_test_data(df=df_2stage_buyer, 
                                                                     end_train=end_training_timestamp, 
                                                                     start_prediction=start_prediction_timestamp)
-
 
             logger.info('   ')
             logger.opt(colors=True).info(f'<fg 72,201,176> Train and Test Dataframes </fg 72,201,176>')
@@ -303,10 +293,10 @@ def create_ensemble_forecasts(ens_params,
                 previous_day_results_second_stage[quantile] = {"fitted_model": fitted_model, 
                                                                 "var_fitted_model": var_fitted_model, 
                                                                 "X_train_augmented": X_train_augmented, 
-                                                                "X_test_augmented_prev": X_test_augmented_prev, 
+                                                                "X_test_augmented": X_test_augmented, 
                                                                 "df_train_ensemble_augmented": df_train_ensemble_augmented, 
                                                                 "df_train_ensemble": df_train_ensemble, 
-                                                                "df_test_ensemble_prev": df_test_ensemble_prev,
+                                                                "df_test_ensemble": df_test_ensemble,
                                                                 "y_train": y_train,
                                                                 "buyer_scaler_stats": buyer_scaler_stats
                                                                 }
