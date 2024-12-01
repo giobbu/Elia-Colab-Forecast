@@ -55,7 +55,7 @@ def create_norm_import_scores_df(importance_scores):
     # Create a DataFrame with the importance scores
     results_df = pd.DataFrame(importance_scores)
     # Drop the forecasters standard deviation and variance rows
-    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std'])]
+    results_df = results_df[~results_df.predictor.isin(['forecasters_var', 'forecasters_std', 'forecasters_mean', 'forecasters_prod'])]
     # Normalize contributions
     results_df = normalize_contributions(results_df)
     # Sort the DataFrame by the contributions
