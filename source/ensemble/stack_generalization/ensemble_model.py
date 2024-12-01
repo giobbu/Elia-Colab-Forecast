@@ -28,7 +28,8 @@ def predico_ensemble_predictions_per_quantile(ens_params,
         X_test_quantile90: np.array, testing data for quantile 90
         df_train_ensemble_quantile90: pd.DataFrame, training data for quantile 90
     returns:
-            results: dict, results"""
+            results: dict, results
+    """
     
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Run ensemble predictions for quantile {quantile} </fg 250,128,114>')

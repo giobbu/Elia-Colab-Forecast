@@ -162,6 +162,7 @@ def first_stage_shapley_importance(y_test, params_model, quantile, info_previous
         # Append the importance score to the list
         importance_scores.append({'predictor': predictor_name, 
                                 'contribution': shapley_score})
+        
         # # Compute the permuted scores in parallel
         # col_scores = Parallel(n_jobs=4)(delayed(compute_col_perm_score)(seed, 
         #                                                                 params_model,

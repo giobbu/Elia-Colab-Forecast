@@ -327,7 +327,7 @@ def wind_power_variability_importance(results_challenge_dict, ens_params, y_test
     assert 'nr_permutations' in ens_params.keys(), 'The key nr_permutations is not present in the ens_params'
 
     logger.opt(colors=True).info(f'<blue>--</blue>' * 79)
-    logger.opt(colors=True).info(f'<blue>Wind Power Ramp</blue>')
+    logger.opt(colors=True).info(f'<blue>Wind Power Variability</blue>')
     # Get the info from the previous day
     info_previous_day_second_stage = results_challenge_dict['wind_power_variability']['info_contributions']
     # Loop through each quantile
