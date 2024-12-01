@@ -137,9 +137,14 @@ def create_ensemble_forecasts(ens_params,
     # Scale buyer dataframe
     df_buyer_norm = scale_buyer_dataframe(ens_params, buyer_scaler_stats, df_buyer)
     
-    # Split train and test dataframes
-    df_train_feat, df_test_feat = split_train_test_data(df=df_ensemble_normalized_lag, end_train=end_training_timestamp, start_prediction=start_prediction_timestamp)
-    df_train_targ, df_test_targ = split_train_test_data(df=df_buyer_norm, end_train=end_training_timestamp, start_prediction=start_prediction_timestamp)
+    # # Split train and test dataframes
+    df_train_feat, df_test_feat = split_train_test_data(df=df_ensemble_normalized_lag, 
+                                                        end_train=end_training_timestamp, 
+                                                        start_prediction=start_prediction_timestamp)
+
+    df_train_targ, df_test_targ = split_train_test_data(df=df_buyer_norm, 
+                                                        end_train=end_training_timestamp, 
+                                                        start_prediction=start_prediction_timestamp)
 
     df_train_ensemble, df_test_ensemble = concatenate_feat_targ_dataframes(buyer_resource_name=buyer_resource_name, 
                                                                             df_train_ensemble=df_train_feat, df_test_ensemble=df_test_feat, 
