@@ -142,7 +142,7 @@ def augment_with_quantiles(X_train, X_test, df_train_ensemble,
         raise ValueError('Invalid quantile value. Must be 0.1, 0.5, or 0.9.')
     " Get the quantile data and augment the training and testing data with it"
     X_train_part, X_test_part, df_train_ensemble_part = quantile_data[quantile]
-    X_train = np.concatenate([X_train, X_train_part], axis=1)
-    X_test = np.concatenate([X_test, X_test_part], axis=1)
+    X_train = np.concatenate([X_train, X_train_part], axis=1) if X_train_part.size > 0 else X_train
+    X_test = np.concatenate([X_test, X_test_part], axis=1) if X_test_part.size > 0 else X_test
     df_train_ensemble = pd.concat([df_train_ensemble, df_train_ensemble_part], axis=1)
     return X_train, X_test, df_train_ensemble
