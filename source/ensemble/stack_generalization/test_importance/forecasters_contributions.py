@@ -25,13 +25,13 @@ def calculate_contributions(results_challenge_dict, ens_params, y_test, forecast
     results_contributions = defaultdict(dict)
     # wind power importance
     start_1_stage = time.time()
-    y_test_1st_stage = y_test[-96:]
+    y_test_1st_stage = y_test.copy()
     results_contributions = wind_power_importance(results_challenge_dict, ens_params, y_test_1st_stage, results_contributions)
     end_1_stage = time.time() - start_1_stage
     logger.debug(f'Computational Time for 1-Stage {end_1_stage}')
     # wind power ramp importance
     start_2_stage = time.time()
-    y_test_2nd_stage = y_test[-192:]
+    y_test_2nd_stage = y_test.copy()
     results_contributions = wind_power_variability_importance(results_challenge_dict, ens_params, y_test_2nd_stage, forecast_range, results_contributions)
     end_2_stage = time.time() - start_2_stage
     logger.debug(f'Computational Time for 2-Stage {end_2_stage}')
