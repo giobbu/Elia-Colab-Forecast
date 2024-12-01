@@ -21,7 +21,7 @@ def calculate_contributions(results_challenge_dict, ens_params, y_test, forecast
     assert isinstance(results_challenge_dict, dict), 'The results_challenge_dict must be a dictionary'
     assert isinstance(ens_params, dict), 'The ens_params must be a dictionary'
     assert isinstance(y_test, np.ndarray), 'The y_test must be a numpy array'
-    assert len(y_test) >= 192, 'The length of y_test must be at least 192'
+    assert y_test.shape[0]>=92 and y_test.shape[0]<=100, 'The y_test must be between 92 and 100'
     results_contributions = defaultdict(dict)
     # wind power importance
     start_1_stage = time.time()
