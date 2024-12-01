@@ -101,21 +101,36 @@ def create_ensemble_forecasts(ens_params,
     # Augment dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
         logger.opt(colors=True).info(f'<fg 250,128,114> -- Augment quantile predictions </fg 250,128,114>')
+        
+        if not df_ensemble_normalized_quantile10.empty:
+            # Augment with predictions quantile 10
+            df_ensemble_normalized_lag_quantile10 = (create_augmented_dataframe(df=df_ensemble_normalized_quantile10,
+                                                                                max_lags=ens_params['max_lags'], 
+                                                                                forecasters_diversity=ens_params['forecasters_diversity'], 
+                                                                                add_lags=ens_params['add_lags'], 
+                                                                                augment_with_poly=ens_params['augment_with_poly'],
+                                                                                augment_with_roll_stats = ens_params['augment_with_roll_stats'], 
+                                                                                differenciate=ens_params['differenciate'], 
+                                                                                end_train=end_training_timestamp, 
+                                                                                start_prediction=start_prediction_timestamp) \
+                                                                                if not df_ensemble_normalized_quantile10.empty else pd.DataFrame())
+        else:
+            df_ensemble_normalized_lag_quantile10 = pd.DataFrame()
 
-        # Augment with predictions quantile 10
-        df_ensemble_normalized_lag_quantile10 = (create_augmented_dataframe(df_ensemble_normalized_quantile10,
-                                                                            max_lags=ens_params['max_lags'], 
-                                                                            forecasters_diversity=ens_params['forecasters_diversity'], 
-                                                                            lagged=ens_params['lagged'], 
-                                                                            augmented=ens_params['augment'], 
-                                                                            differenciate=ens_params['differenciate']) if not df_ensemble_normalized_quantile10.empty else pd.DataFrame())
-        # Augment with predictions quantile 90
-        df_ensemble_normalized_lag_quantile90 = (create_augmented_dataframe(df_ensemble_normalized_quantile90, 
-                                                                            max_lags=ens_params['max_lags'], 
-                                                                            forecasters_diversity=ens_params['forecasters_diversity'], 
-                                                                            lagged=ens_params['lagged'], 
-                                                                            augmented=ens_params['augment'], 
-                                                                            differenciate=ens_params['differenciate']) if not df_ensemble_normalized_quantile90.empty else pd.DataFrame())
+        if not df_ensemble_normalized_quantile90.empty:
+            # Augment with predictions quantile 90
+            df_ensemble_normalized_lag_quantile90 = (create_augmented_dataframe(df=df_ensemble_normalized_quantile90, 
+                                                                                max_lags=ens_params['max_lags'], 
+                                                                                forecasters_diversity=ens_params['forecasters_diversity'], 
+                                                                                add_lags=ens_params['add_lags'], 
+                                                                                augment_with_poly=ens_params['augment_with_poly'],
+                                                                                augment_with_roll_stats = ens_params['augment_with_roll_stats'], 
+                                                                                differenciate=ens_params['differenciate'], 
+                                                                                end_train=end_training_timestamp, 
+                                                                                start_prediction=start_prediction_timestamp) \
+                                                                                if not df_ensemble_normalized_quantile90.empty else pd.DataFrame())
+        else:
+            df_ensemble_normalized_lag_quantile90 = pd.DataFrame()
     else:
         df_ensemble_normalized_lag_quantile10, df_ensemble_normalized_lag_quantile90 = pd.DataFrame(), pd.DataFrame()
     
