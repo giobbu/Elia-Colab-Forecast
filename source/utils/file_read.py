@@ -11,6 +11,14 @@ def read_csv_file(csv_filename, columns, starting_period, ending_period):
     df_filtered = df_offshore_forecasters[df_offshore_forecasters.index.to_series().between(starting_period, ending_period)]
     return df_filtered
 
+def join_dataframes(*dataframes):
+    """
+    Helper function to join multiple dataframes sequentially.
+    """
+    result = dataframes[0]
+    for df in dataframes[1:]:
+        result = result.join(df)
+    return result
 
 def set_index_datetiemUTC(df):
     assert 'datetime' in df.columns, "The DataFrame must contain the 'datetime' column."
