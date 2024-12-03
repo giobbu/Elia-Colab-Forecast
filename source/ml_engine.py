@@ -92,12 +92,17 @@ def create_ensemble_forecasts(ens_params,
     # Augment dataframes
     logger.info('   ')
     logger.opt(colors=True).info(f'<fg 250,128,114> Augment DataFrame </fg 250,128,114>')
-    df_ensemble_normalized_lag = create_augmented_dataframe(df_ensemble_normalized, 
+
+    df_ensemble_normalized_lag = create_augmented_dataframe(df=df_ensemble_normalized, 
                                                             max_lags=ens_params['max_lags'], 
                                                             forecasters_diversity=ens_params['forecasters_diversity'], 
-                                                            lagged=ens_params['lagged'], 
-                                                            augmented=ens_params['augment'],
-                                                            differenciate=ens_params['differenciate'])
+                                                            add_lags=ens_params['add_lags'], 
+                                                            augment_with_poly=ens_params['augment_with_poly'],
+                                                            augment_with_roll_stats = ens_params['augment_with_roll_stats'],
+                                                            differenciate=ens_params['differenciate'], 
+                                                            end_train=end_training_timestamp, 
+                                                            start_prediction=start_prediction_timestamp)
+
     # Augment dataframes quantile predictions
     if ens_params['add_quantile_predictions']:
         logger.opt(colors=True).info(f'<fg 250,128,114> -- Augment quantile predictions </fg 250,128,114>')
@@ -271,8 +276,15 @@ def create_ensemble_forecasts(ens_params,
             df_2stage = create_2stage_dataframe(df_train_ensemble, df_test_ensemble, y_train, y_test, predictions_insample, predictions_outsample)
     
             # Augment 2-stage dataframe
-            df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, ens_params['order_diff'], max_lags=ens_params['max_lags_var'], augment=ens_params['augment_var'])
-            
+            df_2stage_buyer = create_augmented_dataframe_2stage(df_2stage, 
+                                                                order_diff = ens_params['order_diff'],
+                                                                differentiate=ens_params['differenciate_var'], 
+                                                                max_lags=ens_params['max_lags_var'], 
+                                                                add_lags = ens_params['add_lags_var'],
+                                                                augment_with_poly=ens_params['augment_with_poly_var'],
+                                                                end_train=end_training_timestamp,
+                                                                start_prediction=start_prediction_timestamp)
+                        
             # Split 2-stage dataframe
             df_2stage_train, df_2stage_test = split_train_test_data(df=df_2stage_buyer, 
                                                                     end_train=end_training_timestamp, 
