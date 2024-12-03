@@ -1,5 +1,17 @@
 import pandas as pd
 
+def read_csv_file(csv_filename, columns, starting_period, ending_period):
+    """
+    Read csv file and return dataframe
+    """
+    df_csv = pd.read_csv(csv_filename)
+    df_csv['datetime'] = pd.to_datetime(df_csv['datetime'])
+    df_offshore = df_csv[df_csv['offshoreonshore'] == 'Offshore'].set_index('datetime')
+    df_offshore_forecasters = df_offshore[columns]
+    df_filtered = df_offshore_forecasters[df_offshore_forecasters.index.to_series().between(starting_period, ending_period)]
+    return df_filtered
+
+
 def set_index_datetiemUTC(df):
     assert 'datetime' in df.columns, "The DataFrame must contain the 'datetime' column."
     df['datetime'] = pd.to_datetime(df['datetime'], utc=True)
