@@ -51,7 +51,7 @@ def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm,
         df_weighted_avg: pd.DataFrame, weighted average forecast
         dict_weights: dict, dictionary of weights
     """
-    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
+    assert len(df_test_norm)==96, 'Length of test dataframe is not 96'
     if var:
         df = pd.concat([df_train_norm, df_test_norm], axis=0).diff().dropna()
         df_train_norm, df_test_norm = df[df.index < end_observations], df[df.index >= start_predictions]

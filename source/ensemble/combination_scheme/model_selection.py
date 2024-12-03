@@ -37,7 +37,7 @@ def calculate_best_model(df_test_norm, lst_cols_forecasts, norm_lst_q50_pb_loss,
 def run_model_selection(sim_params, df_train_norm, df_test_norm, 
                         end_observations, start_predictions, window_size_valid=1, var=False, norm='sum'):
     " Calculate the weights based on the pinball loss of the forecasts "
-    assert len(df_test_norm)==96*2, 'Length of test dataframe is not 96*2'
+    assert len(df_test_norm)==96, 'Length of test dataframe is not 96'
     if var:
         df = pd.concat([df_train_norm, df_test_norm], axis=0).diff().dropna()
         df_train_norm, df_test_norm = df[df.index < end_observations], df[df.index >= start_predictions]
