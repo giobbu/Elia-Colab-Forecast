@@ -197,6 +197,11 @@ def create_ensemble_forecasts(ens_params,
     # Assert no NaNs in train ensemble
     assert df_train_ensemble.isna().sum().sum() == 0
     
+    # log the number of NaNs in the train and test ensemble
+    logger.info('   ')
+    logger.info(f'Number of NaNs in the train ensemble: {df_train_ensemble.isna().sum().sum()}')
+    logger.info(f'Number of NaNs in the test ensemble: {df_test_ensemble.isna().sum().sum()}')
+    
     file_info, iteration, best_results, best_results_var = load_or_initialize_results(ens_params, buyer_resource_name)
 
     logger.info('   ')
