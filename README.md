@@ -1,19 +1,30 @@
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Status](https://img.shields.io/badge/status-development-orange)
-# Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace
+# PREDICO: Collaborative Forecasting Through a Data Analytics Marketplace
+
+PREDICO is a platform designed for collaborative forecasting of offshore wind power in the spot market. This repository includes the methodology, learning algorithms, and evaluation tools necessary to combine forecasts and progress toward building a fully functional data marketplace.
+
+The collaborative forecasting process is divided into three main modules, as shown in the diagram below. 
 
 <img src="img/schema_predico.png" alt="Image Alt Text" width="500"/>
 
-#### How PREDICO Platform Operates in Practice
-Refer to the following repository for detailed instructions on setting up and running the PREDICO platform in practice : https://github.com/INESCTEC/predico-collabforecast
+The following detailed flowchart illustrates the main steps in wind energy forecasting and wind energy variability, together with the evaluation of the contributions of the various forecasters.
 
+* **Probabilistic Forecasting Module**: This module is divided into two chained processes:
 
+    * **Wind Power Submodule**: Forecasts are generated through standard statistical learning steps including feature engineering, hyperparameter optimization, model training, and the final forecast generation.
 
-<div style="text-align: center;">
-    <h1>Collaborative Forecasting Engine</h1>
-</div>
+    * **Wind Power Variability Submodule**: A similar process is followed here, focusing on capturing fluctuations in wind power output.
+
+* **Wind Ramp Detection Module**: This module identifies sudden changes or "ramps" in wind power, which are essential for maintaining power grid stability and supporting effective decision-making.
+
+* **Contribution Assessment Module**: This module utilizes methodologies such as Permutation Importance and Shapley Values to evaluate the contributions of forecasters' inputs. These methods help identify the most relevant variables in the forecasting task while promoting transparency in the evaluation.
 
 <img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
+
+#### How PREDICO Platform Operates in Practice
+For detailed instructions on setting up and deploying the PREDICO platform in operational environments, refer to the following repository: https://github.com/INESCTEC/predico-collabforecast.
+
 
 <div style="text-align: center;">
     <h2>Contribution Assessment Module</h2>
