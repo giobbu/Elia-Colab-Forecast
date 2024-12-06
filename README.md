@@ -30,15 +30,6 @@ These methods are implemented to address two critical objectives:
 * **Enhancing user trust**: Encouraging forecaster engagement.
 * **Model debugging and refinement**: Interpreting and improving the forecasts combination mechanism.
 
-It’s also important to remember the following:
-
-* #### A forecaster considered to have low importance in a poorly performing model might be crucial for a high-performing model. </span>
-* #### Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model. </span>
-
-<div style="text-align: center;">
-    <img src="img/forecasters_contribution.png" alt="Image Alt Text" width="400"/>
-</div>
-
 ##
 ### Permutation Importance
 <div style="text-align: center;">
@@ -50,6 +41,14 @@ It’s also important to remember the following:
 <img src="img/shapley.jpg" alt="Image Alt Text" width="700"/>
 </div>
 
+It’s also important to remember the following:
+
+* #### A forecaster considered to have low importance in a poorly performing model might be crucial for a high-performing model. </span>
+* #### Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model. </span>
+
+<div style="text-align: center;">
+    <img src="img/forecasters_contribution.png" alt="Image Alt Text" width="400"/>
+</div>
 
 
 ### Contributions
