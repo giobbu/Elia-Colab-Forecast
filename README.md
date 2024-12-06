@@ -19,8 +19,8 @@ Refer to the following repository for detailed instructions on setting up and ru
     <h2>Contribution Assessment Module</h2>
 </div>
 
-
-**PREDICO** utilizes the following methods to assess forecasters’ contributions:
+**PREDICO** exploits advanced techniques of Variable Importance Analysis, also known as Explainable AI, to meet the specific needs of evaluating the contributions of forecasters participating in the data market and to ensure appropriate allocation of payments.
+The following methods to assess forecasters’ contributions:
 
 * **Bootstrapped p-values** (applied in-sample)
 * **Shapley values or permutation importance** (applied out-of-sample)
