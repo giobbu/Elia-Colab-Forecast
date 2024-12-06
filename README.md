@@ -2,25 +2,54 @@
 ![Status](https://img.shields.io/badge/status-development-orange)
 # Empowering Wind Power Forecasting and Wind Ramp Detection Through a Data Analytics Marketplace
 
-### [INESC TEC Power and Energy Systems Centre](https://www.inesctec.pt/en/centres/cpes#intro)
-
 <img src="img/schema_predico.png" alt="Image Alt Text" width="500"/>
 
-## Collaborative Forecasting Engine
+#### How PREDICO Platform Operates in Practice
+Refer to the following repository for detailed instructions on setting up and running the PREDICO platform in practice : https://github.com/INESCTEC/predico-collabforecast
+
+
+
+<div style="text-align: center;">
+    <h1>Collaborative Forecasting Engine</h1>
+</div>
 
 <img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
 
-## Contribution Assessment Module
+<div style="text-align: center;">
+    <h2>Contribution Assessment Module</h2>
+</div>
 
+
+**PREDICO** utilizes the following methods to assess forecasters’ contributions:
+
+* **Bootstrapped p-values** (applied in-sample)
+* **Shapley values or permutation importance** (applied out-of-sample)
+
+These methods are implemented to address two critical objectives:
+
+* **Enhancing user trust**: Encouraging forecaster engagement.
+* **Model debugging and refinement**: Interpreting and improving the forecasts combination mechanism.
+
+It’s also important to remember the following:
+
+* #### A forecaster considered to have low importance in a poorly performing model might be crucial for a high-performing model. </span>
+* #### Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model. </span>
+
+<div style="text-align: center;">
+    <img src="img/forecasters_contribution.png" alt="Image Alt Text" width="400"/>
+</div>
+
+##
 ### Permutation Importance
+<div style="text-align: center;">
 <img src="img/permutation.jpg" alt="Image Alt Text" width="700"/>
+</div>
 
 ### Shapley Values Importance
+<div style="text-align: center;">
 <img src="img/shapley.jpg" alt="Image Alt Text" width="700"/>
+</div>
 
-### <span style="color: red;"> WARNING </span>
-* #### <span style="color: red;"> A forecaster considered to have low importance in a poorly performing model might be crucial for a high-performing model. </span>
-* #### <span style="color: red;"> Contribution score doesn't indicate the intrinsic predictive value of a forecaster on its own but rather how significant that forecaster is to a specific model. </span>
 
 
 ### Contributions
