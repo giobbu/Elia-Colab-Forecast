@@ -22,7 +22,7 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 
 <img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
 
-#### How PREDICO Platform Operates in Practice
+#### Getting started with PREDICO Platform
 For detailed instructions on setting up and deploying the PREDICO platform in operational environments, refer to the following repository: https://github.com/INESCTEC/predico-collabforecast.
 
 
