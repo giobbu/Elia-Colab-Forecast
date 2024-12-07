@@ -58,3 +58,7 @@ def filter_df(df, forecasts_col, measured_col):
         lst_cols.extend([name for name in df.columns if forecast_col in name])
     df_filtered = df[lst_cols]
     return df_filtered
+
+def filter_data(df, start, end):
+    """Filters the dataframe for the given date range."""
+    return df[df.index.to_series().between(start, end)].iloc[:-1, :]
