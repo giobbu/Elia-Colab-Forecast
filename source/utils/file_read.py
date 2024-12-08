@@ -1,4 +1,5 @@
 import pandas as pd
+from loguru import logger
 
 def read_csv_file(csv_filename, columns, starting_period, ending_period):
     """
@@ -62,3 +63,22 @@ def filter_df(df, forecasts_col, measured_col):
 def filter_data(df, start, end):
     """Filters the dataframe for the given date range."""
     return df[df.index.to_series().between(start, end)].iloc[:-1, :]
+
+def replace_nan_values(sim_params, df_processed):
+    """
+    Replace NaN values in the dataframe with zeros if specified in simulation parameters.
+    """
+    logger.info('Starting NaN replacement process...')
+    logger.warning("Replacing NaN values with 0s.")
+    nan_summary = df_processed.isna().sum()
+    print("NaN Summary Before Replacement:\n", nan_summary)
+    if sim_params['imputation_nan'] == 'zero':
+        df_processed.fillna(0, inplace=True)
+    elif sim_params['imputation_nan'] == 'mean':
+        df_processed.fillna(df_processed.mean(), inplace=True)
+    elif sim_params['imputation_nan'] == 'median':
+        df_processed.fillna(df_processed.median(), inplace=True)
+    else:
+        raise ValueError('Invalid NaN replacement method. Please select either "zero" or "mean".')
+    logger.info('NaN replacement complete.')
+    return df_processed
