@@ -2,11 +2,21 @@
 ![Status](https://img.shields.io/badge/status-development-orange)
 # PREDICO: Collaborative Forecasting Through a Data Analytics Marketplace
 
-PREDICO is a platform designed for collaborative forecasting of offshore wind power in the spot market. This repository includes the methodology, learning algorithms, and evaluation tools necessary to combine forecasts and progress toward building a fully functional data marketplace.
+PREDICO is a platform for collaborative forecasting, designed to enhance forecasting accuracy through collaboration between market makers and forecasters. This repository includes the methodology, learning algorithms, and evaluation tools necessary to combine forecasts and progress toward building a fully functional data marketplace.
 
-The collaborative forecasting process is divided into three main modules, as shown in the diagram below. 
+* #### Join PREDICO Collaborative Forecasting Sessions
+    Explore the PREDICO platform and service documentation to join the daily collaborative forecasting sessions at https://predico-elia.inesctec.pt/.
+
+* #### Setting up PREDICO platform
+    For detailed instructions on setting up and deploying the PREDICO platform in operational environments, refer to the following repository: https://github.com/INESCTEC/predico-collabforecast.
+
+## Overview
+
+The collaborative forecasting process is divided into three main components, as shown in the diagram below. 
 
 <img src="img/schema_predico.png" alt="Image Alt Text" width="500"/>
+
+## Collaborative Forecasting Modules
 
 The following detailed flowchart illustrates the main steps in wind energy forecasting and wind energy variability, together with the evaluation of the contributions of the various forecasters.
 
@@ -21,10 +31,6 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 * **Contribution Assessment Module**: This module utilizes methodologies such as Permutation Importance and Shapley Values to evaluate the contributions of forecasters' inputs. These methods help identify the most relevant variables in the forecasting task while promoting transparency in the evaluation.
 
 <img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
-
-#### Getting started with PREDICO Platform
-For detailed instructions on setting up and deploying the PREDICO platform in operational environments, refer to the following repository: https://github.com/INESCTEC/predico-collabforecast.
-
 
 <div style="text-align: center;">
     <h2>Contribution Assessment Module</h2>
