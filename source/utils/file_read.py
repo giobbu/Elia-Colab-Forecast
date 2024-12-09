@@ -60,9 +60,11 @@ def filter_df(df, forecasts_col, measured_col):
     df_filtered = df[lst_cols]
     return df_filtered
 
-def filter_data(df, start, end):
+def filter_data(df, start, end, string = 'training'):
     """Filters the dataframe for the given date range."""
-    return df[df.index.to_series().between(start, end)].iloc[:-1, :]
+    df_trimmed = df[df.index.to_series().between(start, end)].iloc[:-1, :]
+    logger.opt(colors = True).info(f'<blue> -----------------> Length of {string} data: {len(df_trimmed)} </blue>')
+    return df_trimmed
 
 def replace_nan_values(sim_params, df_processed):
     """
