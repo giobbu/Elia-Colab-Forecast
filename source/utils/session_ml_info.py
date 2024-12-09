@@ -1,6 +1,7 @@
 from pathlib import Path
 import pickle
 import os
+from loguru import logger
 
 def load_or_initialize_results(ens_params, buyer_resource_name):
     " Load or initialize results dictionary"
@@ -24,5 +25,6 @@ def delete_previous_day_pickle():
     filename = './info_model/b1r1_previous_day.pickle'
     try:
         os.remove(filename)
+        logger.opt(colors = True).warning('previous day pickle file removed')
     except OSError:
         pass
