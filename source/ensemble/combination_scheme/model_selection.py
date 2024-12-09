@@ -64,9 +64,9 @@ def create_best_model_df(df_test_norm, best_forecast, best_quantile10, best_quan
     " Create dataframe with the weighted average forecast"
     assert len(df_test_norm) == len(best_forecast) == len(best_quantile10) == len(best_quantile90), 'Length mismatch'
     df_best_model = pd.DataFrame({
-        'Q10': best_quantile10,
-        'mean_prediction': best_forecast,
-        'Q90': best_quantile90
+        'q10_best_model': best_quantile10,
+        'q50_best_model': best_forecast,
+        'q90_best_model': best_quantile90
     }, index = df_test_norm.index)
     df_best_model['targets'] = df_test_norm['norm_measured']
     return df_best_model
