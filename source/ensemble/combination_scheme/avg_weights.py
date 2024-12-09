@@ -77,15 +77,19 @@ def calculate_weighted_avg(sim_params, df_train_norm, df_test_norm,
     norm_lst_q50_weight = normalize_weights(lst_q50_weight) 
     norm_lst_q10_weight = normalize_weights(lst_q10_weight) 
     norm_lst_q90_weight = normalize_weights(lst_q90_weight)
-    combination_forecast, combination_quantile10, combination_quantile90 = calculate_combination_forecast(df_test_norm, lst_cols_forecasts, norm_lst_q50_weight, norm_lst_q10_weight, norm_lst_q90_weight)
-    df_weighted_avg = create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90)
+    combination_forecast, combination_quantile10, combination_quantile90 = calculate_combination_forecast(df_test_norm, 
+                                                                                                        lst_cols_forecasts, 
+                                                                                                        norm_lst_q50_weight, 
+                                                                                                        norm_lst_q10_weight, 
+                                                                                                        norm_lst_q90_weight)
+    df_weighted_avg = create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90, norm=norm)
     dict_weights = {0.5: {key:value for d in norm_lst_q50_weight for key, value in d.items()},
                     0.1: {key:value for d in norm_lst_q10_weight for key, value in d.items()}, 
                     0.9: {key:value for d in norm_lst_q90_weight for key, value in d.items()}}
     return df_weighted_avg, dict_weights
 
 
-def create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90):
+def create_weighted_avg_df(df_test_norm, combination_forecast, combination_quantile10, combination_quantile90, norm='sum'):
     """ Create dataframe with the weighted average forecast
     args:
         df_test_norm: pd.DataFrame, test data
@@ -96,10 +100,17 @@ def create_weighted_avg_df(df_test_norm, combination_forecast, combination_quant
         df_weighted_avg: pd.DataFrame, weighted average forecast
     """
     assert len(df_test_norm) == len(combination_forecast) == len(combination_quantile10) == len(combination_quantile90), 'Length mismatch'
-    df_weighted_avg = pd.DataFrame({
-        'Q10': combination_quantile10,
-        'mean_prediction': combination_forecast,
-        'Q90': combination_quantile90
-    }, index=df_test_norm.index)
+    if norm == 'sum':
+        df_weighted_avg = pd.DataFrame({
+            'q10_weight_avg': combination_quantile10,
+            'q50_weight_avg': combination_forecast,
+            'q90_weight_avg': combination_quantile90
+        }, index=df_test_norm.index)
+    elif norm == 'softmax':
+        df_weighted_avg = pd.DataFrame({
+            'q10_weight_avg_soft': combination_quantile10,
+            'q50_weight_avg_soft': combination_forecast,
+            'q90_weight_avg_soft': combination_quantile90
+        }, index=df_test_norm.index)
     df_weighted_avg['targets'] = df_test_norm['norm_measured']
     return df_weighted_avg
