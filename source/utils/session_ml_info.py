@@ -22,6 +22,7 @@ def load_or_initialize_results(ens_params, buyer_resource_name):
 
 # create function to remove previous day pickle file
 def delete_previous_day_pickle():
+    "Delete previous day pickle file"
     filename = './info_model/b1r1_previous_day.pickle'
     try:
         os.remove(filename)
