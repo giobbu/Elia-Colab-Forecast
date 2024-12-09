@@ -1,4 +1,5 @@
 import pandas as pd
+from loguru import logger
 from source.forecasters.deterministic import create_day_ahead_predictions, create_day_ahead_11_predictions, create_week_ahead_predictions, create_most_recent_predictions, create_malicious_predictions, create_noisy_predictions
 from source.forecasters.probabilistic import create_day_ahead_quantiles10, create_day_ahead_11_quantiles10, create_week_ahead_quantiles10, create_most_recent_quantiles10, create_malicious_quantiles10, create_noisy_quantiles10
 from source.forecasters.probabilistic import create_day_ahead_quantiles90, create_day_ahead_11_quantiles90, create_week_ahead_quantiles90, create_most_recent_quantiles90, create_malicious_quantiles90, create_noisy_quantiles90
@@ -168,5 +169,8 @@ def submission_forecasters(sim_params, df_train, df_test):
                 # q90 forecasts
                 df_train['noisyconfidence90'] = df_noisy_q90_train.values
                 df_test['noisyconfidence90'] = df_noisy_q90_test.values
+
+            logger.info(' ')
+            logger.opt(colors = True).info('<blue> -----------------> Forecasters prediction submitted </blue>')
 
             return df_market, df_train, df_test
