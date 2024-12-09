@@ -39,7 +39,7 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 **PREDICO** exploits advanced techniques of Variable Importance Analysis, also known as Explainable AI, to meet the specific needs of evaluating the contributions of forecasters participating in the data market and to ensure appropriate allocation of payments.
 The following methods to assess forecasters’ contributions:
 
-* **Bootstrapped p-values** (applied in-sample)
+* **Model coefficients (Permutation-based p-values)** (applied in-sample)
 * **Shapley values or permutation importance** (applied out-of-sample)
 
 These methods are implemented to address two critical objectives:
