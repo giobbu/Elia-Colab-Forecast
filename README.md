@@ -7,6 +7,10 @@ PREDICO is a platform for collaborative forecasting, designed to enhance forecas
 * #### Join PREDICO Collaborative Forecasting Sessions
     Explore the PREDICO platform and service documentation to join the daily collaborative forecasting sessions at https://predico-elia.inesctec.pt/.
 
+<div style="text-align: center;">
+<img src="img/predico_platform_portal.png" alt="Image Alt Text" width="700"/>
+</div>
+
 * #### Setting up PREDICO platform
     For detailed instructions on setting up and deploying the PREDICO platform in operational environments, refer to the following repository: https://github.com/INESCTEC/predico-collabforecast.
 
