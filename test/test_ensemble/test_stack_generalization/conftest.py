@@ -49,7 +49,9 @@ def mock_data_optimize_gbr():
         'max_depth': [1, 2],
         'max_iter': [2, 3]
     }
-    return X_train, y_train, params
+    nr_cv_splits = 3
+    quantile = 0.1
+    return X_train, y_train, params, nr_cv_splits, quantile
 
 @pytest.fixture
 def mock_data_optimize_lr():
