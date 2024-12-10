@@ -35,6 +35,12 @@ jobs:
         run: |
           poetry lock --no-update
 
+      # Verify repository structure
+      - name: Verify repository structure
+        run: |
+          pwd
+          ls -la  # Check if pyproject.toml is in the root directory
+
       # Install dependencies using Poetry
       - name: Install dependencies
         run: |
