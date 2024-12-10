@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "predico_research"}]
 
 [tool.poetry.dependencies]
-python = "3.9.19"
+python = "~3.9"
 bottleneck = "1.4.2"
 colorama = "0.4.6"
 ipykernel = "6.29.5"
