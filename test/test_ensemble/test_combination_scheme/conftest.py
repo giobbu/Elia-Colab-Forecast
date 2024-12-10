@@ -68,12 +68,13 @@ def mock_combination_quantile10():
 def mock_combination_quantile90():
     return np.array([1.25, 2.35, 3.45])
 
-
 @pytest.fixture
 def mock_calculate_weighted_avg_data():
+    
     # Mock data
     date_rng_train = pd.date_range(start='2022-01-01', end='2022-01-10', freq='D', tz='UTC')
     date_rng_test = pd.date_range(start='2022-01-11', end='2022-01-15', freq='D', tz='UTC')
+    
     df_train_norm_diff = pd.DataFrame(date_rng_train, columns=['date'])
     df_train_norm_diff.set_index('date', inplace=True)
     df_train_norm_diff['diff_norm_measured'] = np.random.randn(len(date_rng_train))
@@ -95,33 +96,34 @@ def mock_calculate_weighted_avg_data():
 @pytest.fixture
 def mock_calculate_equal_weights_data():
     data = {
-        'diff_norm_weekaheadconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_dayaheadconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_dayahead11hconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_weekaheadforecast': [1.0, 1.1, 1.2],
-        'diff_norm_dayaheadforecast': [1.0, 1.1, 1.2],
-        'diff_norm_dayahead11hforecast': [1.0, 1.1, 1.2],
-        'diff_norm_weekaheadconfidence90': [1.9, 2.0, 2.1],
-        'diff_norm_dayaheadconfidence90': [1.9, 2.0, 2.1],
-        'diff_norm_dayahead11hconfidence90': [1.9, 2.0, 2.1],
-        'diff_norm_measured': [1.5, 1.6, 1.7]
+        'norm_weekaheadconfidence10': [i-1 for i in range(96)],
+        'norm_dayaheadconfidence10': [i-1 for i in range(96)],
+        'norm_dayahead11hconfidence10': [i-1 for i in range(96)],
+        'norm_weekaheadforecast': [i for i in range(96)],
+        'norm_dayaheadforecast': [i for i in range(96)],
+        'norm_dayahead11hforecast': [i for i in range(96)],
+        'norm_weekaheadconfidence90': [i + 1 for i in range(96)],
+        'norm_dayaheadconfidence90': [i + 1 for i in range(96)],
+        'norm_dayahead11hconfidence90': [i + 1 for i in range(96)],
+        'norm_measured': [i + 3 for i in range(96)],
     }
-    df_test_norm_diff = pd.DataFrame(data)
+    df_test_norm_diff = pd.DataFrame(data, index=pd.date_range(start='2022-01-01 00:00:00', periods=96, freq='D'))
     return df_test_norm_diff
 
 
 @pytest.fixture
 def mock_calculate_equal_weights_missing_data():
+    # length 96 values
     data = {
-        'diff_norm_weekaheadconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_dayaheadconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_dayahead11hconfidence10': [0.1, 0.2, 0.3],
-        'diff_norm_weekaheadforecast': [1.0, 1.1, 1.2],
-        'diff_norm_dayaheadforecast': [1.0, 1.1, 1.2],
-        'diff_norm_dayahead11hforecast': [1.0, 1.1, 1.2],
-        'diff_norm_weekaheadconfidence90': [1.9, 2.0, 2.1],
-        'diff_norm_dayaheadconfidence90': [1.9, 2.0, 2.1],
-        'diff_norm_dayahead11hconfidence90': [1.9, 2.0, 2.1]
+        'norm_weekaheadconfidence10': [i-1 for i in range(96)],
+        'norm_dayaheadconfidence10': [i-1 for i in range(96)],
+        'norm_dayahead11hconfidence10': [i-1 for i in range(96)],
+        'norm_weekaheadforecast': [i for i in range(96)],
+        'norm_dayaheadforecast': [i for i in range(96)],
+        'norm_dayahead11hforecast': [i for i in range(96)],
+        'norm_weekaheadconfidence90': [i + 1 for i in range(96)],
+        'norm_dayaheadconfidence90': [i + 1 for i in range(96)],
+        'norm_dayahead11hconfidence90': [i + 1 for i in range(96)],
     }
     df_test_norm_diff = pd.DataFrame(data)
     return df_test_norm_diff
@@ -131,6 +133,6 @@ def mock_calculate_equal_weights_missing_data():
 def dict_importance_weights():
     return {
         0.5: [
-            {'diff_norm_feature1': 0.2, 'diff_norm_feature2': 0.8}
+            {'norm_feature1': 0.2, 'norm_feature2': 0.8}
         ]
     }
