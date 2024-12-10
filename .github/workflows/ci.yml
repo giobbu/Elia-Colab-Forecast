@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9.17'  # Match the Python version required in pyproject.toml
+          python-version: '3.9'  # Match the Python version required in pyproject.toml
 
       # Install Poetry
       - name: Install Poetry
