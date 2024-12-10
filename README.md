@@ -1,5 +1,6 @@
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Status](https://img.shields.io/badge/status-development-orange)
+![Python Tests on macOS](https://github.com/giobbu/predico-collab-forecast-research/actions/workflows/ci.yml/badge.svg)
 # PREDICO: Collaborative Forecasting Through a Data Analytics Marketplace
 
 PREDICO is a platform for collaborative forecasting, designed to enhance forecasting accuracy through collaboration between market makers and forecasters. This repository includes the methodology, learning algorithms, and evaluation tools necessary to combine forecasts and progress toward building a fully functional data marketplace.
