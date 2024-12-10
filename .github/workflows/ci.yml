@@ -17,11 +17,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      # Set up Python (use a version compatible with Apple M1)
+      # Set up Python (exact version)
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'  # Specify the required Python version here
+          python-version: '3.9.19'  # Match the Python version required in pyproject.toml
 
       # Install Poetry
       - name: Install Poetry
