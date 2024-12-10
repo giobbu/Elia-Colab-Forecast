@@ -23,6 +23,7 @@ unicodedata2 = "15.1.0"
 wheel = "0.44.0"
 matplotlib = "^3.9.3"
 seaborn = "^0.13.2"
+pytest = "^8.3.4"
 
 
 [build-system]
