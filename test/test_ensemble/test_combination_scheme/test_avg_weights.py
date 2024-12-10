@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from source.ensemble.combination_scheme.avg_weights import normalize_weights, calculate_combination_forecast
 
-
 def test_normalize_weights_single_item(single_weight):
     "Test normalize_weights with single item"
     lst_weight = single_weight
