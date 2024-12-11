@@ -44,7 +44,7 @@ class Simulation:
         ending_period = '2024-01-26 23:45:00+00:00',
 
         # csv for the testing period
-        csv_filename = 'dataset_elia/ELIA_2021_july2024.csv',
+        csv_filename = 'dataset_elia/ELIA_dataset.csv',
 
         # # set buyer resource name
         buyer_resource_name = 'b1r1',
@@ -171,7 +171,7 @@ class Stack:
         zoom_in_variability = True, # zoom in the variability forecasts
 
         # wind ramp detection
-        detector = 'kde',  # 'eq', 'kde', 'box', 'lof'
+        detector = 'box',  # 'eq', 'kde', 'box', 'lof'
 
         preprocess_ramps = True,  # preprocess training data (get rid of wind ramps)
         max_IQW = 1000,

@@ -44,16 +44,17 @@ class Simulation:
         ending_period = '2024-01-26 23:45:00+00:00',
 
         # csv for the testing period
-        csv_filename = 'dataset_elia/ELIA_2021_july2024.csv',
+        csv_filename = 'dataset_elia/ELIA_dataset.csv',
 
         # # set buyer resource name
         buyer_resource_name = 'b1r1',
 
         replace_nan = True,
+        imputation_nan = 'mean', # 'median', 'zero', 'mean'
         random_seed = 42,
-        window_size = 10,
-        start_training = '2021-05-01',
-        num_test_days = 2000,
+        window_size = 30,
+        start_training = '2021-01-01',
+        num_test_days = 3,
         forecasts_col = ['forecast', 'confidence10', 'confidence90'],
         measured_col = 'measured',
         most_recent = False,
@@ -66,7 +67,7 @@ class Simulation:
         save_scenario_contributions = False,
         display_metrics=True,
         baselines_comparison = True,  # compare the model with the baselines
-        contribution_comparison = False,  # compare the model with the contributions
+        contribution_assessment = True,  # compare the model with the contributions
         boxplot = True,
         lof = True,
         kde = True)
@@ -138,6 +139,7 @@ class Stack:
                                     'max_features' : [.98, 1.0],
                                     'max_depth': [2, 3, 4],
                                     'max_iter': [25]},
+
         var_lr_config_params = {'alpha': [0, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.005, 0.0075, 0.01],
                                 'fit_intercept' : [True, False]},
 
