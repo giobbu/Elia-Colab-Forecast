@@ -142,6 +142,8 @@ It’s also important to remember the following:
 ## 6. Contributing
 ## 7. License
 
+This project is licensed under the AGPL v3 license - see the [LICENSE](./LICENSE) file for details.
+
 ## 8. Contact
 
 Contributors:
