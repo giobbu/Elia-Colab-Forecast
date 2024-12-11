@@ -102,8 +102,9 @@ def predico_ensemble_predictions_per_quantile(ens_params,
         results['coefs'] = coefs
         results['p_values'] = np.array([round(p_values_permutation[i], 4) for i in range(len(p_values_permutation))])
         results['model-summary'] = model_summary
-        logger.info('Model summary')
-        logger.info(model_summary[model_summary['significant'] == True])
+        
+        # logger.info('Model summary')
+        # logger.info(model_summary[model_summary['significant'] == True])
     
     # # Store calibration data
     # if ens_params['conformalized_qr']:
