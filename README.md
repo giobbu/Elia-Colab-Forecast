@@ -77,10 +77,10 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 
 <div style="display: flex; justify-content: flex-start; width: 100%; gap: 20px;">
   <div style="text-align: left;">
-    <img src="notebooks_module_probabilistic_forecasting/Coverage by forecaster.png" alt="Image Alt Text" width="500"/>
+    <img src="notebooks_module_probabilistic_forecasting/Coverage_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
   <div style="text-align: center;">
-    <img src="notebooks_module_probabilistic_forecasting/Sharpness by forecaster.png" alt="Image Alt Text" width="500"/>
+    <img src="notebooks_module_probabilistic_forecasting/Sharpness_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
 </div>
 
