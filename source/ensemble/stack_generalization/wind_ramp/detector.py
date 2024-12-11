@@ -25,11 +25,13 @@ def wind_ramp_detector(ens_params, df_pred_variability_insample, df_pred_variabi
 
     if ens_params['detector'] == 'eq':
         # detect IQW anomalies for wind ramps using emprical quantile
+        logger.debug("Detecting wind ramp anomalies using Empirical Quantile method.")
         df_pred_variability_outsample, alarm_status = anomaly_model_eq(df_pred_variability_insample, 
                                                                     df_pred_variability_outsample, 
                                                                     threshold_quantile=ens_params['threshold_quantile_eq'])
     elif ens_params['detector'] == 'kde':
         # detect IQW anomalies for wind ramps using KDE
+        logger.debug("Detecting wind ramp anomalies using KDE method.")
         df_pred_variability_outsample, alarm_status = anomaly_model_kde(df_pred_variability_insample, 
                                                                     df_pred_variability_outsample, 
                                                                     threshold_quantile=ens_params['threshold_quantile_kde'],
