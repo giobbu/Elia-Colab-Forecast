@@ -432,8 +432,9 @@ def create_ensemble_forecasts(ens_params,
                                         'wind_power_variability': 
                                             {'predictions': df_results_wind_power_variability, 
                                                 'info_contributions': previous_day_results_second_stage,
-                                                'best_results': best_results_var,
-                                                'predictions_outsample': var_pred_outsample_df,
+                                                'best_results': best_results_var},
+                                        'wind_power_ramp': 
+                                                {'predictions_outsample': var_pred_outsample_df,
                                                 'predictions_insample': var_pred_insample_df}
                                             }
         # save results
