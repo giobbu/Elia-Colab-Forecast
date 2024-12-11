@@ -61,16 +61,17 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 #### Evaluation
 ##### Performance metrics
 <div style="display: flex; justify-content: space-between; width: 100%;">
-  <div style="text-align: left;">
-    <img src="notebooks_module_probabilistic_forecasting/RMSE by forecaster.png" alt="Image Alt Text" width="500"/>
+  <div style="flex: 1; text-align: left;">
+    <img src="notebooks_module_probabilistic_forecasting/RMSE_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
-  <div style="text-align: center;">
-    <img src="notebooks_module_probabilistic_forecasting/Pinball Loss 0.1 by forecaster.png" alt="Image Alt Text" width="500"/>
+  <div style="flex: 1; text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/Pinball_Loss_0.1_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
-  <div style="text-align: right;">
-    <img src="notebooks_module_probabilistic_forecasting/Pinball Loss 0.9 by forecaster.png" alt="Image Alt Text" width="500"/>
+  <div style="flex: 1; text-align: right;">
+    <img src="notebooks_module_probabilistic_forecasting/Pinball_Loss_0.9_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
 </div>
+
 
 ##### Coverage & Sharpness
 
