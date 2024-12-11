@@ -59,6 +59,42 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 ### 2.1. Probabilistic Forecasting Module
 #### Methodology
 #### Evaluation
+##### Performance metrics
+<div style="display: flex; justify-content: space-between; width: 100%;">
+  <div style="text-align: left;">
+    <img src="notebooks_module_probabilistic_forecasting/RMSE by forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/Pinball Loss 0.1 by forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: right;">
+    <img src="notebooks_module_probabilistic_forecasting/Pinball Loss 0.9 by forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+</div>
+
+##### Coverage & Sharpness
+
+<div style="display: flex; justify-content: flex-start; width: 100%; gap: 20px;">
+  <div style="text-align: left;">
+    <img src="notebooks_module_probabilistic_forecasting/Coverage by forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/Sharpness by forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+</div>
+
+##### Post-hoc Nemenyi test 
+<div style="display: flex; justify-content: space-between; width: 100%;">
+  <div style="text-align: left;">
+    <img src="notebooks_module_probabilistic_forecasting/p_values_posthoc_nemenyi_test_RMSE.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/p_values_posthoc_nemenyi_test_PinBall_Loss_0.1.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: right;">
+    <img src="notebooks_module_probabilistic_forecasting/p_values_posthoc_nemenyi_test_PinBall_Loss_0.9.png" alt="Image Alt Text" width="500"/>
+  </div>
+</div>
 
 ### 2.2. Wind Ramp Detection Module
 #### Methodology
