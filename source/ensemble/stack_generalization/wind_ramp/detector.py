@@ -1,4 +1,6 @@
 import pandas as pd
+from loguru import logger
+from source.ensemble.stack_generalization.wind_ramp.box_method import anomaly_model_box
 from source.ensemble.stack_generalization.wind_ramp.emp_quantile_method import anomaly_model_eq
 from source.ensemble.stack_generalization.wind_ramp.kde_method import anomaly_model_kde
 from source.ensemble.stack_generalization.wind_ramp.alarm_policy import alarm_policy_rule
@@ -32,6 +34,15 @@ def wind_ramp_detector(ens_params, df_pred_variability_insample, df_pred_variabi
                                                                     df_pred_variability_outsample, 
                                                                     threshold_quantile=ens_params['threshold_quantile_kde'],
                                                                     cv_folds=ens_params['cv_folds_kde'])
+    elif ens_params['detector'] == 'box':
+        # detect IQW anomalies for wind ramps using Boxplot
+        logger.debug("Detecting wind ramp anomalies using Boxplot method.")
+        df_pred_variability_outsample, alarm_status = anomaly_model_box(df_pred_variability_insample, 
+                                                                        df_pred_variability_outsample, 
+                                                                        q1=ens_params['q1_box'], 
+                                                                        q3=ens_params['q3_box'], 
+                                                                        k=ens_params['k_box'])
+
     else:
         raise ValueError(f"Detector {ens_params['detector']} not supported.")
     
