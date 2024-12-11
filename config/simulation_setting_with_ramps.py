@@ -171,7 +171,7 @@ class Stack:
         zoom_in_variability = True, # zoom in the variability forecasts
 
         # wind ramp detection
-        detector = 'box',  # 'eq', 'kde', 'box', 'lof'
+        detector = 'eq',  # 'eq', 'kde', 'box', 'lof'
 
         preprocess_ramps = True,  # preprocess training data (get rid of wind ramps)
         max_IQW = 1000,
@@ -190,7 +190,7 @@ class Stack:
         k_box = 1.5,
 
         # params for lof detector
-        n_neighbors_lof = 25,
+        n_neighbors_lof = 35,
         contamination_lof = 0.075,
 
     )
