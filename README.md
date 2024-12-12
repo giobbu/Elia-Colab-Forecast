@@ -9,6 +9,7 @@
 0. [Introducing PREDICO Platform](#0-introducing-predico-platform)
 1. [Overview](#1-overview)
 2. [Collaborative Forecasting Modules](#2-collaborative-forecasting-modules)
+    - 2.0. [Dataset](#20-dataset)
     - 2.1. [Probabilistic Forecasting Module](#21-probabilistic-forecasting-module)
     - 2.2. [Wind Ramp Detection Module](#22-wind-ramp-detection-module)
     - 2.3. [Contribution Assessment Module](#23-contribution-assessment-module)
@@ -56,9 +57,13 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 <img src="img/PREDICO.png" alt="Image Alt Text" width="1000"/>
 
 
+### 2.0. Dataset
+
 ### 2.1. Probabilistic Forecasting Module
 #### Methodology
-#### Evaluation
+
+#### Evaluation over a 3-year period
+
 ##### Performance metrics
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="flex: 1; text-align: left;">
@@ -71,6 +76,21 @@ The following detailed flowchart illustrates the main steps in wind energy forec
     <img src="notebooks_module_probabilistic_forecasting/Pinball_Loss_0.9_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
 </div>
+
+##### The frequency at which QRA outperforms other models
+
+<div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="notebooks_module_probabilistic_forecasting/rmse_frequency.png" alt="RMSE Frequency" width="500"/>
+  </div>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="notebooks_module_probabilistic_forecasting/pinball_loss_01_frequency.png" alt="Pinball Loss 0.1 Frequency" width="500"/>
+  </div>
+  <div style="text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/pinball_loss_09_frequency.png" alt="Pinball Loss 0.9 Frequency" width="500"/>
+  </div>
+</div>
+
 
 
 ##### Coverage & Sharpness
