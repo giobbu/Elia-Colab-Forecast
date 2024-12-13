@@ -69,9 +69,10 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 When evaluating a probabilistic forecast, the main challenge is that we never observe the true distribution of the underlying process. Over the years, a number of ways have been developed to evaluate probabilistic forecasts. Some methods admit formal statistical tests, while other result in a single number which has a clear interpretation and is easy to compare.
 
 * **The Root Mean Squared Error (RMSE)**
-* **The pinball loss** is a special case of an asymmetric piecewise linear loss function. It is a proper scoring rule designed to provide a summary measure for the
+* **The Pinball loss** is a special case of an asymmetric piecewise linear loss function. It is a proper scoring rule designed to provide a summary measure for the
 evaluation of probabilistic forecasts by assigning a numerical score based on the predictive distribution and on the actually
 observed wind power.
+* **Winkler score (TODO)**
 
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="flex: 1; text-align: left;">
