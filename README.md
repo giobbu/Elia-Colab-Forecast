@@ -61,10 +61,13 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 
 ### 2.1. Probabilistic Forecasting Module
 #### Methodology
+**Quantile Regression Averaging (QRA) model**: The method involves applying quantile regression to a pool of forecasts of individual (i.e., not combined) forecasting models. It offers the advantage to directly work with the distribution of the wind power without the need to split the probabilistic forecast into a point forecast and the distribution of the error term.
 
 #### Evaluation over a 3-year period
 
-##### Performance metrics
+#### Performance metrics: RMSE, Pinball loss, Coverage, and Sharpness
+When evaluating a probabilistic forecast, the main challenge is that we never observe the true distribution of the underlying process. Over the years, a number of ways have been developed to evaluate probabilistic forecasts. Some methods admit formal statistical tests, while other result in a single number which has a clear interpretation and is easy to compare.
+
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="flex: 1; text-align: left;">
     <img src="notebooks_module_probabilistic_forecasting/RMSE_by_forecaster.png" alt="Image Alt Text" width="500"/>
@@ -77,7 +80,16 @@ The following detailed flowchart illustrates the main steps in wind energy forec
   </div>
 </div>
 
-##### The frequency at which QRA outperforms other models
+<div style="display: flex; justify-content: flex-start; width: 100%; gap: 20px;">
+  <div style="text-align: left;">
+    <img src="notebooks_module_probabilistic_forecasting/Coverage_by_forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+  <div style="text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/Sharpness_by_forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
+</div>
+
+#### The frequency at which QRA outperforms other models
 
 <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 10px;">
   <div style="text-align: center; margin-bottom: 20px;">
@@ -92,19 +104,7 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 </div>
 
 
-
-##### Coverage & Sharpness
-
-<div style="display: flex; justify-content: flex-start; width: 100%; gap: 20px;">
-  <div style="text-align: left;">
-    <img src="notebooks_module_probabilistic_forecasting/Coverage_by_forecaster.png" alt="Image Alt Text" width="500"/>
-  </div>
-  <div style="text-align: center;">
-    <img src="notebooks_module_probabilistic_forecasting/Sharpness_by_forecaster.png" alt="Image Alt Text" width="500"/>
-  </div>
-</div>
-
-##### Post-hoc Nemenyi test 
+#### Post-hoc Nemenyi test 
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="text-align: left;">
     <img src="notebooks_module_probabilistic_forecasting/p_values_posthoc_nemenyi_test_RMSE.png" alt="Image Alt Text" width="500"/>
