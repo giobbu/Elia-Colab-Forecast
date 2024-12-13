@@ -68,6 +68,11 @@ The following detailed flowchart illustrates the main steps in wind energy forec
 #### Performance metrics: RMSE, Pinball loss, Coverage, and Sharpness
 When evaluating a probabilistic forecast, the main challenge is that we never observe the true distribution of the underlying process. Over the years, a number of ways have been developed to evaluate probabilistic forecasts. Some methods admit formal statistical tests, while other result in a single number which has a clear interpretation and is easy to compare.
 
+* **The Root Mean Squared Error (RMSE)**
+* **The pinball loss** is a special case of an asymmetric piecewise linear loss function. It is a proper scoring rule designed to provide a summary measure for the
+evaluation of probabilistic forecasts by assigning a numerical score based on the predictive distribution and on the actually
+observed wind power.
+
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="flex: 1; text-align: left;">
     <img src="notebooks_module_probabilistic_forecasting/RMSE_by_forecaster.png" alt="Image Alt Text" width="500"/>
@@ -79,6 +84,11 @@ When evaluating a probabilistic forecast, the main challenge is that we never ob
     <img src="notebooks_module_probabilistic_forecasting/Pinball_Loss_0.9_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
 </div>
+
+* **Reliability** (also called calibration or unbiasedness) refers to the statistical consistency between the distributional forecasts and the
+observations. For instance, if a 80% Prediction Interval (PI) covers 80% of the observed wind power, then this PI is said to be reliable, well calibrated, or unbiased.
+
+* **Sharpness** refers to how tightly the predicted distribution covers the actual one, i.e., to the concentration of the predictive distributions.
 
 <div style="display: flex; justify-content: flex-start; width: 100%; gap: 20px;">
   <div style="text-align: left;">
