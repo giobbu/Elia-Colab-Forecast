@@ -13,7 +13,12 @@
     - 2.1. [Probabilistic Forecasting Module](#21-probabilistic-forecasting-module)
     - 2.2. [Wind Ramp Detection Module](#22-wind-ramp-detection-module)
     - 2.3. [Contribution Assessment Module](#23-contribution-assessment-module)
-3. [Installation](#3-installation)
+3. [Installation Quick Start Guide](#3-installation-quick-start-guide)
+    - 3.1. [Poetry](#31-poetry)
+    - 3.2. [Docker](#32-docker)
+      - 3.2.1. [Setting Up Docker](#321-setting-up-docker)
+      - 3.2.2. [Pulling Image from Docker Hub](#322-pulling-image-from-docker-hub) 
+      - 3.2.3. [Running Container](#323-running-container)
 4. [Usage](#4-usage)
 5. [Configuration](#5-configuration)
 6. [Contributing](#6-contributing)
@@ -72,7 +77,7 @@ When evaluating a probabilistic forecast, the main challenge is that we never ob
 * **The Pinball loss** is a special case of an asymmetric piecewise linear loss function. It is a proper scoring rule designed to provide a summary measure for the
 evaluation of probabilistic forecasts by assigning a numerical score based on the predictive distribution and on the actually
 observed wind power.
-* **Winkler score (TODO)**
+
 
 <div style="display: flex; justify-content: space-between; width: 100%;">
   <div style="flex: 1; text-align: left;">
@@ -99,6 +104,13 @@ observations. For instance, if a 80% Prediction Interval (PI) covers 80% of the 
     <img src="notebooks_module_probabilistic_forecasting/Sharpness_by_forecaster.png" alt="Image Alt Text" width="500"/>
   </div>
 </div>
+
+* **Winkler score**: probability coverage and sharpness can be assessed jointly using the score function that was proposed by Winkler Interval Score. The Winkler score gives a penalty if an observation lies outside the constructed interval and rewards a forecaster for a narrow PI; naturally the lower the score the better the PI. Note that the Winkler score, like
+the pinball score, is a proper scoring rule, which makes it an appealing measure for PI evaluation.
+
+  <div style="flex: 1; text-align: center;">
+    <img src="notebooks_module_probabilistic_forecasting/Winkler_Score_by_forecaster.png" alt="Image Alt Text" width="500"/>
+  </div>
 
 #### The frequency at which QRA outperforms other models
 
@@ -167,7 +179,40 @@ It’s also important to remember the following:
 </div>
 
 
-## 3. Installation
+## 3. Installation Quick Start Guide
+### 3.1. Poetry (TODO) 
+### 3.2. Docker
+#### 3.2.1. Setting Up Docker
+To install Docker on your system, follow the instructions on the official Docker website:
+* [Get Docker](https://docs.docker.com/get-started/get-docker/)
+
+This guide includes detailed instructions for major platforms like Windows, macOS, and Linux.
+
+Once installed, verify the installation by running the following command in your terminal:
+```
+docker --version
+```
+This will display the installed Docker version.
+
+#### 3.2.2. Pulling Image from Docker Hub
+Before you can pull a Docker image from Docker Hub, you will need a Docker Hub account. After logging in, you can pull a Docker image from Docker Hub using the `docker pull` command. For example, to pull the `giobbu/predico-research:v1` image, run the following command in your terminal:
+
+```
+docker pull giobbu/predico-research:v1
+```
+This command will download the specified image to your local machine, making it ready to use.
+
+#### 3.2.3. Running Container 
+After pulling the Docker image, you can run it as a container. To run the `giobbu/predico-research:v1` image, use the following command:
+```
+docker run -it giobbu/predico-research:v1
+```
+
+This command does the following:
+`-it`: Runs the container in interactive mode with a terminal.
+`giobbu/predico-research:v1`: Specifies the Docker image to run.
+Once the container is running, you will have access to an interactive terminal session inside the container, allowing you to use the image as needed.
+
 ## 4. Usage
 ## 5. Configuration
 ## 6. Contributing
