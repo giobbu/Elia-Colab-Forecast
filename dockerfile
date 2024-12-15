@@ -5,7 +5,7 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Install system dependencies required for building Python C extensions
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     build-essential \
     gcc \
@@ -14,14 +14,16 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements.txt file into the container at /app
-COPY requirements.txt /app/
+# Copy the requirements.txt file into the container
+COPY requirements.txt .
 
-# Install the Python dependencies from requirements.txt
+# Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the project files into the container at /app
-COPY . /app
+# Copy only necessary directories/files into the container
+COPY . /app/
 
-# Specify the command to run the application
+# Run the application
 CMD ["python", "main.py"]
+
+
